@@ -68,13 +68,8 @@ export class IllustratorProductionSession {
       var expectedWork = ${literal(request.workPath)};
       var actualWork = d.fullName.fsName.replace(/\\\\/g, '/');
       if (actualWork !== expectedWork) throw new Error('ACTIVE_DOCUMENT_IS_NOT_WORK_COPY');
+      d.save();
       var result = {};
-      ${request.pdfPath ? `
-      var pdfFile = new File(${literal(request.pdfPath)});
-      var pdfOptions = new PDFSaveOptions();
-      d.saveAs(pdfFile, pdfOptions);
-      result.pdf = pdfFile.fsName;
-      ` : ""}
       ${request.pngPath ? `
       var pngFile = new File(${literal(request.pngPath)});
       var pngOptions = new ExportOptionsPNG24();
@@ -82,6 +77,14 @@ export class IllustratorProductionSession {
       pngOptions.artBoardClipping = true;
       d.exportFile(pngFile, ExportType.PNG24, pngOptions);
       result.png = pngFile.fsName;
+      ` : ""}
+      ${request.pdfPath ? `
+      // PDF saveAs changes the active document association, so it intentionally runs last.
+      // The AI work copy has already been persisted above and remains on disk.
+      var pdfFile = new File(${literal(request.pdfPath)});
+      var pdfOptions = new PDFSaveOptions();
+      d.saveAs(pdfFile, pdfOptions);
+      result.pdf = pdfFile.fsName;
       ` : ""}
       return result;
     `, 60_000);
