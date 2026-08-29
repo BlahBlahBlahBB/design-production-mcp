@@ -26,9 +26,11 @@ echo "[2/3] Building..."
 npm run build
 
 echo "[3/3] Starting real Illustrator QA..."
+set +e
 node tools/illustrator-real-qa.mjs
-
 status=$?
+set -e
+
 echo ""
 if [[ $status -eq 0 ]]; then
   echo "QA finished successfully."
