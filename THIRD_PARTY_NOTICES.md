@@ -6,13 +6,18 @@ This project is an independent design-production automation project.
 
 ### ie3jp/illustrator-mcp-server
 - License: MIT
-- Intended use: primary reference and candidate source for the Illustrator ExtendScript execution bridge and selected tested capabilities.
+- Reviewed revision: `c06f627bcf32dfc474fce8b80f42488c2b2de2e2`
+- Upstream copyright: Copyright (c) 2026 cyocun (IE3)
+- Reviewed implementation files: `src/executor/jsx-runner.ts`, `src/executor/file-transport.ts`
+- Local use: architecture and behavior were adapted into a separately written transport layer covering serialized Illustrator execution, macOS `osascript`/AppleScript → ExtendScript, Windows PowerShell/COM → ExtendScript, temporary result transport, timeout handling, and cleanup.
+- The local implementation is intentionally narrower and uses different APIs/naming to fit `IllustratorBridge` and the production-safety model.
 - Any copied or substantially adapted portions must retain the upstream copyright and MIT permission notice.
 
 ### gherardo200-glitch/illustrator-mcp
 - License: MIT
-- Intended use: secondary implementation reference for AppleScript -> ExtendScript execution and MCP safety patterns.
-- Any copied or substantially adapted portions must retain the upstream copyright and MIT permission notice.
+- Upstream copyright: Copyright (c) 2026 gherardo200-glitch
+- Intended use: secondary implementation reference for AppleScript → ExtendScript execution and MCP safety patterns.
+- No source from this repository has been copied into the Phase 1 implementation at the time of this notice update.
 
 ## Architecture-only reference
 
