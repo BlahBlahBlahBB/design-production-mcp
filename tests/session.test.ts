@@ -27,13 +27,35 @@ test("saveWorkCopy rejects MASTER overwrite before calling Illustrator", async (
   assert.equal(bridge.scripts.length, 0);
 });
 
-test("replaceNamedText targets object names instead of indexes", async () => {
+test("replaceNamedText requires the active document to be the work copy", async () => {
   const bridge = new RecordingBridge();
   const session = new IllustratorProductionSession(bridge);
-  await session.replaceNamedText("@text:name", "王小明");
+  await session.replaceNamedText("/tmp/work.ai", "@text:name", "王小明");
   assert.equal(bridge.scripts.length, 1);
+  assert.match(bridge.scripts[0], /ACTIVE_DOCUMENT_IS_NOT_WORK_COPY/);
   assert.match(bridge.scripts[0], /t\.name === targetName/);
   assert.match(bridge.scripts[0], /TARGET_TEXT_NOT_FOUND/);
+});
+
+test("replaceTextFrameByIndex supports unnamed legacy text frames with guards", async () => {
+  const bridge = new RecordingBridge();
+  const session = new IllustratorProductionSession(bridge);
+  await session.replaceTextFrameByIndex("/tmp/work.ai", 0, "DPM_QA_TEST", "xx-xx-xxxxxx");
+  assert.equal(bridge.scripts.length, 1);
+  assert.match(bridge.scripts[0], /ACTIVE_DOCUMENT_IS_NOT_WORK_COPY/);
+  assert.match(bridge.scripts[0], /TARGET_TEXT_INDEX_OUT_OF_RANGE/);
+  assert.match(bridge.scripts[0], /TARGET_TEXT_CONTENT_CHANGED/);
+  assert.match(bridge.scripts[0], /targetIndex = 0/);
+});
+
+test("replaceTextFrameByIndex rejects invalid indexes before calling Illustrator", async () => {
+  const bridge = new RecordingBridge();
+  const session = new IllustratorProductionSession(bridge);
+  await assert.rejects(
+    () => session.replaceTextFrameByIndex("/tmp/work.ai", -1, "DPM_QA_TEST"),
+    /non-negative integer/,
+  );
+  assert.equal(bridge.scripts.length, 0);
 });
 
 test("exportOutputs rejects exporting over MASTER", async () => {
