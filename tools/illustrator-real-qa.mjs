@@ -27,6 +27,48 @@ async function ask(rl, question, fallback = "") {
   return answer || fallback;
 }
 
+function parseCliArgs(args) {
+  const options = {
+    nonInteractive: false,
+    masterPath: undefined,
+    targetIndex: undefined,
+    targetName: undefined,
+    text: undefined,
+    outputDir: undefined,
+  };
+
+  const valueFlags = new Map([
+    ["--master-path", "masterPath"],
+    ["--target-index", "targetIndex"],
+    ["--target-name", "targetName"],
+    ["--text", "text"],
+    ["--output-dir", "outputDir"],
+  ]);
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === "--non-interactive") {
+      options.nonInteractive = true;
+      continue;
+    }
+    if (arg === "--help" || arg === "-h") {
+      console.log(`Usage:\n  node tools/illustrator-real-qa.mjs [options]\n\nOptions:\n  --non-interactive          Do not read from stdin; resolve inputs from flags/defaults\n  --master-path <path>       Expected active MASTER path (defaults to active document path)\n  --target-index <index>     Guarded legacy textFrame index targeting\n  --target-name <name>       Named text object targeting\n  --text <value>             Temporary QA replacement text (default: DPM_QA_TEST)\n  --output-dir <path>        QA output directory (default: sibling DPM-QA-output)\n`);
+      process.exit(0);
+    }
+    const key = valueFlags.get(arg);
+    if (!key) throw new Error(`Unknown CLI argument: ${arg}`);
+    const value = args[++i];
+    if (value === undefined) throw new Error(`Missing value for ${arg}`);
+    options[key] = value;
+  }
+
+  if (options.targetIndex !== undefined && options.targetName !== undefined) {
+    throw new Error("Use either --target-index or --target-name, not both.");
+  }
+
+  return options;
+}
+
 function requireOk(label, result, report) {
   report.steps.push({ label, ...result });
   if (!result.ok) {
@@ -36,10 +78,12 @@ function requireOk(label, result, report) {
 }
 
 async function main() {
+  const cli = parseCliArgs(process.argv.slice(2));
   const report = {
     startedAt: new Date().toISOString(),
     platform: process.platform,
     node: process.version,
+    invocationMode: cli.nonInteractive ? "non-interactive" : "interactive",
     steps: [],
     master: {},
     outputs: {},
@@ -53,6 +97,7 @@ async function main() {
 
   console.log("\nDesign Production MCP — Illustrator Real QA\n");
   console.log("This test never intentionally writes to the MASTER file. It saves a separate work copy first.\n");
+  if (cli.nonInteractive) console.log("Mode: non-interactive CLI (stdin will not be used).\n");
 
   const bridge = new LocalIllustratorBridge();
   const status = await bridge.detect();
@@ -89,15 +134,23 @@ async function main() {
     console.log(`  [${item.index}] ${label} -> ${String(item.contents).slice(0, 60)}${item.locked || item.hidden ? " (not editable)" : ""}`);
   }
 
-  const rl = readline.createInterface({ input, output });
+  const rl = cli.nonInteractive ? null : readline.createInterface({ input, output });
   try {
-    const masterPath = path.resolve(await ask(rl, "MASTER path", summary.path));
+    const masterPath = path.resolve(
+      cli.nonInteractive
+        ? (cli.masterPath || summary.path)
+        : await ask(rl, "MASTER path", summary.path),
+    );
     if (path.resolve(summary.path) !== masterPath) {
       throw new Error(`Active Illustrator document does not match MASTER path. Active: ${summary.path}`);
     }
 
     let targetMode;
-    if (named.length > 0) {
+    if (cli.nonInteractive) {
+      if (cli.targetIndex !== undefined) targetMode = "index";
+      else if (cli.targetName !== undefined) targetMode = "name";
+      else targetMode = named.length > 0 ? "name" : "index";
+    } else if (named.length > 0) {
       targetMode = (await ask(rl, "Target mode: name or index", "name")).toLowerCase();
       if (targetMode !== "name" && targetMode !== "index") throw new Error("Target mode must be 'name' or 'index'.");
     } else {
@@ -110,14 +163,19 @@ async function main() {
     let expectedCurrentContents = null;
 
     if (targetMode === "name") {
-      objectName = await ask(rl, "Named text object to change for QA", named[0].name);
+      if (named.length === 0) throw new Error("No named text frames are available for name targeting.");
+      objectName = cli.nonInteractive
+        ? (cli.targetName || named[0].name)
+        : await ask(rl, "Named text object to change for QA", named[0].name);
       const selected = named.find((item) => item.name === objectName);
       if (!selected) throw new Error(`Named text object not found in the read-only snapshot: ${objectName}`);
       if (selected.locked || selected.hidden) throw new Error(`Selected named text object is not editable: ${objectName}`);
       report.target = { mode: "name", name: objectName, index: selected.index, originalContents: selected.contents };
     } else {
       const defaultIndex = String(editable[0].index);
-      const rawIndex = await ask(rl, "Text frame index to change for QA", defaultIndex);
+      const rawIndex = cli.nonInteractive
+        ? (cli.targetIndex ?? defaultIndex)
+        : await ask(rl, "Text frame index to change for QA", defaultIndex);
       targetIndex = Number(rawIndex);
       if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= textFrames.length) {
         throw new Error(`Invalid text frame index: ${rawIndex}`);
@@ -128,8 +186,26 @@ async function main() {
       report.target = { mode: "index", index: targetIndex, name: selected.name || "", originalContents: selected.contents };
     }
 
-    const nextValue = await ask(rl, "Temporary QA text", "DPM_QA_TEST");
-    const outputDir = path.resolve(await ask(rl, "QA output folder", path.join(path.dirname(masterPath), "DPM-QA-output")));
+    const nextValue = cli.nonInteractive
+      ? (cli.text ?? "DPM_QA_TEST")
+      : await ask(rl, "Temporary QA text", "DPM_QA_TEST");
+    const outputDir = path.resolve(
+      cli.nonInteractive
+        ? (cli.outputDir || path.join(path.dirname(masterPath), "DPM-QA-output"))
+        : await ask(rl, "QA output folder", path.join(path.dirname(masterPath), "DPM-QA-output")),
+    );
+
+    if (cli.nonInteractive) {
+      console.log("\nResolved non-interactive QA inputs:");
+      console.log(`  MASTER: ${masterPath}`);
+      console.log(`  target mode: ${targetMode}`);
+      if (targetMode === "index") console.log(`  target index: ${targetIndex}`);
+      if (targetMode === "name") console.log(`  target name: ${objectName}`);
+      console.log(`  original contents: ${report.target.originalContents}`);
+      console.log(`  replacement: ${nextValue}`);
+      console.log(`  output folder: ${outputDir}\n`);
+    }
+
     await mkdir(outputDir, { recursive: true });
 
     const base = path.basename(masterPath, path.extname(masterPath));
@@ -191,7 +267,7 @@ async function main() {
     console.error(`Failure report: ${fallback}\n`);
     process.exitCode = 1;
   } finally {
-    rl.close();
+    if (rl) rl.close();
   }
 }
 
