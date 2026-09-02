@@ -1,6 +1,14 @@
 import type {
   ArtboardInfo,
+  ConvertCoordinateRequest,
+  CoordinateConversion,
+  DocumentStructure,
   DocumentInfo,
+  FindObjectsCriteria,
+  FindObjectsOptions,
+  FindObjectsResult,
+  GroupInfo,
+  GroupsResult,
   LayerInfo,
   SelectionInfo,
   TextFrameDetail,
@@ -43,4 +51,8 @@ export interface IllustratorReadBridge extends IllustratorBridge {
   getSelection(): Promise<ScriptResult<SelectionInfo>>;
   listTextFrames(): Promise<ScriptResult<TextFrameSummary[]>>;
   getTextFrameDetail(target: TextFrameTarget): Promise<ScriptResult<TextFrameDetail>>;
+  getGroups(options?: { maxDepth?: number; maxObjects?: number }): Promise<ScriptResult<GroupsResult>>;
+  getDocumentStructure(options?: { maxDepth?: number; maxObjects?: number }): Promise<ScriptResult<DocumentStructure>>;
+  findObjects(criteria: FindObjectsCriteria, options?: FindObjectsOptions): Promise<ScriptResult<FindObjectsResult>>;
+  convertCoordinate(request: ConvertCoordinateRequest): Promise<ScriptResult<CoordinateConversion>>;
 }

@@ -176,6 +176,17 @@ Implemented on `phase/1.5-general-illustrator-capabilities` as bridge-level, rea
 
 These APIs use the existing serialized local transport and add no MCP registry layer. Optional legacy Illustrator properties are isolated per field and report `null` plus an explicit support flag where applicable, so one unavailable property cannot fail a document read. Real-machine validation on Illustrator 26.1.0 covered all six operations without document writes. The behavior was independently implemented after reviewing the fixed upstream revision; no upstream source was copied or substantially adapted.
 
+#### Wave A2 implementation record
+
+Implemented and **REAL-MACHINE VERIFIED — Illustrator 26.1.0** as bridge-level, read-only APIs:
+
+- `getGroups` with clipping/compound-safe summaries and explicit depth/object traversal limits
+- `getDocumentStructure` with a bounded Document → Layer → Group/Object tree
+- `findObjects` with deterministic structural locators and bounded AND-filtered search
+- `convertCoordinate` using a Codex-facing artboard space (top-left origin, positive Y down) and pure TypeScript conversion against read artboard rectangles
+
+`ObjectLocator` is explicitly a document/session structural locator, not a cross-session persistent ID. Real-machine QA validated group and structure traversal, type/text/no-match finding, and artboard/document coordinate round-trip without changing the document, selection, or active artboard. The behavior was independently implemented after reviewing the fixed upstream revision; no upstream source was copied or substantially adapted.
+
 ### Wave B — Safe general editing primitives
 
 Implement next:

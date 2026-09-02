@@ -1,13 +1,29 @@
 import type { IllustratorReadBridge, IllustratorStatus, ScriptResult } from "./bridge.js";
+import { convertCoordinateForArtboards } from "./coordinate-model.js";
+import { validateFindCriteria } from "./object-finding.js";
 import type {
   ArtboardInfo,
+  ConvertCoordinateRequest,
+  CoordinateConversion,
+  DocumentStructure,
   DocumentInfo,
+  FindObjectsCriteria,
+  FindObjectsOptions,
+  FindObjectsResult,
   LayerInfo,
   SelectionInfo,
   TextFrameDetail,
   TextFrameSummary,
   TextFrameTarget,
+  TraversalOptions,
 } from "./read-schema.js";
+import {
+  buildDocumentStructureJsx,
+  buildFindObjectsJsx,
+  buildGroupsJsx,
+  normalizeFindOptions,
+  normalizeTraversalOptions,
+} from "./structure-read.js";
 import {
   type ExecuteOptions,
   type TransportResult,
@@ -297,5 +313,35 @@ export class LocalIllustratorBridge implements IllustratorReadBridge {
       if (found === null) throw new Error('TEXT_FRAME_NOT_FOUND_BY_NAME:' + targetName);
       return __dpm_text_frame_detail(found, foundIndex);
     `);
+  }
+
+  async getGroups(options: TraversalOptions = {}): Promise<ScriptResult<import("./read-schema.js").GroupsResult>> {
+    const normalized = normalizeTraversalOptions(options);
+    if (!normalized) return { ok: false, error: "INVALID_TRAVERSAL_OPTIONS" };
+    return this.execute(buildGroupsJsx(normalized));
+  }
+
+  async getDocumentStructure(options: TraversalOptions = {}): Promise<ScriptResult<DocumentStructure>> {
+    const normalized = normalizeTraversalOptions(options);
+    if (!normalized) return { ok: false, error: "INVALID_TRAVERSAL_OPTIONS" };
+    return this.execute(buildDocumentStructureJsx(normalized));
+  }
+
+  async findObjects(
+    criteria: FindObjectsCriteria,
+    options: FindObjectsOptions = {},
+  ): Promise<ScriptResult<FindObjectsResult>> {
+    const criteriaError = validateFindCriteria(criteria);
+    if (criteriaError) return { ok: false, error: criteriaError };
+    const normalized = normalizeFindOptions(options);
+    if (!normalized) return { ok: false, error: "INVALID_FIND_OPTIONS" };
+    return this.execute(buildFindObjectsJsx(criteria, normalized));
+  }
+
+  async convertCoordinate(request: ConvertCoordinateRequest): Promise<ScriptResult<CoordinateConversion>> {
+    const artboards = await this.getArtboards();
+    if (!artboards.ok) return { ok: false, error: artboards.error ?? "ARTBOARD_READ_FAILED" };
+    if (!artboards.value) return { ok: false, error: "ARTBOARD_READ_FAILED" };
+    return convertCoordinateForArtboards(request, artboards.value);
   }
 }

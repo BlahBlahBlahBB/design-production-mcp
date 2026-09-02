@@ -98,3 +98,106 @@ export interface TextFrameDetail extends TextFrameSummary {
 export type TextFrameTarget =
   | { index: number; name?: never }
   | { name: string; index?: never };
+
+/** A document/session structural reference; it is deliberately not a persistent object ID. */
+export interface ObjectLocator {
+  kind: "document-session-structural";
+  typename: string;
+  name: string | null;
+  layerPath: string;
+  ancestry: string[];
+  collectionPath: string;
+}
+
+export interface ObjectSummary {
+  typename: string;
+  name: string | null;
+  locator: ObjectLocator;
+  layerPath: string;
+  ancestry: string[];
+  collectionPath: string;
+  locked: boolean | null;
+  hidden: boolean | null;
+  bounds: Bounds | null;
+  contentsPreview: string | null;
+  contentsLength: number | null;
+}
+
+export interface GroupInfo extends ObjectSummary {
+  parentGroupPath: string | null;
+  clipped: boolean | null;
+  clippedSupported: boolean;
+  clippingMask: boolean | null;
+  clippingMaskSupported: boolean;
+  childObjectCount: number | null;
+  childGroupCount: number | null;
+}
+
+export interface TraversalOptions {
+  maxDepth?: number;
+  maxObjects?: number;
+}
+
+export interface GroupsResult {
+  groups: GroupInfo[];
+  objectCount: number;
+  truncated: boolean;
+  truncationReason: string | null;
+}
+
+export interface StructureNode extends ObjectSummary {
+  nodeType: "layer" | "object";
+  children: StructureNode[];
+  truncated: boolean;
+}
+
+export interface DocumentStructure {
+  document: { name: string; path: string | null };
+  layers: StructureNode[];
+  objectCount: number;
+  truncated: boolean;
+  truncationReason: string | null;
+}
+
+export interface StringMatch {
+  value: string;
+  mode: "exact" | "contains";
+}
+
+export interface FindObjectsCriteria {
+  name?: StringMatch;
+  typename?: string | string[];
+  layerName?: string;
+  layerPath?: string;
+  text?: StringMatch;
+  locked?: boolean;
+  hidden?: boolean;
+}
+
+export interface FindObjectsOptions extends TraversalOptions {
+  maxResults?: number;
+}
+
+export interface FindObjectsResult {
+  matchedCount: number;
+  results: ObjectSummary[];
+  truncated: boolean;
+  truncationReason: string | null;
+  criteriaApplied: FindObjectsCriteria;
+}
+
+export type CoordinateDirection = "artboard-to-document" | "document-to-artboard";
+
+export interface ConvertCoordinateRequest {
+  x: number;
+  y: number;
+  direction: CoordinateDirection;
+  artboardIndex?: number;
+}
+
+export interface CoordinateConversion {
+  input: { x: number; y: number; space: "artboard" | "document" };
+  output: { x: number; y: number; space: "artboard" | "document" };
+  artboardIndex: number;
+  artboardRect: [number, number, number, number];
+}
