@@ -17,6 +17,16 @@ function literal(value: string): string {
   return JSON.stringify(value.replaceAll("\\", "/"));
 }
 
+function workCopyGuard(workPath: string): string {
+  return `
+    if (app.documents.length === 0) throw new Error('NO_DOCUMENT');
+    var d = app.activeDocument;
+    var expectedWork = ${literal(workPath)};
+    var actualWork = d.fullName.fsName.replace(/\\\\/g, '/');
+    if (actualWork !== expectedWork) throw new Error('ACTIVE_DOCUMENT_IS_NOT_WORK_COPY');
+  `;
+}
+
 export class IllustratorProductionSession {
   constructor(private readonly bridge: IllustratorBridge) {}
 
@@ -36,10 +46,13 @@ export class IllustratorProductionSession {
     `);
   }
 
-  async replaceNamedText(objectName: string, value: string): Promise<ScriptResult<{ replaced: number }>> {
+  async replaceNamedText(
+    workPath: string,
+    objectName: string,
+    value: string,
+  ): Promise<ScriptResult<{ replaced: number }>> {
     return this.bridge.execute(`
-      if (app.documents.length === 0) throw new Error('NO_DOCUMENT');
-      var d = app.activeDocument;
+      ${workCopyGuard(workPath)}
       var targetName = ${JSON.stringify(objectName)};
       var nextValue = ${JSON.stringify(value)};
       var replaced = 0;
@@ -56,18 +69,43 @@ export class IllustratorProductionSession {
     `);
   }
 
+  async replaceTextFrameByIndex(
+    workPath: string,
+    index: number,
+    value: string,
+    expectedCurrentContents?: string,
+  ): Promise<ScriptResult<{ replaced: number; index: number }>> {
+    if (!Number.isInteger(index) || index < 0) {
+      throw new Error("text frame index must be a non-negative integer");
+    }
+
+    const expectedLiteral = expectedCurrentContents === undefined
+      ? "null"
+      : JSON.stringify(expectedCurrentContents);
+
+    return this.bridge.execute(`
+      ${workCopyGuard(workPath)}
+      var targetIndex = ${index};
+      var nextValue = ${JSON.stringify(value)};
+      var expectedCurrentContents = ${expectedLiteral};
+      if (targetIndex >= d.textFrames.length) throw new Error('TARGET_TEXT_INDEX_OUT_OF_RANGE:' + targetIndex);
+      var t = d.textFrames[targetIndex];
+      if (t.locked || t.hidden) throw new Error('TARGET_TEXT_NOT_EDITABLE_INDEX:' + targetIndex);
+      if (expectedCurrentContents !== null && t.contents !== expectedCurrentContents) {
+        throw new Error('TARGET_TEXT_CONTENT_CHANGED:' + targetIndex);
+      }
+      t.contents = nextValue;
+      return {replaced: 1, index: targetIndex};
+    `);
+  }
+
   async exportOutputs(request: ExportRequest): Promise<ScriptResult<{ pdf?: string; png?: string }>> {
     assertOutputDoesNotOverwriteMaster(request.masterPath, request.workPath);
     if (request.pdfPath) assertOutputDoesNotOverwriteMaster(request.masterPath, request.pdfPath);
     if (request.pngPath) assertOutputDoesNotOverwriteMaster(request.masterPath, request.pngPath);
 
     return this.bridge.execute(`
-      if (app.documents.length === 0) throw new Error('NO_DOCUMENT');
-      var d = app.activeDocument;
-      if (!d.saved) throw new Error('WORK_COPY_MUST_BE_SAVED');
-      var expectedWork = ${literal(request.workPath)};
-      var actualWork = d.fullName.fsName.replace(/\\\\/g, '/');
-      if (actualWork !== expectedWork) throw new Error('ACTIVE_DOCUMENT_IS_NOT_WORK_COPY');
+      ${workCopyGuard(request.workPath)}
       d.save();
       var result = {};
       ${request.pngPath ? `
