@@ -49,7 +49,7 @@ function classifyFailure(message: string): { code: string; message: string } {
   if (lower.includes("not authorized") || lower.includes("not permitted") || lower.includes("automation")) {
     return { code: "ILLUSTRATOR_PERMISSION_DENIED", message };
   }
-  if (lower.includes("connection is invalid") || lower.includes("can't get application") || lower.includes("cannot create activeX".toLowerCase())) {
+  if (lower.includes("connection is invalid") || lower.includes("can't get application") || lower.includes("cannot create activex")) {
     return { code: "ILLUSTRATOR_UNAVAILABLE", message };
   }
   return { code: "ILLUSTRATOR_EXECUTION_FAILED", message };
@@ -81,6 +81,77 @@ function powerShellFor(scriptPath: string, options: ExecuteOptions): string {
   return lines.join("\n");
 }
 
+export function buildWrappedJsx(jsxBody: string, resultPath: string): string {
+  return [
+    "(function () {",
+    `var __DPM_RESULT_PATH__ = ${JSON.stringify(resultPath)};`,
+    "function __dpm_quote_string(value) {",
+    "  var s = String(value);",
+    "  var out = '\"';",
+    "  for (var i = 0; i < s.length; i++) {",
+    "    var ch = s.charAt(i);",
+    "    var code = s.charCodeAt(i);",
+    "    if (ch === '\"') out += '\\\"';",
+    "    else if (ch === '\\\\') out += '\\\\\\\\';",
+    "    else if (ch === '\\b') out += '\\\\b';",
+    "    else if (ch === '\\f') out += '\\\\f';",
+    "    else if (ch === '\\n') out += '\\\\n';",
+    "    else if (ch === '\\r') out += '\\\\r';",
+    "    else if (ch === '\\t') out += '\\\\t';",
+    "    else if (code < 32) {",
+    "      var hex = code.toString(16);",
+    "      while (hex.length < 4) hex = '0' + hex;",
+    "      out += '\\\\u' + hex;",
+    "    } else out += ch;",
+    "  }",
+    "  return out + '\"';",
+    "}",
+    "function __dpm_stringify(value) {",
+    "  if (value === null) return 'null';",
+    "  var type = typeof value;",
+    "  if (type === 'string') return __dpm_quote_string(value);",
+    "  if (type === 'number') return isFinite(value) ? String(value) : 'null';",
+    "  if (type === 'boolean') return value ? 'true' : 'false';",
+    "  if (value instanceof Array) {",
+    "    var items = [];",
+    "    for (var i = 0; i < value.length; i++) {",
+    "      var item = __dpm_stringify(value[i]);",
+    "      items.push(item === undefined ? 'null' : item);",
+    "    }",
+    "    return '[' + items.join(',') + ']';",
+    "  }",
+    "  if (type === 'object') {",
+    "    var props = [];",
+    "    for (var key in value) {",
+    "      if (value.hasOwnProperty && !value.hasOwnProperty(key)) continue;",
+    "      var encoded = __dpm_stringify(value[key]);",
+    "      if (encoded !== undefined) props.push(__dpm_quote_string(key) + ':' + encoded);",
+    "    }",
+    "    return '{' + props.join(',') + '}';",
+    "  }",
+    "  return undefined;",
+    "}",
+    "function __dpm_write_result(value) {",
+    "  var f = new File(__DPM_RESULT_PATH__);",
+    "  f.encoding = 'UTF-8';",
+    "  if (!f.open('w')) throw new Error('RESULT_FILE_OPEN_FAILED');",
+    "  f.write(__dpm_stringify(value));",
+    "  f.close();",
+    "}",
+    "try {",
+    `  var __dpm_value = (function () { ${jsxBody}\n})();`,
+    "  __dpm_write_result({ok:true,value:__dpm_value});",
+    "} catch (e) {",
+    "  try {",
+    "    __dpm_write_result({ok:false,error:{code:'JSX_ERROR',message:String(e),line:e.line || null}});",
+    "  } catch (__dpm_write_error) {",
+    "    throw e;",
+    "  }",
+    "}",
+    "})();",
+  ].join("\n");
+}
+
 export class SerializedJsxTransport {
   private tail: Promise<unknown> = Promise.resolve();
 
@@ -102,21 +173,7 @@ export class SerializedJsxTransport {
 
     try {
       await writeFile(paramsPath, "{}", "utf8");
-      const wrappedJsx = [
-        "(function () {",
-        `var __DPM_RESULT_PATH__ = ${JSON.stringify(resultPath)};`,
-        "function __dpm_write_result(value) {",
-        "  var f = new File(__DPM_RESULT_PATH__);",
-        "  f.encoding = 'UTF-8'; f.open('w'); f.write(JSON.stringify(value)); f.close();",
-        "}",
-        "try {",
-        `  var __dpm_value = (function () { ${jsxBody}\n})();`,
-        "  __dpm_write_result({ok:true,value:__dpm_value});",
-        "} catch (e) {",
-        "  __dpm_write_result({ok:false,error:{code:'JSX_ERROR',message:String(e),line:e.line || null}});",
-        "}",
-        "})();",
-      ].join("\n");
+      const wrappedJsx = buildWrappedJsx(jsxBody, resultPath);
       await writeFile(jsxPath, `\uFEFF${wrappedJsx}`, "utf8");
 
       if (transport === "osascript") {
