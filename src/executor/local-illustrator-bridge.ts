@@ -63,9 +63,12 @@ export class LocalIllustratorBridge implements IllustratorBridge {
     return this.execute(`
       if (app.documents.length === 0) throw new Error('NO_DOCUMENT');
       var d = app.activeDocument;
+      var fullPath = null;
+      try { fullPath = d.fullName.fsName; } catch (_e) { fullPath = null; }
       return {
         name: d.name,
-        path: d.saved ? d.fullName.fsName : null,
+        path: fullPath,
+        saved: d.saved,
         colorSpace: String(d.documentColorSpace),
         artboards: d.artboards.length,
         textFrames: d.textFrames.length,
