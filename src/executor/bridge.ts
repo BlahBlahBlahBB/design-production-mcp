@@ -1,5 +1,7 @@
 import type {
   ArtboardInfo,
+  ColorInspectionOptions,
+  ColorsResult,
   ConvertCoordinateRequest,
   CoordinateConversion,
   DocumentStructure,
@@ -9,6 +11,10 @@ import type {
   FindObjectsResult,
   GroupInfo,
   GroupsResult,
+  FontListOptions,
+  FontsResult,
+  ImageInspectionOptions,
+  ImagesResult,
   LayerInfo,
   SelectionInfo,
   TextFrameDetail,
@@ -55,4 +61,7 @@ export interface IllustratorReadBridge extends IllustratorBridge {
   getDocumentStructure(options?: { maxDepth?: number; maxObjects?: number }): Promise<ScriptResult<DocumentStructure>>;
   findObjects(criteria: FindObjectsCriteria, options?: FindObjectsOptions): Promise<ScriptResult<FindObjectsResult>>;
   convertCoordinate(request: ConvertCoordinateRequest): Promise<ScriptResult<CoordinateConversion>>;
+  getColors(options?: ColorInspectionOptions): Promise<ScriptResult<ColorsResult>>;
+  getImages(options?: ImageInspectionOptions): Promise<ScriptResult<ImagesResult>>;
+  listFonts(options?: FontListOptions): Promise<ScriptResult<FontsResult>>;
 }

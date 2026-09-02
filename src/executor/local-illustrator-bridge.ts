@@ -1,8 +1,19 @@
 import type { IllustratorReadBridge, IllustratorStatus, ScriptResult } from "./bridge.js";
 import { convertCoordinateForArtboards } from "./coordinate-model.js";
+import {
+  buildColorsJsx,
+  buildFontsJsx,
+  buildImagesJsx,
+  normalizeColorInspectionOptions,
+  normalizeFontListOptions,
+  normalizeFonts,
+  normalizeImageInspectionOptions,
+} from "./inspection-read.js";
 import { validateFindCriteria } from "./object-finding.js";
 import type {
   ArtboardInfo,
+  ColorInspectionOptions,
+  ColorsResult,
   ConvertCoordinateRequest,
   CoordinateConversion,
   DocumentStructure,
@@ -10,6 +21,11 @@ import type {
   FindObjectsCriteria,
   FindObjectsOptions,
   FindObjectsResult,
+  FontListOptions,
+  FontSummary,
+  FontsResult,
+  ImageInspectionOptions,
+  ImagesResult,
   LayerInfo,
   SelectionInfo,
   TextFrameDetail,
@@ -54,7 +70,7 @@ const READ_HELPERS = `
     var item = {
       index: index, name: '', contents: '', typename: 'TextFrame', locked: null, hidden: null,
       position: __dpm_position(t), bounds: __dpm_bounds(t), textKind: null,
-      fontFamily: null, fontName: null, fontSize: null, overflow: null, overflowSupported: false
+      fontFamily: null, fontPostScriptName: null, fontName: null, fontStyle: null, fontSize: null, overflow: null, overflowSupported: false
     };
     try { item.name = t.name || ''; } catch (e) {}
     try { item.contents = t.contents; } catch (e) {}
@@ -65,8 +81,9 @@ const READ_HELPERS = `
     try {
       var a = t.textRange.characterAttributes;
       try { item.fontFamily = a.textFont.family; } catch (e1) {}
-      try { item.fontName = a.textFont.name; } catch (e2) {}
-      try { item.fontSize = a.size; } catch (e3) {}
+      try { item.fontPostScriptName = a.textFont.name; item.fontName = item.fontPostScriptName; } catch (e2) {}
+      try { item.fontStyle = a.textFont.style; } catch (e3) {}
+      try { item.fontSize = a.size; } catch (e4) {}
     } catch (e) {}
     try {
       var overflowValue = t.overflows;
@@ -77,7 +94,7 @@ const READ_HELPERS = `
   function __dpm_text_frame_detail(t, index) {
     var item = __dpm_text_frame_summary(t, index);
     item.typography = {
-      fontFamily: item.fontFamily, fontName: item.fontName, fontStyle: null, fontSize: item.fontSize,
+      fontFamily: item.fontFamily, fontPostScriptName: item.fontPostScriptName, fontName: item.fontName, fontStyle: item.fontStyle, fontSize: item.fontSize,
       tracking: null, leading: null, justification: null, paragraphCount: null
     };
     try { item.typography.paragraphCount = t.paragraphs.length; } catch (e) {}
@@ -343,5 +360,35 @@ export class LocalIllustratorBridge implements IllustratorReadBridge {
     if (!artboards.ok) return { ok: false, error: artboards.error ?? "ARTBOARD_READ_FAILED" };
     if (!artboards.value) return { ok: false, error: "ARTBOARD_READ_FAILED" };
     return convertCoordinateForArtboards(request, artboards.value);
+  }
+
+  async getColors(options: ColorInspectionOptions = {}): Promise<ScriptResult<ColorsResult>> {
+    const normalized = normalizeColorInspectionOptions(options);
+    if (!normalized) return { ok: false, error: "INVALID_COLOR_INSPECTION_OPTIONS" };
+    return this.execute<ColorsResult>(buildColorsJsx(normalized));
+  }
+
+  async getImages(options: ImageInspectionOptions = {}): Promise<ScriptResult<ImagesResult>> {
+    const normalized = normalizeImageInspectionOptions(options);
+    if (!normalized) return { ok: false, error: "INVALID_IMAGE_INSPECTION_OPTIONS" };
+    return this.execute<ImagesResult>(buildImagesJsx(normalized));
+  }
+
+  async listFonts(options: FontListOptions = {}): Promise<ScriptResult<FontsResult>> {
+    const normalized = normalizeFontListOptions(options);
+    if (!normalized) return { ok: false, error: "INVALID_FONT_LIST_OPTIONS" };
+    const raw = await this.execute<{ totalAvailable: number; fonts: FontSummary[] }>(buildFontsJsx());
+    if (!raw.ok || !raw.value) return { ok: false, error: raw.error ?? "FONT_ENUMERATION_FAILED" };
+    const result = normalizeFonts(raw.value.fonts, normalized);
+    return {
+      ok: true,
+      value: {
+        totalAvailable: raw.value.totalAvailable,
+        matchedCount: result.matchedCount,
+        results: result.results,
+        truncated: result.truncated,
+        search: normalized.search,
+      },
+    };
   }
 }

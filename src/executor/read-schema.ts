@@ -74,7 +74,10 @@ export interface TextFrameSummary {
   bounds: Bounds | null;
   textKind: string | null;
   fontFamily: string | null;
+  /** Illustrator TextFont.name; retained alongside fontName for compatibility. */
+  fontPostScriptName: string | null;
   fontName: string | null;
+  fontStyle: string | null;
   fontSize: number | null;
   overflow: boolean | null;
   overflowSupported: boolean;
@@ -82,6 +85,7 @@ export interface TextFrameSummary {
 
 export interface TextFrameTypography {
   fontFamily: string | null;
+  fontPostScriptName: string | null;
   fontName: string | null;
   fontStyle: string | null;
   fontSize: number | null;
@@ -200,4 +204,149 @@ export interface CoordinateConversion {
   output: { x: number; y: number; space: "artboard" | "document" };
   artboardIndex: number;
   artboardRect: [number, number, number, number];
+}
+
+export type ColorModel = "RGB" | "CMYK" | "GRAY" | "SPOT" | "GRADIENT" | "NONE" | "UNKNOWN";
+
+export interface RgbChannels {
+  red: number;
+  green: number;
+  blue: number;
+}
+
+export interface CmykChannels {
+  cyan: number;
+  magenta: number;
+  yellow: number;
+  black: number;
+}
+
+export interface GradientStopSummary {
+  rampPoint: number | null;
+  midPoint: number | null;
+  opacity: number | null;
+  color: ColorSummary;
+}
+
+/**
+ * A semantic color value. Spot and gradient values intentionally retain their
+ * Illustrator identity instead of being coerced to an approximate process color.
+ */
+export interface ColorSummary {
+  colorModel: ColorModel;
+  typename: string | null;
+  rgb: RgbChannels | null;
+  cmyk: CmykChannels | null;
+  grayscale: number | null;
+  spotName: string | null;
+  spotKind: string | null;
+  tint: number | null;
+  spotBaseColor: ColorSummary | null;
+  gradientName: string | null;
+  gradientType: string | null;
+  gradientStops: GradientStopSummary[] | null;
+  gradientStopsTruncated: boolean;
+  registration: boolean | null;
+}
+
+export type ColorReferenceSource = "swatch" | "path-fill" | "path-stroke" | "text-fill";
+
+export interface ColorReference {
+  source: ColorReferenceSource;
+  swatchName: string | null;
+  locator: ObjectLocator | null;
+  color: ColorSummary;
+}
+
+export interface UsedColorSummary extends ColorSummary {
+  references: ColorReference[];
+  referenceCount: number;
+}
+
+export interface ColorInspectionOptions {
+  maxDepth?: number;
+  maxObjects?: number;
+  maxColors?: number;
+}
+
+export interface ColorsResult {
+  swatches: ColorReference[];
+  usedColors: UsedColorSummary[];
+  diagnostics: {
+    swatchesRead: number;
+    usedReferencesRead: number;
+    optionalPropertyFailures: number;
+  };
+  objectsScanned: number;
+  maxObjectsScanned: number;
+  truncated: boolean;
+  truncationReason: "MAX_DEPTH" | "MAX_COLORS" | "OBJECT_TRAVERSAL_LIMIT" | null;
+}
+
+export type ImageStatus = "linked" | "embedded" | "unknown";
+
+export interface ImageSummary {
+  locator: ObjectLocator | null;
+  typename: "PlacedItem" | "RasterItem";
+  name: string | null;
+  layerPath: string | null;
+  status: ImageStatus;
+  linked: boolean | null;
+  embedded: boolean | null;
+  filePath: string | null;
+  fileExists: boolean | null;
+  brokenLink: boolean | null;
+  bounds: Bounds | null;
+  displayedWidth: number | null;
+  displayedHeight: number | null;
+  intrinsicPixelWidth: number | null;
+  intrinsicPixelHeight: number | null;
+  intrinsicPixelsSupported: boolean;
+  horizontalScale: number | null;
+  verticalScale: number | null;
+  scaleSupported: boolean;
+  effectivePpi: number | null;
+  effectivePpiSupported: boolean;
+  colorSpace: string | null;
+  colorSpaceSupported: boolean;
+}
+
+export interface ImageInspectionOptions {
+  maxDepth?: number;
+  maxObjects?: number;
+  maxImages?: number;
+}
+
+export interface ImagesResult {
+  linked: ImageSummary[];
+  embedded: ImageSummary[];
+  all: ImageSummary[];
+  diagnostics: {
+    brokenLinks: number;
+    optionalPropertyFailures: number;
+  };
+  objectsScanned: number;
+  maxObjectsScanned: number;
+  truncated: boolean;
+  truncationReason: "MAX_DEPTH" | "MAX_IMAGES" | "OBJECT_TRAVERSAL_LIMIT" | null;
+}
+
+export interface FontSummary {
+  postScriptName: string;
+  family: string | null;
+  style: string | null;
+  typename: string | null;
+}
+
+export interface FontListOptions {
+  search?: string;
+  maxResults?: number;
+}
+
+export interface FontsResult {
+  totalAvailable: number;
+  matchedCount: number;
+  results: FontSummary[];
+  truncated: boolean;
+  search: string | null;
 }

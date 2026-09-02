@@ -187,6 +187,24 @@ Implemented and **REAL-MACHINE VERIFIED — Illustrator 26.1.0** as bridge-level
 
 `ObjectLocator` is explicitly a document/session structural locator, not a cross-session persistent ID. Real-machine QA validated group and structure traversal, type/text/no-match finding, and artboard/document coordinate round-trip without changing the document, selection, or active artboard. The behavior was independently implemented after reviewing the fixed upstream revision; no upstream source was copied or substantially adapted.
 
+#### Wave A3 implementation record
+
+Implemented and **REAL-MACHINE VERIFIED — Illustrator 26.1.0** as bridge-level, read-only APIs:
+
+- `get_colors` / `getColors` with bounded swatch and artwork-color inspection, explicit RGB/CMYK/gray/spot/gradient/no-color models, and no process-color coercion for spots or gradients
+- `get_images` / `getImages` with bounded linked/embedded inspection, file/broken-link diagnostics, display bounds, and explicit unsupported flags for unprovable intrinsic pixels, scale, and effective PPI
+- `list_fonts` / `listFonts` as an application-level no-document capability with normalized PostScript/family/style fields, deterministic sorting, deduplication, contains search, and result limits
+
+Real-machine QA used Illustrator 26.1.0 without document writes: color scanning returned RGB, spot, gradient, no-color, and unknown values; a 64-swatch guard correctly returned a partial result; image inspection found seven embedded raster records with bounds and no broken links; and app-level font enumeration returned 1,574 available fonts with verified search, no-match, and truncation behavior. The behavior was independently implemented after reviewing the fixed upstream revision; no upstream source was copied or substantially adapted.
+
+#### Wave A Read Foundation Status
+
+**Wave A read foundation complete.** This is not a declaration that Phase 1.5 is complete; editing, preflight, linked-image management, replace-color, and font replacement remain later work.
+
+- A1 (real-machine verified): `get_document_info`, `get_artboards`, `get_layers`, `get_selection`, `list_text_frames`, `get_text_frame_detail`
+- A2 (real-machine verified): `get_groups`, `get_document_structure`, `find_objects`, `convert_coordinate`
+- A3 (real-machine verified): `get_colors`, `get_images`, `list_fonts`
+
 ### Wave B — Safe general editing primitives
 
 Implement next:
