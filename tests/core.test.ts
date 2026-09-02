@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { planBatch } from "../src/production/batch/chunk.js";
 import { assertOutputDoesNotOverwriteMaster } from "../src/production/qa/master-protection.js";
 import { isProductionReady } from "../src/compat/capabilities.js";
+import { buildWrappedJsx } from "../src/executor/local-transport.js";
 
 const capabilities = {
   status: true,
@@ -29,4 +30,11 @@ test("production readiness requires running Illustrator and capabilities", () =>
 
 test("master template cannot be overwritten", () => {
   assert.throws(() => assertOutputDoesNotOverwriteMaster("/tmp/master.ai", "/tmp/master.ai"), /MASTER/);
+});
+
+test("wrapped JSX does not require ExtendScript JSON global", () => {
+  const wrapped = buildWrappedJsx("return {name: app.name};", "/tmp/result.json");
+  assert.equal(wrapped.includes("JSON.stringify(value)"), false);
+  assert.equal(wrapped.includes("__dpm_stringify(value)"), true);
+  assert.equal(wrapped.includes("f.write(__dpm_stringify(value))"), true);
 });
