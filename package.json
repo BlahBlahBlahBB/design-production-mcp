@@ -1,0 +1,17 @@
+{
+  "name": "design-production-mcp",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Local design-production automation core for Adobe Illustrator, intended to sit behind an MCP server.",
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && node --test dist/tests/*.test.js",
+    "check": "npm run test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
