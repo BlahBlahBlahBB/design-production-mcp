@@ -163,6 +163,19 @@ Implement first:
 
 Goal: Codex can understand a real Illustrator document without touching it and can identify production targets deterministically.
 
+#### Wave A1 implementation record
+
+Implemented on `phase/1.5-general-illustrator-capabilities` as bridge-level, read-only APIs:
+
+- `getDocumentInfo`
+- `getArtboards`
+- `getLayers`
+- `getSelection`
+- expanded `listTextFrames`
+- `getTextFrameDetail` with deterministic index or unique object-name targeting
+
+These APIs use the existing serialized local transport and add no MCP registry layer. Optional legacy Illustrator properties are isolated per field and report `null` plus an explicit support flag where applicable, so one unavailable property cannot fail a document read. Real-machine validation on Illustrator 26.1.0 covered all six operations without document writes. The behavior was independently implemented after reviewing the fixed upstream revision; no upstream source was copied or substantially adapted.
+
 ### Wave B — Safe general editing primitives
 
 Implement next:
