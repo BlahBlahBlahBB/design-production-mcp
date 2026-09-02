@@ -43,6 +43,7 @@ async function main() {
     steps: [],
     master: {},
     outputs: {},
+    target: {},
     result: "INCOMPLETE",
   };
 
@@ -64,17 +65,28 @@ async function main() {
   const summary = requireOk("read document summary", await bridge.getDocumentSummary(), report);
   console.log(`✓ Active document: ${summary.name}`);
   if (!summary.path) {
-    throw new Error("The active document must already be saved to disk before QA.");
+    throw new Error("The active document must already have a filesystem path before QA.");
+  }
+  if (!summary.saved) {
+    throw new Error("The active MASTER has unsaved changes. Save it manually in Illustrator before QA.");
   }
 
   const textFrames = requireOk("list text frames", await bridge.listTextFrames(), report);
   console.log(`✓ Text frames readable: ${textFrames.length}`);
-  console.log("\nNamed text objects found:");
+  if (textFrames.length === 0) {
+    throw new Error("The active document has no text frames to use for the Phase 1 replacement test.");
+  }
+
   const named = textFrames.filter((item) => item.name);
-  if (named.length === 0) {
-    console.log("  (none — name one test text object in Illustrator first, for example @text:name)");
-  } else {
-    for (const item of named.slice(0, 30)) console.log(`  ${item.name} -> ${String(item.contents).slice(0, 60)}`);
+  const editable = textFrames.filter((item) => !item.locked && !item.hidden);
+  if (editable.length === 0) {
+    throw new Error("The active document has no unlocked, visible text frame available for QA.");
+  }
+
+  console.log("\nText targets found:");
+  for (const item of textFrames.slice(0, 50)) {
+    const label = item.name ? `name=${item.name}` : "unnamed";
+    console.log(`  [${item.index}] ${label} -> ${String(item.contents).slice(0, 60)}${item.locked || item.hidden ? " (not editable)" : ""}`);
   }
 
   const rl = readline.createInterface({ input, output });
@@ -84,7 +96,38 @@ async function main() {
       throw new Error(`Active Illustrator document does not match MASTER path. Active: ${summary.path}`);
     }
 
-    const objectName = await ask(rl, "Named text object to change for QA", named[0]?.name || "@text:name");
+    let targetMode;
+    if (named.length > 0) {
+      targetMode = (await ask(rl, "Target mode: name or index", "name")).toLowerCase();
+      if (targetMode !== "name" && targetMode !== "index") throw new Error("Target mode must be 'name' or 'index'.");
+    } else {
+      targetMode = "index";
+      console.log("No named text frames found; using guarded legacy index targeting.");
+    }
+
+    let objectName = null;
+    let targetIndex = null;
+    let expectedCurrentContents = null;
+
+    if (targetMode === "name") {
+      objectName = await ask(rl, "Named text object to change for QA", named[0].name);
+      const selected = named.find((item) => item.name === objectName);
+      if (!selected) throw new Error(`Named text object not found in the read-only snapshot: ${objectName}`);
+      if (selected.locked || selected.hidden) throw new Error(`Selected named text object is not editable: ${objectName}`);
+      report.target = { mode: "name", name: objectName, index: selected.index, originalContents: selected.contents };
+    } else {
+      const defaultIndex = String(editable[0].index);
+      const rawIndex = await ask(rl, "Text frame index to change for QA", defaultIndex);
+      targetIndex = Number(rawIndex);
+      if (!Number.isInteger(targetIndex) || targetIndex < 0 || targetIndex >= textFrames.length) {
+        throw new Error(`Invalid text frame index: ${rawIndex}`);
+      }
+      const selected = textFrames[targetIndex];
+      if (selected.locked || selected.hidden) throw new Error(`Selected text frame index is not editable: ${targetIndex}`);
+      expectedCurrentContents = selected.contents;
+      report.target = { mode: "index", index: targetIndex, name: selected.name || "", originalContents: selected.contents };
+    }
+
     const nextValue = await ask(rl, "Temporary QA text", "DPM_QA_TEST");
     const outputDir = path.resolve(await ask(rl, "QA output folder", path.join(path.dirname(masterPath), "DPM-QA-output")));
     await mkdir(outputDir, { recursive: true });
@@ -105,8 +148,17 @@ async function main() {
     report.outputs.workCopy = workCopy.path;
     console.log(`✓ Work copy created: ${workPath}`);
 
-    requireOk("replace named text", await session.replaceNamedText(objectName, nextValue), report);
-    console.log(`✓ Replaced test object '${objectName}' in work copy only`);
+    if (targetMode === "name") {
+      requireOk("replace named text", await session.replaceNamedText(workPath, objectName, nextValue), report);
+      console.log(`✓ Replaced test object '${objectName}' in work copy only`);
+    } else {
+      requireOk(
+        "replace text by index",
+        await session.replaceTextFrameByIndex(workPath, targetIndex, nextValue, expectedCurrentContents),
+        report,
+      );
+      console.log(`✓ Replaced text frame index ${targetIndex} in work copy only`);
+    }
 
     const exports = requireOk(
       "export PDF/PNG",
