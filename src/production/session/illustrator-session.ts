@@ -7,9 +7,26 @@ import {
   type MutationResult,
 } from "../mutation/context.js";
 import { executeTextCanary, type TextCanarySuccess } from "../mutation/text-canary.js";
+import {
+  createEllipse,
+  createLine,
+  createRectangle,
+  createTextFrame,
+  setFillStroke,
+  updateObject,
+  type EllipseRequest,
+  type FillStrokeRequest,
+  type LineRequest,
+  type ObjectUpdateRequest,
+  type RectangleRequest,
+  type TextFrameRequest,
+} from "../mutation/editing.js";
+import type { ObjectSummary } from "../../executor/read-schema.js";
 
 /** Persistence can legitimately exceed the ordinary interactive transport deadline. */
 export const DEFAULT_SAVE_WORK_COPY_TIMEOUT_MS = 300_000;
+/** Opening a file is a separate session operation, not a document mutation. */
+export const DEFAULT_OPEN_DOCUMENT_TIMEOUT_MS = 120_000;
 
 export interface WorkCopyRequest {
   masterPath: string;
@@ -22,6 +39,8 @@ export interface ExportRequest {
   pdfPath?: string;
   pngPath?: string;
 }
+
+export interface OpenDocumentResult { name: string; path: string; saved: boolean; version: string; }
 
 function literal(value: string): string {
   return JSON.stringify(value.replaceAll("\\", "/"));
@@ -44,6 +63,48 @@ export class IllustratorProductionSession {
 
   get mutationContextState(): SafeMutationContext["state"] | null {
     return this.mutationContext?.state ?? null;
+  }
+
+  /** Opens an explicit file but deliberately does not authorize any write. */
+  async openDocument(documentPath: string): Promise<ScriptResult<OpenDocumentResult>> {
+    if (typeof documentPath !== "string" || documentPath.trim() === "") return { ok: false, error: "INVALID_REQUEST: documentPath is required" };
+    const result = await this.bridge.execute<OpenDocumentResult>(`
+      var expected = ${literal(documentPath)};
+      for (var i = 0; i < app.documents.length; i++) {
+        var openDocument = app.documents[i];
+        var openPath = null;
+        try { openPath = openDocument.fullName.fsName.replace(/\\\\/g, '/'); } catch (e1) {}
+        if (openPath === expected) {
+          try { openDocument.activate(); } catch (e2) {}
+          return { name: openDocument.name, path: openDocument.fullName.fsName, saved: openDocument.saved, version: app.version };
+        }
+      }
+      var file = new File(${literal(documentPath)});
+      if (!file.exists) throw new Error('DOCUMENT_NOT_FOUND');
+      app.open(file);
+      // Older Illustrator builds can return a transient Document wrapper from
+      // app.open(). Re-read the active document before identity verification.
+      var d = app.activeDocument;
+      var actual = null;
+      try { actual = d.fullName.fsName; } catch (e) {}
+      if (actual === null) throw new Error('OPENED_DOCUMENT_NOT_PATH_BACKED');
+      return { name: d.name, path: actual, saved: d.saved, version: app.version };
+    `, DEFAULT_OPEN_DOCUMENT_TIMEOUT_MS);
+    if (result.ok || !result.error?.includes("ILLUSTRATOR_TIMEOUT")) return result;
+
+    // Do not retry an open. A single read-only reconciliation may establish
+    // that Illustrator already completed it and selected the exact file.
+    const reconciled = await this.bridge.execute<OpenDocumentResult>(`
+      if (app.documents.length === 0) throw new Error('NO_DOCUMENT');
+      var d = app.activeDocument;
+      var p = null;
+      try { p = d.fullName.fsName; } catch (e) {}
+      return { name: d.name, path: p, saved: d.saved, version: app.version };
+    `, 30_000);
+    if (!reconciled.ok || !reconciled.value || !reconciled.value.path) return result;
+    const expected = documentPath.replace(/\\/g, "/");
+    const actual = reconciled.value.path.replace(/\\/g, "/");
+    return actual === expected && reconciled.value.saved ? reconciled : result;
   }
 
   async saveWorkCopy(request: WorkCopyRequest): Promise<ScriptResult<{ path: string }>> {
@@ -72,6 +133,31 @@ export class IllustratorProductionSession {
     return result;
   }
 
+  /**
+   * Internal managed-session authorization after host-side verified copying
+   * and an Illustrator read-only open/identity proof. This method does not
+   * issue a document write and is deliberately not exposed as an MCP tool.
+   */
+  authorizeVerifiedFilesystemWorkCopy(
+    masterPath: string,
+    workPath: string,
+    opened: OpenDocumentResult,
+  ): MutationResult<{ workPath: string }> {
+    const intended = createWorkCopyIdentity(masterPath, workPath);
+    if (!intended.ok) return intended;
+    const actual = createWorkCopyIdentity(masterPath, opened.path);
+    if (!opened.saved || !actual.ok || actual.value.workCanonicalPath !== intended.value.workCanonicalPath) {
+      this.mutationContext = null;
+      return {
+        ok: false,
+        contextState: "QUARANTINED",
+        error: mutationError("WORK_COPY_IDENTITY_MISMATCH", "identity", "authorize-filesystem-work-copy", "Illustrator did not make the copied, saved WORK COPY active."),
+      };
+    }
+    this.mutationContext = new SafeMutationContext(intended.value);
+    return { ok: true, value: { workPath: opened.path }, contextState: this.mutationContext.state };
+  }
+
   async replaceNamedText(
     workPath: string,
     objectName: string,
@@ -96,6 +182,43 @@ export class IllustratorProductionSession {
       index,
       expected: { typename: "TextFrame", contents: expectedCurrentContents },
     }, value, "replace-text-frame-by-index");
+  }
+
+  async saveDocument(workPath: string): Promise<MutationResult<{ path: string; saved: boolean }>> {
+    if (!this.mutationContext) return this.workCopyRequired("save-document");
+    const preflight = this.mutationContext.prepare("save-document", workPath, false);
+    if (preflight) return { ok: false, error: preflight, contextState: this.mutationContext.state };
+    const result = await this.bridge.execute<{ path: string; saved: boolean }>(`
+      ${workCopyGuard(workPath)}
+      d.save();
+      var actual = d.fullName.fsName.replace(/\\\\/g, '/');
+      if (actual !== ${literal(workPath)} || !d.saved) throw new Error('SAVE_POST_CONDITION_FAILED');
+      return { path: d.fullName.fsName, saved: d.saved };
+    `, DEFAULT_SAVE_WORK_COPY_TIMEOUT_MS);
+    if (!result.ok || !result.value) {
+      this.mutationContext.quarantine();
+      return { ok: false, contextState: this.mutationContext.state, error: mutationError("MUTATION_OUTCOME_UNKNOWN", "transport", "save-document", result.error ?? "ILLUSTRATOR_EXECUTION_FAILED", true, "Do not retry automatically; create a new verified work-copy session.", result.error ? { bridgeError: result.error } : undefined) };
+    }
+    return { ok: true, value: result.value, contextState: this.mutationContext.state };
+  }
+
+  async createRectangle(workPath: string, request: RectangleRequest): Promise<MutationResult<ObjectSummary>> { return this.withContext("create-rectangle", (context) => createRectangle(this.bridge, context, workPath, request)); }
+  async createEllipse(workPath: string, request: EllipseRequest): Promise<MutationResult<ObjectSummary>> { return this.withContext("create-ellipse", (context) => createEllipse(this.bridge, context, workPath, request)); }
+  async createLine(workPath: string, request: LineRequest): Promise<MutationResult<ObjectSummary>> { return this.withContext("create-line", (context) => createLine(this.bridge, context, workPath, request)); }
+  async createTextFrame(workPath: string, request: TextFrameRequest): Promise<MutationResult<ObjectSummary>> { return this.withContext("create-text-frame", (context) => createTextFrame(this.bridge, context, workPath, request)); }
+  async updateObject(workPath: string, request: ObjectUpdateRequest): Promise<MutationResult<ObjectSummary>> { return this.withContext("update-object", (context) => updateObject(this.bridge, context, workPath, request)); }
+  async setFillStroke(workPath: string, request: FillStrokeRequest): Promise<MutationResult<ObjectSummary>> { return this.withContext("set-fill-stroke", (context) => setFillStroke(this.bridge, context, workPath, request)); }
+
+  /** Called only by the managed registry after a successful read result. */
+  async refreshAfterVerifiedRead(workPath: string): Promise<MutationResult<{ refreshed: true }>> {
+    if (!this.mutationContext) return this.workCopyRequired("verified-read-refresh");
+    const active = await this.bridge.execute<{ path: string }>(`
+      if (app.documents.length === 0) throw new Error('NO_DOCUMENT');
+      return { path: app.activeDocument.fullName.fsName };
+    `, 30_000);
+    if (!active.ok || !active.value) return { ok: false, contextState: this.mutationContext.state, error: mutationError("ACTIVE_DOCUMENT_MISMATCH", "identity", "verified-read-refresh", active.error ?? "Could not verify active document.") };
+    const result = this.mutationContext.refreshAfterVerifiedRead(active.value.path);
+    return result ? { ok: false, error: result, contextState: this.mutationContext.state } : { ok: true, value: { refreshed: true }, contextState: this.mutationContext.state };
   }
 
   async exportOutputs(request: ExportRequest): Promise<ScriptResult<{ pdf?: string; png?: string }>> {
@@ -133,18 +256,21 @@ export class IllustratorProductionSession {
     value: string,
     operation: string,
   ): Promise<MutationResult<TextCanarySuccess>> {
-    if (!this.mutationContext) {
-      return {
-        ok: false,
-        contextState: "QUARANTINED",
-        error: mutationError("WORK_COPY_REQUIRED", "identity", operation, "No verified work-copy identity exists for this session."),
-      };
-    }
+    if (!this.mutationContext) return this.workCopyRequired(operation);
     return executeTextCanary(this.bridge, this.mutationContext, {
       operation,
       workPath,
       nextContents: value,
       targets: [target],
     });
+  }
+
+  private workCopyRequired<T>(operation: string): MutationResult<T> {
+    return { ok: false, contextState: "QUARANTINED", error: mutationError("WORK_COPY_REQUIRED", "identity", operation, "No verified work-copy identity exists for this session.") };
+  }
+
+  private async withContext<T>(operation: string, run: (context: SafeMutationContext) => Promise<MutationResult<T>>): Promise<MutationResult<T>> {
+    if (!this.mutationContext) return this.workCopyRequired(operation);
+    return run(this.mutationContext);
   }
 }

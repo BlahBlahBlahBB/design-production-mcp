@@ -38,6 +38,16 @@ export type MutationErrorCode =
   | "WORK_COPY_REQUIRED"
   | "ACTIVE_DOCUMENT_MISMATCH"
   | "WORK_COPY_IDENTITY_INVALID"
+  | "MASTER_FILE_NOT_FOUND"
+  | "MASTER_NOT_SAVED"
+  | "WORK_COPY_ALREADY_EXISTS"
+  | "WORK_COPY_COPY_FAILED"
+  | "WORK_COPY_COPY_VERIFICATION_FAILED"
+  | "WORK_COPY_OPEN_FAILED"
+  | "WORK_COPY_OPEN_TIMEOUT"
+  | "WORK_COPY_IDENTITY_MISMATCH"
+  | "SESSION_NOT_FOUND"
+  | "INVALID_REQUEST"
   | "TARGET_NOT_FOUND"
   | "TARGET_AMBIGUOUS"
   | "TARGET_STALE"
@@ -72,7 +82,11 @@ export interface StructuralTarget {
   expected?: ExpectedTargetState;
 }
 
-function canonicalPath(value: string): string {
+/**
+ * Host-side path identity policy. Deliberately preserves case: callers must
+ * not treat a structural locator or a platform path as a permanent ID.
+ */
+export function canonicalizeDocumentPath(value: string): string {
   if (typeof value !== "string" || value.trim() === "") throw new Error("path is required");
   // Do not lowercase: macOS can preserve case and Unicode distinctions in paths.
   return path.resolve(value).replaceAll("\\", "/");
@@ -92,8 +106,8 @@ export function mutationError(
 
 export function createWorkCopyIdentity(masterPath: string, workPath: string): MutationResult<WorkCopyIdentity> {
   try {
-    const masterCanonicalPath = canonicalPath(masterPath);
-    const workCanonicalPath = canonicalPath(workPath);
+    const masterCanonicalPath = canonicalizeDocumentPath(masterPath);
+    const workCanonicalPath = canonicalizeDocumentPath(workPath);
     if (masterCanonicalPath === workCanonicalPath) {
       return {
         ok: false,
@@ -131,15 +145,15 @@ export class SafeMutationContext {
     return this.currentState;
   }
 
-  prepare(operation: string, workPath: string): MutationError | null {
+  prepare(operation: string, workPath: string, requiresFreshTargets = true): MutationError | null {
     if (this.currentState === "QUARANTINED") {
       return mutationError("MUTATION_OUTCOME_UNKNOWN", "identity", operation, "This work-copy context is quarantined after an unproven mutation outcome.", true);
     }
-    if (this.currentState === "REFRESH_REQUIRED") {
+    if (this.currentState === "REFRESH_REQUIRED" && requiresFreshTargets) {
       return mutationError("MUTATION_SCOPE_VIOLATION", "identity", operation, "A structural mutation requires targets to be re-read before another write.");
     }
     try {
-      const candidate = canonicalPath(workPath);
+      const candidate = canonicalizeDocumentPath(workPath);
       if (candidate !== this.identity.workCanonicalPath || candidate === this.identity.masterCanonicalPath) {
         return mutationError("WORK_COPY_IDENTITY_INVALID", "identity", operation, "Requested write path is not this context's authorized work copy.");
       }
@@ -151,6 +165,20 @@ export class SafeMutationContext {
 
   markStructuralMutation(): void {
     if (this.currentState === "READY") this.currentState = "REFRESH_REQUIRED";
+  }
+
+  /**
+   * Re-arm only after the managed session has completed a successful read of
+   * this same verified work copy. A quarantined context is intentionally final.
+   */
+  refreshAfterVerifiedRead(workPath: string): MutationError | null {
+    if (this.currentState === "QUARANTINED") {
+      return mutationError("MUTATION_OUTCOME_UNKNOWN", "identity", "verified-read-refresh", "A quarantined work copy cannot be re-armed.", true);
+    }
+    const identityFailure = this.prepare("verified-read-refresh", workPath, false);
+    if (identityFailure) return identityFailure;
+    if (this.currentState === "REFRESH_REQUIRED") this.currentState = "READY";
+    return null;
   }
 
   quarantine(): void {

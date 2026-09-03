@@ -8,10 +8,15 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/tests/*.test.js",
-    "check": "npm run test"
+    "check": "npm run test",
+    "mcp": "npm run build && node dist/src/mcp/stdio.js"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^4.5.4"
   }
 }
