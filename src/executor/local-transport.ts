@@ -31,11 +31,14 @@ export function resolveLocalTransport(platform = process.platform): LocalTranspo
 
 function execFileAsync(command: string, args: string[], timeoutMs: number): Promise<void> {
   return new Promise((resolve, reject) => {
-    execFile(command, args, { timeout: timeoutMs }, (error, _stdout, stderr) => {
+    execFile(command, args, { timeout: timeoutMs }, (error, stdout, stderr) => {
       if (!error) return resolve();
-      const message = stderr?.trim() || error.message;
+      const details = error as Error & { code?: string | number; killed?: boolean; signal?: string | null };
+      const timedOut = details.killed === true || details.signal === "SIGTERM";
+      const message = (stderr?.trim() || stdout?.trim() || details.message)
+        + (timedOut ? ` (timed out after ${timeoutMs}ms)` : "");
       const wrapped = new Error(message) as Error & { code?: string };
-      wrapped.code = typeof error.code === "string" ? error.code : undefined;
+      wrapped.code = timedOut ? "ILLUSTRATOR_TIMEOUT" : typeof details.code === "string" ? details.code : undefined;
       reject(wrapped);
     });
   });
@@ -55,13 +58,32 @@ function classifyFailure(message: string): { code: string; message: string } {
   return { code: "ILLUSTRATOR_EXECUTION_FAILED", message };
 }
 
-function appleScriptFor(scriptPath: string, options: ExecuteOptions): string {
+/**
+ * A JSX wrapper can write a plain structured error before AppleScript reports a
+ * transport-level failure. Keep that diagnostic instead of replacing it with
+ * less-specific shell output.
+ */
+export function preferWrappedTransportResult<T>(
+  wrapperContents: string,
+  fallback: TransportResult<T>,
+): TransportResult<T> {
+  try {
+    const parsed = JSON.parse(wrapperContents.replace(/^\uFEFF/, "")) as TransportResult<T>;
+    return typeof parsed?.ok === "boolean" ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function appleScriptFor(scriptPath: string, options: ExecuteOptions): string {
   const target = (options.appPath || "Adobe Illustrator").replaceAll('"', '\\"');
   const escapedScriptPath = scriptPath.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
-  const lines = [`tell application "${target}"`];
+  const timeoutSeconds = Math.max(1, Math.ceil((options.timeoutMs ?? DEFAULT_TIMEOUT_MS) / 1_000));
+  const lines = [`with timeout of ${timeoutSeconds} seconds`, `tell application "${target}"`];
   if (options.activate) lines.push("activate");
   lines.push(`do javascript of file "${escapedScriptPath}"`);
   lines.push("end tell");
+  lines.push("end timeout");
   return lines.join("\n");
 }
 
@@ -187,8 +209,16 @@ export class SerializedJsxTransport {
       const parsed = JSON.parse((await readFile(resultPath, "utf8")).replace(/^\uFEFF/, "")) as TransportResult<T>;
       return parsed;
     } catch (error) {
+      // A JSX exception can still have written its plain diagnostic result before
+      // osascript returns an error. Prefer that structured data over shell noise.
       const message = error instanceof Error ? error.message : String(error);
-      return { ok: false, error: classifyFailure(message) };
+      const fallback: TransportResult<T> = { ok: false, error: classifyFailure(message) };
+      try {
+        return preferWrappedTransportResult(await readFile(resultPath, "utf8"), fallback);
+      } catch {
+        // The runner may fail before ExtendScript can create a result file.
+      }
+      return fallback;
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

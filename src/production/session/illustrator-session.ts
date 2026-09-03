@@ -1,5 +1,15 @@
 import type { IllustratorBridge, ScriptResult } from "../../executor/bridge.js";
 import { assertOutputDoesNotOverwriteMaster } from "../qa/master-protection.js";
+import {
+  SafeMutationContext,
+  createWorkCopyIdentity,
+  mutationError,
+  type MutationResult,
+} from "../mutation/context.js";
+import { executeTextCanary, type TextCanarySuccess } from "../mutation/text-canary.js";
+
+/** Persistence can legitimately exceed the ordinary interactive transport deadline. */
+export const DEFAULT_SAVE_WORK_COPY_TIMEOUT_MS = 300_000;
 
 export interface WorkCopyRequest {
   masterPath: string;
@@ -28,12 +38,18 @@ function workCopyGuard(workPath: string): string {
 }
 
 export class IllustratorProductionSession {
+  private mutationContext: SafeMutationContext | null = null;
+
   constructor(private readonly bridge: IllustratorBridge) {}
+
+  get mutationContextState(): SafeMutationContext["state"] | null {
+    return this.mutationContext?.state ?? null;
+  }
 
   async saveWorkCopy(request: WorkCopyRequest): Promise<ScriptResult<{ path: string }>> {
     assertOutputDoesNotOverwriteMaster(request.masterPath, request.workPath);
 
-    return this.bridge.execute(`
+    const result = await this.bridge.execute<{ path: string }>(`
       if (app.documents.length === 0) throw new Error('NO_DOCUMENT');
       var source = app.activeDocument;
       if (!source.saved) throw new Error('MASTER_MUST_BE_SAVED');
@@ -43,60 +59,43 @@ export class IllustratorProductionSession {
       var workFile = new File(${literal(request.workPath)});
       source.saveAs(workFile);
       return {path: source.fullName.fsName};
-    `);
+    `, DEFAULT_SAVE_WORK_COPY_TIMEOUT_MS);
+    if (!result.ok || !result.value) return result;
+
+    const intended = createWorkCopyIdentity(request.masterPath, request.workPath);
+    const actual = createWorkCopyIdentity(request.masterPath, result.value.path);
+    if (!intended.ok || !actual.ok || intended.value.workCanonicalPath !== actual.value.workCanonicalPath) {
+      this.mutationContext = null;
+      return { ok: false, error: "WORK_COPY_IDENTITY_INVALID: saveAs did not produce the requested work-copy path" };
+    }
+    this.mutationContext = new SafeMutationContext(intended.value);
+    return result;
   }
 
   async replaceNamedText(
     workPath: string,
     objectName: string,
     value: string,
-  ): Promise<ScriptResult<{ replaced: number }>> {
-    return this.bridge.execute(`
-      ${workCopyGuard(workPath)}
-      var targetName = ${JSON.stringify(objectName)};
-      var nextValue = ${JSON.stringify(value)};
-      var replaced = 0;
-      for (var i = 0; i < d.textFrames.length; i++) {
-        var t = d.textFrames[i];
-        if (t.name === targetName) {
-          if (t.locked || t.hidden) throw new Error('TARGET_TEXT_NOT_EDITABLE:' + targetName);
-          t.contents = nextValue;
-          replaced++;
-        }
-      }
-      if (replaced === 0) throw new Error('TARGET_TEXT_NOT_FOUND:' + targetName);
-      return {replaced: replaced};
-    `);
+    expectedCurrentContents: string,
+  ): Promise<MutationResult<TextCanarySuccess>> {
+    return this.runTextCanary(workPath, {
+      kind: "name",
+      name: objectName,
+      expected: { typename: "TextFrame", name: objectName, contents: expectedCurrentContents },
+    }, value, "replace-named-text");
   }
 
   async replaceTextFrameByIndex(
     workPath: string,
     index: number,
     value: string,
-    expectedCurrentContents?: string,
-  ): Promise<ScriptResult<{ replaced: number; index: number }>> {
-    if (!Number.isInteger(index) || index < 0) {
-      throw new Error("text frame index must be a non-negative integer");
-    }
-
-    const expectedLiteral = expectedCurrentContents === undefined
-      ? "null"
-      : JSON.stringify(expectedCurrentContents);
-
-    return this.bridge.execute(`
-      ${workCopyGuard(workPath)}
-      var targetIndex = ${index};
-      var nextValue = ${JSON.stringify(value)};
-      var expectedCurrentContents = ${expectedLiteral};
-      if (targetIndex >= d.textFrames.length) throw new Error('TARGET_TEXT_INDEX_OUT_OF_RANGE:' + targetIndex);
-      var t = d.textFrames[targetIndex];
-      if (t.locked || t.hidden) throw new Error('TARGET_TEXT_NOT_EDITABLE_INDEX:' + targetIndex);
-      if (expectedCurrentContents !== null && t.contents !== expectedCurrentContents) {
-        throw new Error('TARGET_TEXT_CONTENT_CHANGED:' + targetIndex);
-      }
-      t.contents = nextValue;
-      return {replaced: 1, index: targetIndex};
-    `);
+    expectedCurrentContents: string,
+  ): Promise<MutationResult<TextCanarySuccess>> {
+    return this.runTextCanary(workPath, {
+      kind: "index",
+      index,
+      expected: { typename: "TextFrame", contents: expectedCurrentContents },
+    }, value, "replace-text-frame-by-index");
   }
 
   async exportOutputs(request: ExportRequest): Promise<ScriptResult<{ pdf?: string; png?: string }>> {
@@ -126,5 +125,26 @@ export class IllustratorProductionSession {
       ` : ""}
       return result;
     `, 60_000);
+  }
+
+  private async runTextCanary(
+    workPath: string,
+    target: Parameters<typeof executeTextCanary>[2]["targets"][number],
+    value: string,
+    operation: string,
+  ): Promise<MutationResult<TextCanarySuccess>> {
+    if (!this.mutationContext) {
+      return {
+        ok: false,
+        contextState: "QUARANTINED",
+        error: mutationError("WORK_COPY_REQUIRED", "identity", operation, "No verified work-copy identity exists for this session."),
+      };
+    }
+    return executeTextCanary(this.bridge, this.mutationContext, {
+      operation,
+      workPath,
+      nextContents: value,
+      targets: [target],
+    });
   }
 }
