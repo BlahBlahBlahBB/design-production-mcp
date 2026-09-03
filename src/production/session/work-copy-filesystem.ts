@@ -19,6 +19,10 @@ export interface WorkCopyVerification {
   copyDurationMs: number;
 }
 
+export type WorkCopyReverificationResult =
+  | { ok: true; value: { masterSha256: string; workCopySha256: string } }
+  | { ok: false; error: { code: "MASTER_FILE_NOT_FOUND" | "WORK_COPY_COPY_VERIFICATION_FAILED"; message: string } };
+
 export type VerifiedFilesystemCopyResult =
   | { ok: true; value: WorkCopyVerification }
   | { ok: false; error: { code: WorkCopyFilesystemErrorCode; message: string } };
@@ -37,6 +41,38 @@ async function sha256(path: string): Promise<string> {
 }
 
 const nodeOperations: WorkCopyFilesystemOperations = { stat, copyFile, sha256 };
+
+/**
+ * Re-proves that the files behind a previously verified copy have not changed.
+ * This has no Illustrator interaction and never repairs, copies, or deletes files.
+ */
+export async function reverifyFilesystemWorkCopy(
+  verification: WorkCopyVerification,
+  operations: WorkCopyFilesystemOperations = nodeOperations,
+): Promise<WorkCopyReverificationResult> {
+  try {
+    const master = await operations.stat(verification.masterPath);
+    if (!master.isFile()) return { ok: false, error: { code: "MASTER_FILE_NOT_FOUND", message: "MASTER path is not a regular file." } };
+  } catch (error) {
+    return { ok: false, error: { code: "MASTER_FILE_NOT_FOUND", message: error instanceof Error ? error.message : String(error) } };
+  }
+  try {
+    const work = await operations.stat(verification.workPath);
+    if (!work.isFile()) return { ok: false, error: { code: "WORK_COPY_COPY_VERIFICATION_FAILED", message: "WORK COPY path is not a regular file." } };
+    const masterSha256 = await operations.sha256(verification.masterPath);
+    const workCopySha256 = await operations.sha256(verification.workPath);
+    const originalVerificationIsConsistent = verification.masterSha256Before === verification.workCopySha256
+      && verification.masterSha256Before === verification.masterSha256After;
+    if (!originalVerificationIsConsistent
+      || masterSha256 !== verification.masterSha256Before
+      || workCopySha256 !== verification.workCopySha256) {
+      return { ok: false, error: { code: "WORK_COPY_COPY_VERIFICATION_FAILED", message: "MASTER or WORK COPY SHA-256 changed after the verified filesystem copy." } };
+    }
+    return { ok: true, value: { masterSha256, workCopySha256 } };
+  } catch (error) {
+    return { ok: false, error: { code: "WORK_COPY_COPY_VERIFICATION_FAILED", message: error instanceof Error ? error.message : String(error) } };
+  }
+}
 
 /**
  * Copies the persisted on-disk MASTER only. It intentionally never captures

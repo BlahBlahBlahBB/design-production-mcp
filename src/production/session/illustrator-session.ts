@@ -41,6 +41,7 @@ export interface ExportRequest {
 }
 
 export interface OpenDocumentResult { name: string; path: string; saved: boolean; version: string; }
+export interface OpenDocumentOptions { reconcileAfterTimeout?: boolean; }
 
 function literal(value: string): string {
   return JSON.stringify(value.replaceAll("\\", "/"));
@@ -66,7 +67,7 @@ export class IllustratorProductionSession {
   }
 
   /** Opens an explicit file but deliberately does not authorize any write. */
-  async openDocument(documentPath: string): Promise<ScriptResult<OpenDocumentResult>> {
+  async openDocument(documentPath: string, options: OpenDocumentOptions = {}): Promise<ScriptResult<OpenDocumentResult>> {
     if (typeof documentPath !== "string" || documentPath.trim() === "") return { ok: false, error: "INVALID_REQUEST: documentPath is required" };
     const result = await this.bridge.execute<OpenDocumentResult>(`
       var expected = ${literal(documentPath)};
@@ -90,7 +91,7 @@ export class IllustratorProductionSession {
       if (actual === null) throw new Error('OPENED_DOCUMENT_NOT_PATH_BACKED');
       return { name: d.name, path: actual, saved: d.saved, version: app.version };
     `, DEFAULT_OPEN_DOCUMENT_TIMEOUT_MS);
-    if (result.ok || !result.error?.includes("ILLUSTRATOR_TIMEOUT")) return result;
+    if (result.ok || !result.error?.includes("ILLUSTRATOR_TIMEOUT") || options.reconcileAfterTimeout === false) return result;
 
     // Do not retry an open. A single read-only reconciliation may establish
     // that Illustrator already completed it and selected the exact file.
@@ -105,6 +106,18 @@ export class IllustratorProductionSession {
     const expected = documentPath.replace(/\\/g, "/");
     const actual = reconciled.value.path.replace(/\\/g, "/");
     return actual === expected && reconciled.value.saved ? reconciled : result;
+  }
+
+  /** Read the active document only; it never opens, activates, or mutates a document. */
+  async readActiveDocumentIdentity(): Promise<ScriptResult<OpenDocumentResult>> {
+    return this.bridge.execute<OpenDocumentResult>(`
+      if (app.documents.length === 0) throw new Error('NO_DOCUMENT');
+      var d = app.activeDocument;
+      var p = null;
+      try { p = d.fullName.fsName; } catch (e) {}
+      if (p === null) throw new Error('ACTIVE_DOCUMENT_NOT_PATH_BACKED');
+      return { name: d.name, path: p, saved: d.saved, version: app.version };
+    `, 30_000);
   }
 
   async saveWorkCopy(request: WorkCopyRequest): Promise<ScriptResult<{ path: string }>> {
