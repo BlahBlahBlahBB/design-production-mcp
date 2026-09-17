@@ -123,6 +123,12 @@ function createColor(colorObj) {
 
 function applyOptionalFill(item, colorObj) {
   if (typeof colorObj === "undefined") return;
+
+  if (item.typename === "TextFrame") {
+    item.textRange.characterAttributes.fillColor = createColor(colorObj);
+    return;
+  }
+
   if (!colorObj || colorObj.type === "none") {
     item.filled = false;
     return;
