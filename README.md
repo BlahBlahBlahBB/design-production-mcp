@@ -7,7 +7,9 @@
 当前版本：**v0.1.0**  
 发布说明：[RELEASE_NOTES.md](RELEASE_NOTES.md)
 
-## 目前能做什么
+<br>
+
+## ⭕️ 目前能做什么
 
 当前公开能力分为两部分：
 
@@ -56,7 +58,9 @@ DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** �
 
 [docs/dpm-production-tools.md](docs/dpm-production-tools.md)
 
-## 适合怎么用
+<br>
+
+## ⭕️ 适合怎么用
 
 这个 MCP 的目标不是让你手动记住 74 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
 
@@ -72,7 +76,9 @@ DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** �
 
 > 不允许修改 MASTER，先创建 Work Copy，再完成替换和导出。
 
-## 已验证环境
+<br>
+
+## ⭕️ 已验证环境
 
 当前正式验证环境：
 
@@ -88,11 +94,13 @@ DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** �
 - Illustrator 26.1 目前仍属于 **未正式认证**
 - Windows 当前也属于 **未正式认证**
 
-# 安装
+<br>
+
+# ⚙️ 安装
 
 推荐优先使用 **方式 A：直接把安装指令发给 Agent**。如果你习惯自己用终端，也可以使用方式 B。
 
-## 方式 A：直接发给 Agent 自动安装
+## 🔘 方式 A：直接发给 Agent 自动安装
 
 适用于能够在你的 Mac 上执行本机终端命令的 Codex / Agent。
 
@@ -147,7 +155,7 @@ https://github.com/BlahBlahBlahBB/design-production-mcp
    “请完全退出并重新打开 Codex，然后打开 Adobe Illustrator 2026 Stable，新建会话并让 Codex 调用 `illustrator_status`。”
 ```
 
-## 方式 B：终端一键安装
+## 🔘 方式 B：终端一键安装
 
 ### 1. 检查 Node.js
 
@@ -201,7 +209,9 @@ chmod +x install.command uninstall.command
 ./install.command
 ```
 
-## 安装后验证
+<br>
+
+## ⭕️ 安装后验证
 
 安装完成后：
 
@@ -221,7 +231,9 @@ chmod +x install.command uninstall.command
 
 平时正常使用时不需要手动写工具名，可以直接用自然语言描述 Illustrator 任务。
 
-## 安装问题排查
+<br>
+
+## ⚠️ 安装问题排查
 
 ### Node 版本过低
 
@@ -255,7 +267,9 @@ git remote set-url origin git@github.com:BlahBlahBlahBB/design-production-mcp.gi
 
 然后重新执行 `git pull` / `git fetch`。
 
-## 手动安装
+<br>
+
+## ⚙️ 手动安装
 
 ```bash
 git clone https://github.com/BlahBlahBlahBB/design-production-mcp.git
@@ -284,7 +298,9 @@ Node 的真实路径可以通过下面命令查看：
 node -p 'process.execPath'
 ```
 
-## 卸载
+<br>
+
+## 🚼 卸载
 
 在项目目录运行：
 
@@ -300,7 +316,9 @@ node -p 'process.execPath'
 
 不会删除 Illustrator 文件、项目源码、其他 MCP 或其他 Codex 配置。卸载前同样会备份 Codex 配置。
 
-## Core 与 Production 的区别
+<br>
+
+## 📄 Core 与 Production 的区别
 
 ### Illustrator Core
 
@@ -332,7 +350,9 @@ create_work_copy
 
 这条路径专门防止 MASTER 被误保存或被直接写入。
 
-## 当前验证状态
+<br>
+
+## ⚠️ 当前验证状态
 
 在 Adobe Illustrator 2026 Stable 30.8.1 上，代表性 Smoke Test 已验证：
 
@@ -356,7 +376,9 @@ create_work_copy
 - TypeScript build：通过
 - `npm audit --omit=dev`：**0 个已报告漏洞**
 
-## 开源来源
+<br>
+
+## 🔮 开源来源
 
 本项目整合并保留了以下开源项目的许可和归属信息：
 
@@ -372,7 +394,9 @@ create_work_copy
 
 Jinkeda / `Illustrator_MCP` 曾用于研究，但因为当时没有从仓库根目录明确验证许可证，本项目 **没有复制其源码**。
 
-## 安全边界
+<br>
+
+## ⚠️ 安全边界
 
 本项目只暴露固定、类型化的 MCP 工具，不提供任意 JSX、Shell 或任意 Illustrator 菜单命令执行入口。
 
