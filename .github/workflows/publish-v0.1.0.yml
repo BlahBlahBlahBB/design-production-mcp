@@ -1,0 +1,43 @@
+name: 发布 v0.1.0
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/publish-v0.1.0.yml
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 创建 v0.1.0 标签和 Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          if gh release view v0.1.0 >/dev/null 2>&1; then
+            echo "v0.1.0 Release 已存在，无需重复创建。"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if ! git rev-parse -q --verify refs/tags/v0.1.0 >/dev/null; then
+            git tag -a v0.1.0 -m "Design Production MCP v0.1.0"
+            git push origin v0.1.0
+          fi
+
+          gh release create v0.1.0 \
+            --title "v0.1.0 — Illustrator MCP 首个公开版本" \
+            --notes-file RELEASE_NOTES.md
