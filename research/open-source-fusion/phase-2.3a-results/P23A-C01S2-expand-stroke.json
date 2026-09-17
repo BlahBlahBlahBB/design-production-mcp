@@ -1,0 +1,176 @@
+{
+  "testId": "P23A-C01S2-expand-stroke",
+  "capability": "Object Expand stroke semantics",
+  "publicMcpTool": "expand_objects",
+  "fixtureMasterPath": "/private/tmp/dpm-phase-2.3a-qa/DPM-QA-EXPAND.ai",
+  "freshWorkCopyPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789632372273-P23A-C01S2-expand-stroke.ai",
+  "applicationName": "Adobe Illustrator 2026 Stable",
+  "illustratorVersion": "30.8.1",
+  "inputParameters": {
+    "object": false,
+    "fill": false,
+    "stroke": true,
+    "gradient": false
+  },
+  "structuralPrecondition": {
+    "inventory": {
+      "documentCount": 1,
+      "qaWorkCopies": [
+        "/private/tmp/dpm-phase-2.3a-qa/work/1789632372273-P23A-C01S2-expand-stroke.ai"
+      ],
+      "documents": [
+        {
+          "name": "1789632372273-P23A-C01S2-expand-stroke.ai",
+          "path": "/private/tmp/dpm-phase-2.3a-qa/work/1789632372273-P23A-C01S2-expand-stroke.ai"
+        }
+      ]
+    },
+    "structure": {
+      "activePath": "/private/tmp/dpm-phase-2.3a-qa/work/1789632372273-P23A-C01S2-expand-stroke.ai",
+      "pageItems": 4,
+      "pathItems": 3,
+      "groupItems": 0,
+      "compoundPathItems": 0,
+      "placedItems": [],
+      "namedItems": [
+        {
+          "name": "qa-expand-control",
+          "typename": "PathItem",
+          "bounds": [
+            30,
+            170,
+            110,
+            110
+          ],
+          "filled": true,
+          "stroked": true,
+          "strokeWidth": 1,
+          "pathPoints": 4,
+          "descendants": []
+        },
+        {
+          "name": "qa-expand-stroke",
+          "typename": "PathItem",
+          "bounds": [
+            30,
+            220,
+            180,
+            220
+          ],
+          "filled": false,
+          "stroked": true,
+          "strokeWidth": 8,
+          "pathPoints": 2,
+          "descendants": []
+        }
+      ]
+    },
+    "stableBeforeExecution": {
+      "name": "Adobe Illustrator",
+      "version": "30.8.1",
+      "documentCount": 1
+    }
+  },
+  "executionResult": {
+    "ok": true,
+    "value": {
+      "action": "DPMExpand_mu58wq8b_1",
+      "actionSet": "DPMExpandSet_mu58wq8b_1",
+      "actionFile": "/var/folders/vy/zb67cjxx24s7vzjf8wblc4l00000gp/T/dpm-expand-mu58wq8b_1.aia",
+      "selectionCount": 1
+    },
+    "contextState": "REFRESH_REQUIRED"
+  },
+  "structuralPostcondition": {
+    "structure": {
+      "activePath": "/private/tmp/dpm-phase-2.3a-qa/work/1789632372273-P23A-C01S2-expand-stroke.ai",
+      "pageItems": 5,
+      "pathItems": 3,
+      "groupItems": 1,
+      "compoundPathItems": 0,
+      "placedItems": [],
+      "namedItems": [
+        {
+          "name": "qa-expand-control",
+          "typename": "PathItem",
+          "bounds": [
+            30,
+            170,
+            110,
+            110
+          ],
+          "filled": true,
+          "stroked": true,
+          "strokeWidth": 1,
+          "pathPoints": 4,
+          "descendants": []
+        },
+        {
+          "name": "qa-expand-stroke",
+          "typename": "GroupItem",
+          "bounds": [
+            30,
+            224,
+            180,
+            216
+          ],
+          "pathPoints": null,
+          "descendants": [
+            {
+              "name": "",
+              "typename": "PathItem",
+              "bounds": [
+                30,
+                224,
+                180,
+                216
+              ],
+              "filled": true,
+              "stroked": false,
+              "strokeWidth": 1,
+              "pathPoints": 4,
+              "descendants": []
+            }
+          ]
+        }
+      ]
+    },
+    "refresh": {
+      "ok": true,
+      "value": {
+        "refreshed": true
+      },
+      "contextState": "READY"
+    },
+    "stableAfterExecution": {
+      "name": "Adobe Illustrator",
+      "version": "30.8.1",
+      "documentCount": 1
+    },
+    "masterSha256Before": "668b8a3ab39ffe18bb7a34bd15fe06eb779fbd39b66946bff43d998ab134eef7",
+    "masterSha256After": "668b8a3ab39ffe18bb7a34bd15fe06eb779fbd39b66946bff43d998ab134eef7",
+    "verification": {
+      "passed": true,
+      "controlUnchanged": true,
+      "targetOutlined": true,
+      "structureChanged": true
+    }
+  },
+  "classification": "PASS_30_8_1",
+  "functionalResult": "PASS_30_8_1",
+  "cleanupClassification": "INTERRUPTED_AFTER_EVIDENCE",
+  "cleanupRecovery": {
+    "reconciledAfterRestart": true,
+    "finalStableDocumentCount": 0,
+    "finalQaWorkCopies": 0
+  },
+  "cleanupResult": {
+    "passed": false,
+    "error": "Error: INVENTORY_FAILED:ILLUSTRATOR_TIMEOUT: Command failed: osascript /var/folders/vy/zb67cjxx24s7vzjf8wblc4l00000gp/T/design-production-mcp-yqavN2/run-6068ec07-a93c-4ddc-95a4-fdbe29dfa5b6.scpt\n (timed out after 30000ms)"
+  },
+  "beforeDocumentCount": 0,
+  "afterDocumentCount": null,
+  "maximumSimultaneousQaDocuments": 1,
+  "durationMs": 63984,
+  "timestamp": "2026-09-17T08:06:12.273Z"
+}

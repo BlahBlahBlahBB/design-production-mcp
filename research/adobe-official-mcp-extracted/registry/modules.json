@@ -1,0 +1,456 @@
+[
+  {
+    "name": "AlignmentTasks",
+    "declaredToolCount": 2,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 4,
+      "fileOffset": "0x2e6a0a",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "AlignObjects",
+      "DistributeObjects"
+    ]
+  },
+  {
+    "name": "AppearanceTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 96,
+      "fileOffset": "0x2e7b0c",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "SetAppearance"
+    ]
+  },
+  {
+    "name": "ArtboardTasks",
+    "declaredToolCount": 11,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 267,
+      "fileOffset": "0x2ea5ae",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "ListArtboards",
+      "CreateArtboard",
+      "SetArtboardProperties",
+      "DuplicateArtboard",
+      "GetActiveArtboard",
+      "ScaleArtboards",
+      "FitArtboard",
+      "DeleteArtboard",
+      "SetActiveArtboard",
+      "MoveArtboards",
+      "GetArtboardProperties"
+    ]
+  },
+  {
+    "name": "CanvasSummary",
+    "declaredToolCount": 3,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 738,
+      "fileOffset": "0x2f10e3",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "GetCanvasStructure",
+      "GetArtboardStructure",
+      "VisualizeSelection"
+    ]
+  },
+  {
+    "name": "DocumentTasks",
+    "declaredToolCount": 8,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 804,
+      "fileOffset": "0x2f24b2",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "CreateDocument",
+      "SaveDocument",
+      "OpenDocument",
+      "ListDocuments",
+      "SwitchDocument",
+      "CloseDocument",
+      "SetDocumentProperties",
+      "GetUndoStack"
+    ]
+  },
+  {
+    "name": "EffectTasks",
+    "declaredToolCount": 2,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 1105,
+      "fileOffset": "0x2f5816",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "ApplyEffect",
+      "RemoveEffect"
+    ]
+  },
+  {
+    "name": "ExportTasks",
+    "declaredToolCount": 6,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 1288,
+      "fileOffset": "0x2f7ac7",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "Export",
+      "CapturePreview",
+      "CapturePreviewInternal",
+      "InspectAttachment",
+      "UploadAttachment",
+      "OpenInFirefly"
+    ]
+  },
+  {
+    "name": "ExtractTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 1822,
+      "fileOffset": "0x2ff8a5",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "Extract"
+    ]
+  },
+  {
+    "name": "FilterOperationTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 1874,
+      "fileOffset": "0x30090f",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "FindObjects"
+    ]
+  },
+  {
+    "name": "GenAITasks",
+    "declaredToolCount": 4,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 1947,
+      "fileOffset": "0x301f9d",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "TextToVector",
+      "EditTextToVector",
+      "InvokeTurntable",
+      "ConceptToVector"
+    ]
+  },
+  {
+    "name": "GradientTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 2130,
+      "fileOffset": "0x3047dc",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "SetGradient"
+    ]
+  },
+  {
+    "name": "ImageTraceTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 2229,
+      "fileOffset": "0x305e05",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "Vectorize"
+    ]
+  },
+  {
+    "name": "LayerTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 2293,
+      "fileOffset": "0x307a67",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "CreateLayer"
+    ]
+  },
+  {
+    "name": "ObjectPropertiesTasks",
+    "declaredToolCount": 6,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 2331,
+      "fileOffset": "0x30832b",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "GetVisualAppearance",
+      "GetGeometry",
+      "GetTypographyMetrics",
+      "GetDynamicEffects",
+      "GetObjectStructure",
+      "GetBounds"
+    ]
+  },
+  {
+    "name": "PathfinderTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 2522,
+      "fileOffset": "0x30c46a",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "PathfinderOperation"
+    ]
+  },
+  {
+    "name": "PathTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 2565,
+      "fileOffset": "0x30ce5b",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "CleanupPath"
+    ]
+  },
+  {
+    "name": "PreflightTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 2625,
+      "fileOffset": "0x30e60f",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "RunPreflightChecks"
+    ]
+  },
+  {
+    "name": "ScriptingTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 2666,
+      "fileOffset": "0x310408",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "ExecuteJavaScript"
+    ]
+  },
+  {
+    "name": "SelectionTasks",
+    "declaredToolCount": 2,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 2694,
+      "fileOffset": "0x310866",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "RenameObject",
+      "SelectObjects"
+    ]
+  },
+  {
+    "name": "StructuralTasks",
+    "declaredToolCount": 15,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 2766,
+      "fileOffset": "0x311382",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "DrawEllipse",
+      "DrawRectangle",
+      "DrawPolygon",
+      "DrawStar",
+      "DrawLine",
+      "DrawPath",
+      "DeleteObjects",
+      "DuplicateObjects",
+      "PlaceImage",
+      "Rasterize",
+      "CreateGroup",
+      "MoveObjectsToContainer",
+      "CreateClippingMask",
+      "DrawSVG",
+      "ArrangeArt"
+    ]
+  },
+  {
+    "name": "SwatchTasks",
+    "declaredToolCount": 2,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 3570,
+      "fileOffset": "0x31d220",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "GetSwatches",
+      "ModifySwatches"
+    ]
+  },
+  {
+    "name": "TextTasks",
+    "declaredToolCount": 9,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 3646,
+      "fileOffset": "0x31ebf8",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "CreatePointText",
+      "CreateAreaText",
+      "ReplaceText",
+      "SetTextProperties",
+      "SetCharacterStyle",
+      "SetParagraphStyle",
+      "ConvertTextToOutlines",
+      "GetFonts",
+      "ReplaceFont"
+    ]
+  },
+  {
+    "name": "TransformTasks",
+    "declaredToolCount": 3,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 4222,
+      "fileOffset": "0x3263df",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "MoveObjects",
+      "RotateObjects",
+      "ScaleObjects"
+    ]
+  },
+  {
+    "name": "RecolorTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 4344,
+      "fileOffset": "0x327e57",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "RecolorArtwork"
+    ]
+  },
+  {
+    "name": "FileTasks",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 4422,
+      "fileOffset": "0x329d37",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "SaveTextFile"
+    ]
+  },
+  {
+    "name": "AIAssistantTasks",
+    "declaredToolCount": 3,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 4461,
+      "fileOffset": "0x32a329",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "SendUserPromptToAIAssistant",
+      "ListUserSkills",
+      "DeleteUserSkill"
+    ]
+  },
+  {
+    "name": "ProbeTool",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 4530,
+      "fileOffset": "0x32b4f5",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "ProbeTool"
+    ]
+  },
+  {
+    "name": "MetaTools",
+    "declaredToolCount": 1,
+    "provenance": {
+      "binary": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "rawExtraction": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "rawLine": 4565,
+      "fileOffset": "0x32c8cd",
+      "section": "__TEXT,__cstring"
+    },
+    "toolNames": [
+      "ExecuteBatchTool"
+    ]
+  }
+]

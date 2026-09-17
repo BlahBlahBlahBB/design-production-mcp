@@ -1,0 +1,12 @@
+{
+  "CFBundleName": "MCPToolkit",
+  "CFBundleIdentifier": "com.adobe.illustrator.plugins.MCPToolkit",
+  "CFBundleInfoDictionaryVersion": "6.0",
+  "CFBundleGetInfoHTML": "MCPToolkit version 30.9.0, Copyright © 1987-2026 Adobe Inc. All rights reserved.",
+  "CFBundleVersion": "30.9.0",
+  "CFBundleExecutable": "MCPToolkit",
+  "CFBundleDisplayName": "MCPToolkit",
+  "CFBundlePackageType": "BNDL",
+  "CFBundleShortVersionString": "MCPToolkit version 30.9.0",
+  "provenance": "plutil conversion of the copied plug-in Info.plist"
+}

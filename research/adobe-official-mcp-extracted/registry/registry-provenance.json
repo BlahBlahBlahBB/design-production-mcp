@@ -1,0 +1,31 @@
+{
+  "phase": "Native MCP registry harvest",
+  "sourceArtifacts": [
+    {
+      "path": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+      "sha256": "9aaddbe737cfbf6750f4c43a8e9b8c3113a483ed3dde5fec65bca6919069e3f6"
+    },
+    {
+      "path": "copied-files/Required/Plug-ins/Extensions/AIAgenticSystem.aip/Contents/MacOS/AIAgenticSystem",
+      "sha256": "9decbfb576d6bcaf0d7b5b341377f09b2e5a718a8b8b3d12387a1e1d145de875"
+    },
+    {
+      "path": "unpacked/MCPToolkit.embedded-tool-registry.raw.txt",
+      "sha256": "59434d3f36149e7ab762523682c5d1984b3c6957863940e453d65819d0c04c6f"
+    }
+  ],
+  "methods": [
+    "strings -a -t x",
+    "nm -m",
+    "otool -l",
+    "otool -L",
+    "file",
+    "plutil"
+  ],
+  "knownLimitations": [
+    "No live protocol requests were made in this phase.",
+    "The raw registry is native string-table output, not a standalone valid JSON source file.",
+    "The classification uses embedded externalAccess metadata; it is not a live tools/list exposure claim.",
+    "File offsets are strings(1) offsets. The recorded __TEXT,__cstring attribution is derived from otool -l file-offset ranges; offsets outside those ranges remain UNKNOWN."
+  ]
+}

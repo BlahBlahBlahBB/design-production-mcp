@@ -1,0 +1,1701 @@
+{
+  "suites": [
+    {
+      "name": "AI Counted Object Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2df6a0",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI AdobeDunamis Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2df6d3",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Assertion Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2df719",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Art Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2df9dd",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Path Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2df9ea",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Art Set Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2df9f8",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Layer Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfa09",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Group Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfa18",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Art Style Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfa27",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Plugin Group Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfa3a",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Symbol Utils Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfa50",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Dynamic Symbol Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfa66",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Symbol Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfa7e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Real Math Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfa8e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Entry Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfaa1",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Array Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfab7",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Dictionary Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfb57",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Document Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfb6b",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Dictionary Iterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfb7d",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Custom Color Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfe42",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Pattern Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfe58",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Gradient Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfe69",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Path Style Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dff7e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Text Private Utils Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dff92",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI ThreadPool Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dffae",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI UUID Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dffc2",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Placed Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dffd0",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Document List Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dffe0",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Document List Private Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2dfff7",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI File Path Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0016",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Asset Management CAI Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0029",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ADM Basic Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0343",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI User Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0353",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Dev Utils Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e03f3",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI User Private Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0454",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI AdobePIP Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e046a",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "SP Access Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e047c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "SP Plug-ins Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e048c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Notifier Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e049e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Context Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e04b0",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI MdMemory Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e04d9",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Matching Art Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e04eb",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Preference Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0680",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ApplicationPaint Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e06cd",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE CompFont Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e06e8",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE CompFontClass Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e06fb",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE CompFontClassSet Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0713",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE CompFontComponent Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e072e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE CompFontSet Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e074a",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE GlyphRun Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0760",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE GlyphRunsIterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0773",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ListStyle Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e078f",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ListStyleSet Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e07a3",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE MojiKumi Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e07ba",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE MojiKumiSet Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e07cd",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TextFrame Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e07e3",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TextFramesIterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e07f7",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TextLine Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0814",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TextLinesIterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0827",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TextResources Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0843",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ApplicationTextResources Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e085b",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE DocumentTextResources Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e087e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE VersionInfo Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e089e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayApplicationPaintRef Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e08b4",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayReal Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e08d7",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayBool Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e08eb",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayInteger Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e08ff",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayLineCapType Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0916",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayFigureStyle Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0931",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayLineJoinType Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e094c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayWariChuJustification Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0968",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayStyleRunAlignment Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e098c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayAutoKernType Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e09ad",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayBaselineDirection Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e09c9",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayLanguage Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e09ea",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayFontCapsOption Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0a02",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayFontBaselineOption Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0a20",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayFontOpenTypePositionOption Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0a42",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayUnderlinePosition Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0a6c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayStrikethroughPosition Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0a8d",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayParagraphJustification Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0ab2",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayArrayReal Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0ad8",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayBurasagariType Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0af1",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayPreferredKinsokuOrder Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0b0f",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayKinsokuRef Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0b34",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayListStyleRef Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0b4e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayListStyleSetRef Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0b6a",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayMojiKumiRef Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0b89",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayMojiKumiSetRef Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0ba4",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayTabStopsRef Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0bc2",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayLeadingType Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0bdd",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayFontRef Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0bf8",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayGlyphID Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0c0f",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayRealPoint Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0c26",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayRealMatrix Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0c3f",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayParagraphDirection Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0c59",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayJustificationMethod Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0c7b",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayKashidaWidth Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0c9e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayKashidas Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0cba",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayDirOverride Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0cd2",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayDigitSet Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0ced",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayDiacVPos Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0d05",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE CharFeatures Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0d1d",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE CharInspector Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0d34",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE CharStyle Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0d4c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE CharStyles Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0d60",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE CharStylesIterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0d75",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE Find Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0d92",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE Font Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0da1",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE Glyph Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0db0",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE Glyphs Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0dc0",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE GlyphsIterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0dd1",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE Kinsoku Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0dea",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE KinsokuSet Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0dfc",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ParaFeatures Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0e11",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE Paragraph Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0e28",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ParagraphsIterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0e3c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ParaInspector Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0e59",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ParaStyle Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0e71",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ParaStyles Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0e85",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ParaStylesIterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0e9a",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE Spell Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0eb7",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE Stories Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0ec7",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE Story Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0ed9",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TabStop Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0ee9",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TabStops Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0efb",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TabStopsIterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0f0e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TextRange Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0f29",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TextRanges Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0f3d",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TextRangesIterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0f52",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE TextRunsIterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0f6f",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE WordsIterator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0f8a",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayLine Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0fa2",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "ATE ArrayComposerEngine Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0fb6",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI AttrCollecCat Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0fd4",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI AttrCollec Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0feb",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI AIAgenticSystem Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e0fff",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Brush Mgr Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e1018",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Color Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e102b",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Export PNG Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e1048",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Raster Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e105c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Swatch List Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e106c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Undo Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e1081",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Undo Private Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e108f",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Unicode String Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e10a5",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "SP Suites Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e10bd",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Swatch Libraries Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3c86",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI DocumentTaskQueue Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3cb3",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Docuement Private Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3cce",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Rasterize Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3ce9",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Transform Art Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3cfc",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Recent Color Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3d13",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Swatch Group Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3d29",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Hard Soft Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3d3f",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Document View Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3d60",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Asset Management Utils Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3d77",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI PDF Document Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3d97",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI T2VLinkedVariations Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3dad",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Intertwine Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e3dca",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Folders Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e589b",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI MCP Toolkit Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x2e5cc4",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Artboard Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x32ded3",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI UxpExtension Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x32dee5",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Text Frame Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x333087",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Shape Construction Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x33309b",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Font Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3330b7",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Font Sample Draw Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3330c5",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Typekit API Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x333107",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Font Similar Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x33311c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI GenerativeTextUI Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3343f4",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Font Glue Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x334495",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Mesh Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x335489",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Mesh Vertex Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x335497",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Paint Style Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x335545",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Blend Style Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x33555a",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Repeat Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x336075",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Color Conversion Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x33798d",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Dimension Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x338499",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Geometry3D Effect Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3393e7",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Art Style Filter Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x339402",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Live Effect Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x339640",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Art Style Parser Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x339655",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Geometry Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x33c201",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Vectorize Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x33f55c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI VectorizeUI Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x33f56f",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Control Panel Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x340500",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI New Document Options UI Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x343125",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI ArtboardUtils Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3436cb",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Draw CropMark Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3436e2",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI FireflyService Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3450cc",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Image Segmentation Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3450e4",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI GenerateCore Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x345100",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI GenerateUI Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x345116",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI TurntableUI Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34512a",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI GenerativeTraceUI Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34513f",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Delay Load Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34797e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Runtime Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x347992",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI GPU Rendering Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3479a3",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Action Manager Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3490fb",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Command Manager Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x349113",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Menu Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34912c",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Pathfinder Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34957b",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Live Shapes Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34d165",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI SVG Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34ddda",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Art Private Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34e619",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Perspective Transform Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34e7ad",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Data Filter Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34f16b",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Live Ellipse Properties Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34f180",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Live Shapes Common Properties Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x34f1a1",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI File Format Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3520c7",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Artboard Range Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x35289d",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI URL Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x354cb0",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Licensing Utils Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x354cbd",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Color Harmony Private Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3559d7",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI GenAIRecolor Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3559f6",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI BridgeTalk Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x356066",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Simplify Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3561e0",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Smoothner Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3561f2",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Placed Private Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x358807",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI File Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x358e73",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Mask Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x358f78",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Path Interpolate Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x358f86",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Tag Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3591a8",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Tag Private Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3591b5",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Color Space Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x359241",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI String Format Utils Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x359256",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI SmartExport Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x359889",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Selection Context Manager Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x35989e",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI NotificationsUI Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3598c1",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Cloud Sync Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3598da",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI GenAIErrorToastUI Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3598ee",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Art Set Generator Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x359935",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "SP Blocks Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x3599a2",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    },
+    {
+      "name": "AI Global UnicodeString Suite",
+      "sourceBinary": "MCPToolkit",
+      "fileOffset": "0x359af9",
+      "section": "__TEXT,__cstring",
+      "evidence": "Literal suite name in native string table."
+    }
+  ],
+  "frameworks": [
+    {
+      "path": "/System/Library/Frameworks/CoreServices.framework/Versions/A/CoreServices",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/ApplicationServices",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "/System/Library/Frameworks/Carbon.framework/Versions/A/Carbon",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "/System/Library/Frameworks/Foundation.framework/Versions/C/Foundation",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "/System/Library/Frameworks/AppKit.framework/Versions/C/AppKit",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "/System/Library/Frameworks/Cocoa.framework/Versions/A/Cocoa",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "@executable_path/../Frameworks/aifm.framework/Versions/A/aifm",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "@executable_path/../Frameworks/SPBasic.framework/Versions/A/SPBasic",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "@executable_path/../Frameworks/MacMemory.framework/Versions/A/MacMemory",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "@executable_path/../Frameworks/uxtech.framework/Versions/A/uxtech",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "/usr/lib/libobjc.A.dylib",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "/usr/lib/libc++.1.dylib",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "/usr/lib/libSystem.B.dylib",
+      "evidence": "otool -L dependency record"
+    },
+    {
+      "path": "/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation",
+      "evidence": "otool -L dependency record"
+    }
+  ],
+  "note": "Suite strings prove references in the native binary but do not by themselves prove every suite is invoked by every MCP operation."
+}

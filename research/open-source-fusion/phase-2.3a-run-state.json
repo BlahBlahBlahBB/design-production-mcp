@@ -1,0 +1,12 @@
+{
+  "applicationName": "Adobe Illustrator 2026 Stable",
+  "illustratorVersion": "30.8.1",
+  "lastCompletedTestId": "P23A-Q03-geometry",
+  "lastResultPath": "/Users/shouchen.nsc/Desktop/Blah‘ Codex/Design-Production-MCP/research/open-source-fusion/phase-2.3a-results/P23A-Q03-geometry.json",
+  "lastFunctionalResult": "FAIL_RUNTIME",
+  "lastBridgeContinuity": "PASS",
+  "lastCleanupResult": "FAIL",
+  "currentOpenQaWorkCopy": null,
+  "recoveryRequired": "Exact close transport timed out. Its required after-inventory was clean, but the queue is stopped; require a new Stable preflight before any resume.",
+  "updatedAt": "2026-09-17T08:25:30.000Z"
+}

@@ -1,0 +1,20 @@
+{
+  "capturedBeforeDerivedRegistryFiles": true,
+  "branch": "phase/1.5-general-illustrator-capabilities",
+  "head": "8fb22aea91346fcd4595d5e19c6eac0f4ef19fed",
+  "status": [
+    " M src/mcp/server.ts",
+    " M src/production/mutation/context.ts",
+    " M src/production/mutation/editing.ts",
+    " M src/production/session/illustrator-session.ts",
+    " M src/production/session/managed-sessions.ts",
+    " M tests/b1-editing.test.ts",
+    "?? .local-tools/",
+    "?? dist/",
+    "?? node_modules/",
+    "?? package-lock.json",
+    "?? research/",
+    "?? tools/b2-real-qa.mjs"
+  ],
+  "note": "These pre-existing working-tree changes were observed and preserved. This harvest created only new files beneath research/adobe-official-mcp-extracted/."
+}

@@ -3,8 +3,10 @@ import type { IllustratorReadBridge, ScriptResult } from "../../executor/bridge.
 import type { FindObjectsCriteria, FindObjectsOptions, FindObjectsResult, ObjectSummary } from "../../executor/read-schema.js";
 import type { MutationResult } from "../mutation/context.js";
 import { canonicalizeDocumentPath, mutationError, type MutationErrorCode } from "../mutation/context.js";
-import type { EllipseRequest, FillStrokeRequest, LineRequest, ObjectUpdateRequest, RectangleRequest, TextFrameRequest } from "../mutation/editing.js";
+import type { AlignObjectsRequest, DistributeObjectsRequest, DuplicateObjectsRequest, EllipseRequest, FillStrokeRequest, GroupObjectsRequest, LineRequest, ObjectUpdateRequest, RectangleRequest, SelectObjectsRequest, TextFrameRequest, UngroupObjectRequest } from "../mutation/editing.js";
 import { IllustratorProductionSession, type OpenDocumentResult } from "./illustrator-session.js";
+import type { ObjectLocator } from "../../executor/read-schema.js";
+import type { ArtboardLayout, ExpandOptions, PathfinderMode, PlaceImageRequest } from "../../illustrator/legacy/adapters/donor-capabilities.js";
 import { createVerifiedFilesystemWorkCopy, reverifyFilesystemWorkCopy, type VerifiedFilesystemCopyResult, type WorkCopyVerification } from "./work-copy-filesystem.js";
 
 interface ManagedSession { id: string; masterPath: string; workPath: string; production: IllustratorProductionSession; }
@@ -122,6 +124,19 @@ export class ManagedSessionRegistry {
   createTextFrame(sessionId: string, request: TextFrameRequest) { return this.withSession(sessionId, "create-text-frame", (r) => r.production.createTextFrame(r.workPath, request)); }
   updateObject(sessionId: string, request: ObjectUpdateRequest) { return this.withSession(sessionId, "update-object", (r) => r.production.updateObject(r.workPath, request)); }
   setFillStroke(sessionId: string, request: FillStrokeRequest) { return this.withSession(sessionId, "set-fill-stroke", (r) => r.production.setFillStroke(r.workPath, request)); }
+  selectObjects(sessionId: string, request: SelectObjectsRequest) { return this.withSession(sessionId, "select-objects", (r) => r.production.selectObjects(r.workPath, request)); }
+  clearSelection(sessionId: string) { return this.withSession(sessionId, "clear-selection", (r) => r.production.clearSelection(r.workPath)); }
+  duplicateObjects(sessionId: string, request: DuplicateObjectsRequest) { return this.withSession(sessionId, "duplicate-objects", (r) => r.production.duplicateObjects(r.workPath, request)); }
+  groupObjects(sessionId: string, request: GroupObjectsRequest) { return this.withSession(sessionId, "group-objects", (r) => r.production.groupObjects(r.workPath, request)); }
+  ungroupObject(sessionId: string, request: UngroupObjectRequest) { return this.withSession(sessionId, "ungroup-object", (r) => r.production.ungroupObject(r.workPath, request)); }
+  alignObjects(sessionId: string, request: AlignObjectsRequest) { return this.withSession(sessionId, "align-objects", (r) => r.production.alignObjects(r.workPath, request)); }
+  distributeObjects(sessionId: string, request: DistributeObjectsRequest) { return this.withSession(sessionId, "distribute-objects", (r) => r.production.distributeObjects(r.workPath, request)); }
+  pathfinderObjects(sessionId: string, locators: ObjectLocator[], mode: PathfinderMode) { return this.withSession(sessionId, "pathfinder-objects", (r) => r.production.pathfinderObjects(r.workPath, locators, mode)); }
+  expandObjects(sessionId: string, locators: ObjectLocator[], options: ExpandOptions) { return this.withSession(sessionId, "expand-objects", (r) => r.production.expandObjects(r.workPath, locators, options)); }
+  relinkImage(sessionId: string, locator: ObjectLocator, newPath: string) { return this.withSession(sessionId, "relink-image", (r) => r.production.relinkImage(r.workPath, locator, newPath)); }
+  fitArtboardToObjects(sessionId: string, locators: ObjectLocator[]) { return this.withSession(sessionId, "fit-artboard-to-objects", (r) => r.production.fitArtboardToObjects(r.workPath, locators)); }
+  placeImage(sessionId: string, request: PlaceImageRequest) { return this.withSession(sessionId, "place-image", (r) => r.production.placeImage(r.workPath, request)); }
+  rearrangeArtboards(sessionId: string, layout: ArtboardLayout, rowsOrColumns: number, spacing: number) { return this.withSession(sessionId, "rearrange-artboards", (r) => r.production.rearrangeArtboards(r.workPath, layout, rowsOrColumns, spacing)); }
 
   private async withSession<T>(sessionId: string, operation: string, action: (record: ManagedSession) => Promise<MutationResult<T>>): Promise<MutationResult<T>> {
     const record = this.sessions.get(sessionId);

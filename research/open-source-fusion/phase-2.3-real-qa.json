@@ -1,0 +1,714 @@
+{
+  "schemaVersion": 1,
+  "phase": "2.3A",
+  "generatedAt": "2026-09-17T06:04:14.087Z",
+  "safetySnapshot": {
+    "branch": "phase/2-open-source-fusion",
+    "head": "8fb22aea91346fcd4595d5e19c6eac0f4ef19fed",
+    "gitStatus": [
+      "M THIRD_PARTY_NOTICES.md",
+      " M package.json",
+      " M src/mcp/server.ts",
+      " M src/production/mutation/context.ts",
+      " M src/production/mutation/editing.ts",
+      " M src/production/session/illustrator-session.ts",
+      " M src/production/session/managed-sessions.ts",
+      " M tests/b1-editing.test.ts",
+      "?? .DS_Store",
+      "?? .local-tools/",
+      "?? dist/",
+      "?? docs/open-source-origins.md",
+      "?? node_modules/",
+      "?? package-lock.json",
+      "?? research/",
+      "?? src/illustrator/",
+      "?? src/production/infrastructure/",
+      "?? tests/donor-fusion.test.ts",
+      "?? tests/input-formats.test.ts",
+      "?? tools/b2-real-qa.mjs"
+    ],
+    "masterArtworkTouched": false
+  },
+  "targetIllustratorVersion": "26.1.0",
+  "environmentProbe": {
+    "stableApplication": "/Applications/Adobe Illustrator 2026/Adobe Illustrator.app",
+    "stableVersion": "30.8.1",
+    "betaApplication": "/Applications/Adobe Illustrator (Beta)/Adobe Illustrator.app",
+    "betaVersion": "30.9.0",
+    "matching261InstallationFound": false,
+    "conclusion": "Stable Illustrator 30.8.1 is reachable for read-only scripting. Capability mutation QA is blocked because reusable .ai fixture creation stalled before save and left a modal/runtime-blocked temporary document."
+  },
+  "plannedFixtures": {
+    "workspace": "A disposable /private/tmp/dpm-phase-2.3-qa.* directory",
+    "documents": [
+      "DPM-PHASE2-QA-VECTOR.ai",
+      "DPM-PHASE2-QA-TEXT.ai",
+      "DPM-PHASE2-QA-IMAGE.ai",
+      "DPM-PHASE2-QA-PRODUCTION.ai"
+    ],
+    "supportFiles": [
+      "image-a.png",
+      "image-b.png",
+      "editable-test.svg",
+      "data.csv",
+      "data.xlsx"
+    ],
+    "status": "NOT_CREATED: creating or saving Illustrator fixtures with 30.8.1/30.9.0 would not establish 26.1.0 compatibility."
+  },
+  "publicCandidates": [
+    {
+      "capability": "Basic shape and text creation",
+      "donor": "DPM",
+      "sourceFiles": [
+        "src/production/mutation/editing.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-TEXT.ai",
+      "exactOperation": "createRectangle / createEllipse / createLine / createTextFrame",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Safe object grouping and duplication",
+      "donor": "DPM",
+      "sourceFiles": [
+        "src/production/mutation/editing.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-VECTOR.ai",
+      "exactOperation": "duplicateObjects / groupObjects / ungroupObject",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Geometry alignment and distribution",
+      "donor": "DPM",
+      "sourceFiles": [
+        "src/production/mutation/editing.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-VECTOR.ai",
+      "exactOperation": "alignObjects / distributeObjects",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Place linked or embedded image",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/place-image.ts"
+      ],
+      "mcpTool": "place_image linked and embedded; inspect placed/raster result",
+      "fixture": "DPM-PHASE2-QA-IMAGE.ai",
+      "exactOperation": "place_image linked and embedded; inspect placed/raster result",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Relink a placed image",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/manage-linked-images.ts"
+      ],
+      "mcpTool": "relink_image; assert exact resulting file path",
+      "fixture": "DPM-PHASE2-QA-IMAGE.ai",
+      "exactOperation": "relink_image; assert exact resulting file path",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Embed a placed image",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/manage-linked-images.ts",
+        "src/tools/modify/place-image.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-IMAGE.ai",
+      "exactOperation": "buildPlaceImageJsx",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Rearrange artboards",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/manage-artboards.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-PRODUCTION.ai",
+      "exactOperation": "buildRearrangeArtboardsJsx",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Fit active artboard to selected artwork",
+      "donor": "CREOLD",
+      "sourceFiles": [
+        "jsx/FitArtboardsToArtwork.jsx"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-PRODUCTION.ai",
+      "exactOperation": "buildFitActiveArtboardToSelectionJsx",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Object Expand with component controls",
+      "donor": "ALEXANDER",
+      "sourceFiles": [
+        "libraries/AI_PS_Library.js"
+      ],
+      "mcpTool": "expand_objects",
+      "fixture": "DPM-PHASE2-QA-VECTOR.ai",
+      "exactOperation": "expand_objects({ object: true, fill: false }) plus stroke/gradient combinations",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Pathfinder operations",
+      "donor": "ALEXANDER",
+      "sourceFiles": [
+        "libraries/AI_PS_Library.js"
+      ],
+      "mcpTool": "pathfinder_objects with fixed modes; assert structural result",
+      "fixture": "DPM-PHASE2-QA-VECTOR.ai",
+      "exactOperation": "pathfinder_objects with fixed modes; assert structural result",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Convert text to outlines",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/convert-to-outlines.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-TEXT.ai",
+      "exactOperation": "TextFrameItem.createOutline",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Compound paths",
+      "donor": "MULTIPLE",
+      "sourceFiles": [
+        "compoundFix.jsx",
+        "illustrator_mcp/tools/archive/composite.py"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-VECTOR.ai",
+      "exactOperation": "Alexander script / Jinkeda candidate",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Clipping masks",
+      "donor": "MULTIPLE",
+      "sourceFiles": [
+        "libraries/AI_PS_Library.js",
+        "MaskArtboards.jsx",
+        "illustrator_mcp/tools/archive/composite.py"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-VECTOR.ai",
+      "exactOperation": "Alexander Action / Creold script / Jinkeda candidate",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Offset path and path cleanup",
+      "donor": "MULTIPLE",
+      "sourceFiles": [
+        "minusOffset.jsx",
+        "illustrator_mcp/tools/archive/paths.py"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-VECTOR.ai",
+      "exactOperation": "Alexander script / Jinkeda candidate",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Editable SVG import",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/import-svg-as-editable.ts",
+        "inlineSVGToAI.jsx"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-IMAGE.ai",
+      "exactOperation": "temporary document import/copy",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Rasterize artwork",
+      "donor": "ALEXANDER",
+      "sourceFiles": [
+        "libraries/AI_PS_Library.js"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-IMAGE.ai",
+      "exactOperation": "Object.prototype.toRaster",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Image Trace / vectorization",
+      "donor": "CREOLD",
+      "sourceFiles": [
+        "jsx/BatchTrace.jsx"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-IMAGE.ai",
+      "exactOperation": "Batch Trace",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Path text",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/create-path-text.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-TEXT.ai",
+      "exactOperation": "textFrames.pathText",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Formatted text replacement",
+      "donor": "CREOLD",
+      "sourceFiles": [
+        "jsx/ReplaceFormattedText.jsx",
+        "jsx/MultiEditText.jsx"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-TEXT.ai",
+      "exactOperation": "formatted text replacement scripts",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Character, paragraph, and graphic styles",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/apply-text-style.ts",
+        "src/tools/modify/apply-graphic-style.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-TEXT.ai",
+      "exactOperation": "characterStyles / paragraphStyles / graphicStyles",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Gradients and swatches",
+      "donor": "MULTIPLE",
+      "sourceFiles": [
+        "src/tools/modify/create-gradient.ts",
+        "src/tools/modify/manage-swatches.ts",
+        "jsx/ConvertToGradient.jsx",
+        "jsx/HexToSwatches.jsx"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-PRODUCTION.ai",
+      "exactOperation": "IE3JP gradient/swatch tools; Creold conversion/palette scripts",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Layers and move-to-layer",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/manage-layers.ts",
+        "src/tools/modify/move-to-layer.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-VECTOR.ai",
+      "exactOperation": "Document.layers / PageItem.move",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Arrange and z-order",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/set-z-order.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-VECTOR.ai",
+      "exactOperation": "PageItem.zOrder",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Color replacement",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/replace-color.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-PRODUCTION.ai",
+      "exactOperation": "path-item color traversal",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Export PNG, JPEG, SVG, PDF",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/export/export.ts",
+        "src/tools/export/export-pdf.ts"
+      ],
+      "mcpTool": "export each format; assert file existence, format, non-zero bytes",
+      "fixture": "DPM-PHASE2-QA-PRODUCTION.ai",
+      "exactOperation": "export each format; assert file existence, format, non-zero bytes",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Preflight and separation checks",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/utility/preflight-check.ts",
+        "src/tools/read/get-overprint-info.ts",
+        "src/tools/read/get-separation-info.ts"
+      ],
+      "mcpTool": "preflight_summary; assert missing-link, overprint, and separation fields",
+      "fixture": "DPM-PHASE2-QA-PRODUCTION.ai",
+      "exactOperation": "preflight_summary; assert missing-link, overprint, and separation fields",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Symbols",
+      "donor": "MULTIPLE",
+      "sourceFiles": [
+        "src/tools/read/get-symbols.ts",
+        "jsx/PlaceSymbols.jsx"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-PRODUCTION.ai",
+      "exactOperation": "IE3JP reader / Creold placement script",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Crop marks",
+      "donor": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/create-crop-marks.ts"
+      ],
+      "mcpTool": null,
+      "fixture": "DPM-PHASE2-QA-PRODUCTION.ai",
+      "exactOperation": "fixed TrimMark command with style preference",
+      "illustratorVersion": "30.8.1",
+      "result": "BLOCKED_TEST_FIXTURE",
+      "structuralPrecondition": "A disposable saved fixture is opened as MASTER, copied to a verified work copy, then selected/targeted structurally.",
+      "structuralPostcondition": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "outputVerification": "Not run: no saved disposable AI fixture could be authorized as a work copy.",
+      "failureClassification": "BLOCKED_TEST_FIXTURE",
+      "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "finalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    }
+  ],
+  "internalCapabilities": [
+    {
+      "capability": "Safe work-copy mutation",
+      "exercisedBy": "tests/work-copy-filesystem.test.ts and tests/session.test.ts",
+      "result": "CODE_LEVEL_EXERCISED",
+      "realQaResult": "BLOCKED_TEST_FIXTURE",
+      "functionalQaVersion": "30.8.1",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Deterministic object selection",
+      "exercisedBy": "tests/a2-object-finding.test.ts",
+      "result": "CODE_LEVEL_EXERCISED",
+      "realQaResult": "BLOCKED_TEST_FIXTURE",
+      "functionalQaVersion": "30.8.1",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Document, layer, image, font, color, and structure inspection",
+      "exercisedBy": "tests/document-read.test.ts and inspection tests",
+      "result": "CODE_LEVEL_EXERCISED",
+      "realQaResult": "BLOCKED_TEST_FIXTURE",
+      "functionalQaVersion": "30.8.1",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Save, close, undo, and redo",
+      "exercisedBy": "tests/session.test.ts",
+      "result": "CODE_LEVEL_EXERCISED",
+      "realQaResult": "BLOCKED_TEST_FIXTURE",
+      "functionalQaVersion": "30.8.1",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    },
+    {
+      "capability": "Variables and datasets",
+      "exercisedBy": "tests/donor-fusion.test.ts static fixed-operation coverage",
+      "result": "CODE_LEVEL_EXERCISED",
+      "realQaResult": "BLOCKED_TEST_FIXTURE",
+      "functionalQaVersion": "30.8.1",
+      "legacy26_1Status": "UNVERIFIED_26_1"
+    }
+  ],
+  "summary": {
+    "startingPublicCandidate": 28,
+    "PASS_30_8_1": 0,
+    "FAIL_ADAPTER": 0,
+    "FAIL_DONOR": 0,
+    "FAIL_RUNTIME": 0,
+    "BLOCKED_TEST_FIXTURE": 28,
+    "remainingPublicCandidate": 28,
+    "integratedPublicPromoted": 0,
+    "legacy26_1": "UNVERIFIED_26_1"
+  },
+  "functionalQaVersion": "30.8.1",
+  "legacyCompatibility": {
+    "targetVersion": "26.1.0",
+    "status": "UNVERIFIED_26_1",
+    "reason": "No Illustrator 26.1.0 installation is available."
+  },
+  "fixtureAttempt": {
+    "stableVersion": "30.8.1",
+    "attempted": true,
+    "supportAssetsCreated": [
+      "image-a.png",
+      "image-b.png",
+      "editable-test.svg",
+      "data.csv",
+      "data.xlsx"
+    ],
+    "aiFixtureMastersCreated": [],
+    "observedTemporaryDocument": {
+      "name": "未标题-1",
+      "saved": false
+    },
+    "outcome": "BLOCKED_TEST_FIXTURE",
+    "evidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+    "recovery": "Dismiss the Illustrator modal/runtime block manually, close the known disposable unsaved document without saving, then rerun the same version-neutral fixture builder on stable 30.8.1."
+  }
+}

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.local-tools/
+.DS_Store
+research/**/.DS_Store
+
+# Local static-extraction artifacts, retained outside source control.
+research/adobe-official-mcp-extracted/copied-files/
+
+# Disposable Phase 2.3 QA harness; historical results remain under research/.
+tools/b2-real-qa.mjs

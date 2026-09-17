@@ -1,0 +1,26 @@
+{
+  "recordedAt": "2026-09-17",
+  "startingBranch": "phase/1.5-general-illustrator-capabilities",
+  "startingHead": "8fb22aea91346fcd4595d5e19c6eac0f4ef19fed",
+  "fusionBranch": "phase/2-open-source-fusion",
+  "preExistingModifiedFiles": [
+    "src/mcp/server.ts",
+    "src/production/mutation/context.ts",
+    "src/production/mutation/editing.ts",
+    "src/production/session/illustrator-session.ts",
+    "src/production/session/managed-sessions.ts",
+    "tests/b1-editing.test.ts"
+  ],
+  "preExistingUntrackedPaths": [
+    ".DS_Store",
+    ".local-tools/",
+    "dist/",
+    "node_modules/",
+    "package-lock.json",
+    "research/",
+    "tools/b2-real-qa.mjs"
+  ],
+  "safetyActionsNotTaken": [
+    "git reset", "git clean", "git stash", "deletion of unrelated files", "Adobe application modification", "Adobe binary modification", "commit"
+  ]
+}

@@ -1,0 +1,161 @@
+{
+  "testId": "P23A-C01O-expand-object-symbol",
+  "capability": "Object Expand SymbolItem semantics",
+  "publicMcpTool": "expand_objects",
+  "fixtureMasterPath": "/private/tmp/dpm-phase-2.3a-qa/DPM-QA-EXPAND.ai",
+  "freshWorkCopyPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789632688337-P23A-C01O-expand-object-symbol.ai",
+  "applicationName": "Adobe Illustrator 2026 Stable",
+  "illustratorVersion": "30.8.1",
+  "inputParameters": {
+    "object": true,
+    "fill": false,
+    "stroke": false,
+    "gradient": false
+  },
+  "structuralPrecondition": {
+    "inventory": {
+      "documentCount": 1,
+      "qaWorkCopies": [
+        "/private/tmp/dpm-phase-2.3a-qa/work/1789632688337-P23A-C01O-expand-object-symbol.ai"
+      ],
+      "documents": [
+        {
+          "name": "1789632688337-P23A-C01O-expand-object-symbol.ai",
+          "path": "/private/tmp/dpm-phase-2.3a-qa/work/1789632688337-P23A-C01O-expand-object-symbol.ai"
+        }
+      ]
+    },
+    "structure": {
+      "activePath": "/private/tmp/dpm-phase-2.3a-qa/work/1789632688337-P23A-C01O-expand-object-symbol.ai",
+      "pageItems": 4,
+      "pathItems": 3,
+      "groupItems": 0,
+      "compoundPathItems": 0,
+      "placedItems": [],
+      "namedItems": [
+        {
+          "name": "qa-expand-symbol",
+          "typename": "SymbolItem",
+          "bounds": [
+            230,
+            170,
+            275,
+            125
+          ],
+          "pathPoints": null,
+          "descendants": []
+        },
+        {
+          "name": "qa-expand-control",
+          "typename": "PathItem",
+          "bounds": [
+            30,
+            170,
+            110,
+            110
+          ],
+          "filled": true,
+          "stroked": true,
+          "strokeWidth": 1,
+          "pathPoints": 4,
+          "descendants": []
+        }
+      ]
+    },
+    "stableBeforeExecution": {
+      "name": "Adobe Illustrator",
+      "version": "30.8.1",
+      "documentCount": 1
+    }
+  },
+  "executionResult": {
+    "ok": true,
+    "value": {
+      "action": "DPMExpand_mu593j9h_1",
+      "actionSet": "DPMExpandSet_mu593j9h_1",
+      "actionFile": "/var/folders/vy/zb67cjxx24s7vzjf8wblc4l00000gp/T/dpm-expand-mu593j9h_1.aia",
+      "selectionCount": 1
+    },
+    "contextState": "REFRESH_REQUIRED"
+  },
+  "structuralPostcondition": {
+    "structure": {
+      "activePath": "/private/tmp/dpm-phase-2.3a-qa/work/1789632688337-P23A-C01O-expand-object-symbol.ai",
+      "pageItems": 4,
+      "pathItems": 4,
+      "groupItems": 0,
+      "compoundPathItems": 0,
+      "placedItems": [],
+      "namedItems": [
+        {
+          "name": "qa-expand-control",
+          "typename": "PathItem",
+          "bounds": [
+            30,
+            170,
+            110,
+            110
+          ],
+          "filled": true,
+          "stroked": true,
+          "strokeWidth": 1,
+          "pathPoints": 4,
+          "descendants": []
+        }
+      ]
+    },
+    "refresh": {
+      "ok": true,
+      "value": {
+        "refreshed": true
+      },
+      "contextState": "READY"
+    },
+    "stableAfterExecution": {
+      "name": "Adobe Illustrator",
+      "version": "30.8.1",
+      "documentCount": 1
+    },
+    "masterSha256Before": "668b8a3ab39ffe18bb7a34bd15fe06eb779fbd39b66946bff43d998ab134eef7",
+    "masterSha256After": "668b8a3ab39ffe18bb7a34bd15fe06eb779fbd39b66946bff43d998ab134eef7",
+    "verification": {
+      "passed": true,
+      "controlUnchanged": true,
+      "noLongerSymbol": true,
+      "structureChanged": true
+    }
+  },
+  "classification": "PASS_30_8_1",
+  "cleanupResult": {
+    "method": "EXACT_NORMALIZED_EXTENDSCRIPT_CLOSE_DONOTSAVECHANGES",
+    "closeResult": {
+      "ok": true,
+      "value": {
+        "closedPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789632688337-P23A-C01O-expand-object-symbol.ai"
+      }
+    },
+    "before": {
+      "documentCount": 1,
+      "qaWorkCopies": [
+        "/private/tmp/dpm-phase-2.3a-qa/work/1789632688337-P23A-C01O-expand-object-symbol.ai"
+      ],
+      "documents": [
+        {
+          "name": "1789632688337-P23A-C01O-expand-object-symbol.ai",
+          "path": "/private/tmp/dpm-phase-2.3a-qa/work/1789632688337-P23A-C01O-expand-object-symbol.ai"
+        }
+      ]
+    },
+    "after": {
+      "documentCount": 0,
+      "qaWorkCopies": [],
+      "documents": []
+    },
+    "passed": true
+  },
+  "beforeDocumentCount": 0,
+  "afterDocumentCount": 0,
+  "maximumSimultaneousQaDocuments": 1,
+  "durationMs": 11765,
+  "timestamp": "2026-09-17T08:11:28.338Z"
+}

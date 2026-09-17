@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "phase": "2.3A-S",
+  "targetApplication": "Adobe Illustrator 2026 Stable",
+  "illustratorVersion": "30.8.1",
+  "restartRecoveryCount": 2,
+  "tests": [
+    {
+      "capability": "Object Expand SymbolItem semantics",
+      "testId": "P23A-C01O-expand-object-symbol",
+      "functionalResult": "PASS_30_8_1",
+      "bridgeHealthAfterOperation": "PASS",
+      "cleanupResult": "PASS",
+      "restartRequired": false,
+      "illustratorVersion": "30.8.1"
+    },
+    {
+      "capability": "Object Expand stroke semantics",
+      "testId": "P23A-C01S2-expand-stroke",
+      "functionalResult": "PASS_30_8_1",
+      "bridgeHealthAfterOperation": "TIMEOUT_AFTER_OPERATION",
+      "cleanupResult": "RESTART_RECOVERY_REQUIRED",
+      "restartRequired": true,
+      "illustratorVersion": "30.8.1"
+    },
+    {
+      "capability": "Pathfinder Unite",
+      "testId": "P23A-C02-pathfinder-unite",
+      "functionalResult": "PASS_30_8_1",
+      "bridgeHealthAfterOperation": "PASS",
+      "cleanupResult": "PASS",
+      "restartRequired": false,
+      "illustratorVersion": "30.8.1"
+    },
+    {
+      "capability": "Linked place_image",
+      "testId": "P23A-C03-place-linked-image",
+      "functionalResult": "PASS_30_8_1",
+      "bridgeHealthAfterOperation": "PASS",
+      "cleanupResult": "PASS",
+      "restartRequired": false,
+      "illustratorVersion": "30.8.1"
+    },
+    {
+      "capability": "Basic shape creation",
+      "testId": "P23A-Q01-basic-shape-text",
+      "functionalResult": "PASS_30_8_1",
+      "bridgeHealthAfterOperation": "PASS",
+      "cleanupResult": "PASS",
+      "restartRequired": false,
+      "illustratorVersion": "30.8.1"
+    },
+    {
+      "capability": "Safe object grouping and duplication",
+      "testId": "P23A-Q02-grouping-duplication",
+      "functionalResult": "PASS_30_8_1",
+      "bridgeHealthAfterOperation": "TIMEOUT_AFTER_OPERATION",
+      "cleanupResult": "INTERRUPTED_REQUIRING_RESTART",
+      "restartRequired": true,
+      "illustratorVersion": "30.8.1"
+    },
+    {
+      "capability": "Geometry alignment and distribution",
+      "testId": "P23A-Q03-geometry",
+      "functionalResult": "FAIL_RUNTIME",
+      "bridgeHealthAfterOperation": "PASS",
+      "bridgeContinuity": "PASS",
+      "cleanupResult": "FAIL",
+      "restartRequired": true,
+      "illustratorVersion": "30.8.1"
+    }
+  ]
+}

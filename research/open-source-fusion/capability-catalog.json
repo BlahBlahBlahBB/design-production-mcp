@@ -1,0 +1,1121 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-17",
+  "scope": "Static donor review and Phase 2 internal source fusion; no public MCP expansion.",
+  "donors": [
+    {
+      "source": "IE3JP",
+      "repository": "https://github.com/ie3jp/illustrator-mcp-server",
+      "commit": "1814485cfa24787215f0ec515a6853cb293e1e0a",
+      "license": "MIT",
+      "copyPermitted": true
+    },
+    {
+      "source": "JINKEDA",
+      "repository": "https://github.com/jinkeda/Illustrator_MCP",
+      "commit": "c814a2922e627efcc9ff6914fb1bc7d51a9585bc",
+      "license": "README declares MIT; repository LICENSE absent",
+      "copyPermitted": false
+    },
+    {
+      "source": "ALEXANDER",
+      "repository": "https://github.com/Alexander-Ladygin/illustrator-scripts",
+      "commit": "fc7625410b62c833fce100f67cf18a97588279c5",
+      "license": "MIT",
+      "copyPermitted": true
+    },
+    {
+      "source": "CREOLD",
+      "repository": "https://github.com/creold/illustrator-scripts",
+      "commit": "9b3e3eeade9ba748f41612ec4697bb6a5c2489c2",
+      "license": "MIT",
+      "copyPermitted": true
+    }
+  ],
+  "capabilities": [
+    {
+      "name": "Safe work-copy mutation",
+      "whatItDoes": "Allows document edits only after a saved MASTER is copied, verified, and opened as an authorized work copy.",
+      "source": "DPM",
+      "sourceFiles": [
+        "src/production/session/managed-sessions.ts",
+        "src/production/mutation/context.ts"
+      ],
+      "implementation": "ManagedSessionRegistry / SafeMutationContext",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_EXPECTED",
+      "fusionStatus": "INTEGRATED_INTERNAL",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "NO",
+      "missing": "",
+      "userValueCategories": [
+        "TEMPLATE_PRODUCTION",
+        "BATCH_PRODUCTION",
+        "AUTOMATION"
+      ],
+      "availability": "INTEGRATED_INTERNAL",
+      "phase22Status": "INTEGRATED_INTERNAL"
+    },
+    {
+      "name": "Deterministic object selection",
+      "whatItDoes": "Finds artwork using structural locators and verified expected state rather than trusting a loose selection.",
+      "source": "DPM",
+      "sourceFiles": [
+        "src/executor/object-finding.ts",
+        "src/executor/structure-read.ts"
+      ],
+      "implementation": "findObjects / ObjectLocator",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_EXPECTED",
+      "fusionStatus": "INTEGRATED_INTERNAL",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "NO",
+      "missing": "",
+      "userValueCategories": [
+        "AUTOMATION",
+        "LAYOUT",
+        "TEXT",
+        "PATH"
+      ],
+      "availability": "INTEGRATED_INTERNAL",
+      "phase22Status": "INTEGRATED_INTERNAL"
+    },
+    {
+      "name": "Basic shape and text creation",
+      "whatItDoes": "Creates rectangles, ellipses, lines, and point text at predictable artboard coordinates.",
+      "source": "DPM",
+      "sourceFiles": [
+        "src/production/mutation/editing.ts"
+      ],
+      "implementation": "createRectangle / createEllipse / createLine / createTextFrame",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_EXPECTED",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "NO",
+      "missing": "",
+      "userValueCategories": [
+        "LAYOUT",
+        "TEXT",
+        "TEMPLATE_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Safe object grouping and duplication",
+      "whatItDoes": "Duplicates, groups, and ungroups fresh structural targets while invalidating stale target state afterward.",
+      "source": "DPM",
+      "sourceFiles": [
+        "src/production/mutation/editing.ts"
+      ],
+      "implementation": "duplicateObjects / groupObjects / ungroupObject",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_EXPECTED",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "NO",
+      "missing": "",
+      "userValueCategories": [
+        "LAYOUT",
+        "AUTOMATION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Geometry alignment and distribution",
+      "whatItDoes": "Aligns and distributes known targets by their measured bounds, without undocumented menu commands.",
+      "source": "DPM",
+      "sourceFiles": [
+        "src/production/mutation/editing.ts"
+      ],
+      "implementation": "alignObjects / distributeObjects",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_EXPECTED",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "NO",
+      "missing": "",
+      "userValueCategories": [
+        "LAYOUT",
+        "TEMPLATE_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Document, layer, image, font, color, and structure inspection",
+      "whatItDoes": "Reads the document safely to identify artboards, layers, text, images, colors, fonts, groups, and object hierarchy.",
+      "source": "DPM",
+      "sourceFiles": [
+        "src/executor/local-illustrator-bridge.ts",
+        "src/executor/inspection-read.ts",
+        "src/executor/structure-read.ts"
+      ],
+      "implementation": "IllustratorReadBridge",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_EXPECTED",
+      "fusionStatus": "INTEGRATED_INTERNAL",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "NO",
+      "missing": "",
+      "userValueCategories": [
+        "PREFLIGHT",
+        "AUTOMATION",
+        "TEXT",
+        "IMAGE",
+        "COLOR"
+      ],
+      "availability": "INTEGRATED_INTERNAL",
+      "phase22Status": "INTEGRATED_INTERNAL"
+    },
+    {
+      "name": "Place linked or embedded image",
+      "whatItDoes": "Places a supported local image as a link or converts it to embedded raster artwork while finding the replacement item after embed.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/place-image.ts"
+      ],
+      "implementation": "buildPlaceImageJsx",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "NO",
+      "missing": "A structural-target adapter and focused Illustrator smoke QA are needed before public exposure.",
+      "userValueCategories": [
+        "IMAGE",
+        "TEMPLATE_PRODUCTION",
+        "BATCH_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Relink a placed image",
+      "whatItDoes": "Changes a linked image to a supplied existing file.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/manage-linked-images.ts"
+      ],
+      "implementation": "buildRelinkSelectedImageJsx",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "NO",
+      "missing": "Public use needs a locator-to-single-selected-PlacedItem adapter and expected linked-path guard.",
+      "userValueCategories": [
+        "IMAGE",
+        "BATCH_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Embed a placed image",
+      "whatItDoes": "Embeds linked artwork and tracks Illustrator's replacement RasterItem by a temporary unique name.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/manage-linked-images.ts",
+        "src/tools/modify/place-image.ts"
+      ],
+      "implementation": "buildPlaceImageJsx",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "NO",
+      "missing": "Public use needs a structural target adapter and irreversible-operation policy.",
+      "userValueCategories": [
+        "IMAGE",
+        "TEMPLATE_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Rearrange artboards",
+      "whatItDoes": "Reflows artboards by grid, row, or column and moves artwork with them.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/manage-artboards.ts"
+      ],
+      "implementation": "buildRearrangeArtboardsJsx",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "NO",
+      "missing": "Public use needs artboard expected-state snapshots and option validation.",
+      "userValueCategories": [
+        "LAYOUT",
+        "BATCH_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Fit active artboard to selected artwork",
+      "whatItDoes": "Resizes the current artboard tightly around the selected artwork.",
+      "source": "CREOLD",
+      "sourceFiles": [
+        "jsx/FitArtboardsToArtwork.jsx"
+      ],
+      "implementation": "buildFitActiveArtboardToSelectionJsx",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "NO",
+      "missing": "Public use needs structural selection construction and an explicit artboard guard.",
+      "userValueCategories": [
+        "LAYOUT",
+        "TEMPLATE_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Object Expand with component controls",
+      "whatItDoes": "Runs Illustrator's Object > Expand operation with independent object, fill, stroke, and gradient flags.",
+      "source": "ALEXANDER",
+      "sourceFiles": [
+        "libraries/AI_PS_Library.js"
+      ],
+      "implementation": "buildExpandAction",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "NO",
+      "missing": "Requires a verified target-selection adapter and version smoke QA because it uses an undocumented Action payload.",
+      "userValueCategories": [
+        "PATH",
+        "ADVANCED",
+        "AUTOMATION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Pathfinder operations",
+      "whatItDoes": "Runs Unite, Minus Front/Back, Intersect, Exclude, Divide, Trim, Merge, Crop, or Outline using Illustrator's Pathfinder Action payload.",
+      "source": "ALEXANDER",
+      "sourceFiles": [
+        "libraries/AI_PS_Library.js"
+      ],
+      "implementation": "buildPathfinderAction",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "NO",
+      "missing": "Requires verified target ordering, output-shape postconditions, and version smoke QA before exposure.",
+      "userValueCategories": [
+        "PATH",
+        "ADVANCED",
+        "AUTOMATION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Convert text to outlines",
+      "whatItDoes": "Turns text frames into editable vector paths.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/convert-to-outlines.ts"
+      ],
+      "implementation": "TextFrameItem.createOutline",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Must adapt exact locators, expected text state, and irreversible-output verification; broad selection/all/layer modes are intentionally not accepted.",
+      "userValueCategories": [
+        "TEXT",
+        "PATH",
+        "TEMPLATE_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Outline stroke",
+      "whatItDoes": "Converts a stroke into filled path artwork.",
+      "source": "MULTIPLE",
+      "sourceFiles": [
+        "libraries/AI_PS_Library.js",
+        "illustrator_mcp/tools/archive/paths.py"
+      ],
+      "implementation": "Alexander menu/action techniques; Jinkeda candidate",
+      "license": "MIT for Alexander; Jinkeda unverified",
+      "illustrator261Status": "UNKNOWN",
+      "fusionStatus": "TECHNICALLY_BLOCKED",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "YES",
+      "missing": "No verified licensed donor has a complete outline-stroke implementation that can be reused without reconstructing an undocumented Action payload.",
+      "userValueCategories": [
+        "PATH",
+        "ADVANCED"
+      ],
+      "availability": "TECHNICALLY_BLOCKED",
+      "phase22Status": "TECHNICALLY_BLOCKED"
+    },
+    {
+      "name": "Compound paths",
+      "whatItDoes": "Creates or releases compound paths for holes and combined artwork.",
+      "source": "MULTIPLE",
+      "sourceFiles": [
+        "compoundFix.jsx",
+        "illustrator_mcp/tools/archive/composite.py"
+      ],
+      "implementation": "Alexander script / Jinkeda candidate",
+      "license": "MIT for Alexander; Jinkeda unverified",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs a narrow non-dialog implementation with structural output checks.",
+      "userValueCategories": [
+        "PATH",
+        "ADVANCED"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Clipping masks",
+      "whatItDoes": "Creates or releases a mask so artwork shows only inside a defined shape.",
+      "source": "MULTIPLE",
+      "sourceFiles": [
+        "libraries/AI_PS_Library.js",
+        "MaskArtboards.jsx",
+        "illustrator_mcp/tools/archive/composite.py"
+      ],
+      "implementation": "Alexander Action / Creold script / Jinkeda candidate",
+      "license": "MIT except Jinkeda unverified",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs explicit mask-item ordering, target identity, and safe release behavior.",
+      "userValueCategories": [
+        "PATH",
+        "LAYOUT",
+        "IMAGE"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Offset path and path cleanup",
+      "whatItDoes": "Builds inset/outset paths and cleans path geometry for production artwork.",
+      "source": "MULTIPLE",
+      "sourceFiles": [
+        "minusOffset.jsx",
+        "illustrator_mcp/tools/archive/paths.py"
+      ],
+      "implementation": "Alexander script / Jinkeda candidate",
+      "license": "MIT for Alexander; Jinkeda unverified",
+      "illustrator261Status": "UNKNOWN",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs extraction from a standalone script or verified MIT alternative, plus numeric option schema.",
+      "userValueCategories": [
+        "PATH",
+        "ADVANCED"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Editable SVG import",
+      "whatItDoes": "Opens SVG artwork and copies editable vectors and text into the target document instead of placing a flat linked file.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/import-svg-as-editable.ts",
+        "inlineSVGToAI.jsx"
+      ],
+      "implementation": "temporary document import/copy",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs work-copy-safe multi-document lifecycle and cleanup/recovery semantics.",
+      "userValueCategories": [
+        "IMAGE",
+        "PATH",
+        "TEMPLATE_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Rasterize artwork",
+      "whatItDoes": "Converts selected vector or placed artwork into a raster item at chosen raster settings.",
+      "source": "ALEXANDER",
+      "sourceFiles": [
+        "libraries/AI_PS_Library.js"
+      ],
+      "implementation": "Object.prototype.toRaster",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs target adapter, explicit RasterizeOptions schema, and postcondition verification.",
+      "userValueCategories": [
+        "IMAGE",
+        "EXPORT",
+        "ADVANCED"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Image Trace / vectorization",
+      "whatItDoes": "Converts raster artwork into editable vector paths using Illustrator tracing presets.",
+      "source": "CREOLD",
+      "sourceFiles": [
+        "jsx/BatchTrace.jsx"
+      ],
+      "implementation": "Batch Trace",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Donor is dialog/batch-folder oriented; needs noninteractive single-target adapter and preset validation.",
+      "userValueCategories": [
+        "IMAGE",
+        "PATH",
+        "BATCH_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Path text",
+      "whatItDoes": "Creates text that follows a supplied line or path.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/create-path-text.ts"
+      ],
+      "implementation": "textFrames.pathText",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs safe source-path target identity and text/typography schema.",
+      "userValueCategories": [
+        "TEXT",
+        "LAYOUT"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Formatted text replacement",
+      "whatItDoes": "Replaces copy while retaining or deliberately changing font formatting.",
+      "source": "CREOLD",
+      "sourceFiles": [
+        "jsx/ReplaceFormattedText.jsx",
+        "jsx/MultiEditText.jsx"
+      ],
+      "implementation": "formatted text replacement scripts",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs adaptation to DPM's existing verified text locator and expected-content contract.",
+      "userValueCategories": [
+        "TEXT",
+        "BATCH_PRODUCTION",
+        "TEMPLATE_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Character, paragraph, and graphic styles",
+      "whatItDoes": "Lists and applies named Illustrator text or graphic styles to known artwork.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/apply-text-style.ts",
+        "src/tools/modify/apply-graphic-style.ts"
+      ],
+      "implementation": "characterStyles / paragraphStyles / graphicStyles",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs exact target and existing-style preflight checks.",
+      "userValueCategories": [
+        "TEXT",
+        "LAYOUT",
+        "TEMPLATE_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Gradients and swatches",
+      "whatItDoes": "Creates gradients, manages named swatches, and converts flat colors to matching gradients.",
+      "source": "MULTIPLE",
+      "sourceFiles": [
+        "src/tools/modify/create-gradient.ts",
+        "src/tools/modify/manage-swatches.ts",
+        "jsx/ConvertToGradient.jsx",
+        "jsx/HexToSwatches.jsx"
+      ],
+      "implementation": "IE3JP gradient/swatch tools; Creold conversion/palette scripts",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Need a normalized color model and guarded handling for global/spot swatches.",
+      "userValueCategories": [
+        "COLOR",
+        "TEMPLATE_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Layers and move-to-layer",
+      "whatItDoes": "Creates, renames, shows, locks, reorders, deletes, and moves artwork between layers.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/manage-layers.ts",
+        "src/tools/modify/move-to-layer.ts"
+      ],
+      "implementation": "Document.layers / PageItem.move",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Requires splitting broad donor modes into individually guarded DPM operations; delete remains destructive.",
+      "userValueCategories": [
+        "LAYOUT",
+        "AUTOMATION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Arrange and z-order",
+      "whatItDoes": "Moves selected artwork forward, backward, to front, or to back.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/set-z-order.ts"
+      ],
+      "implementation": "PageItem.zOrder",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs exact target and parent-container precondition.",
+      "userValueCategories": [
+        "LAYOUT",
+        "AUTOMATION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Transforms",
+      "whatItDoes": "Moves, rotates, scales, reflects, and shears artwork.",
+      "source": "JINKEDA",
+      "sourceFiles": [
+        "illustrator_mcp/tools/archive/transform.py",
+        "illustrator_mcp/resources/scripts/geometry.jsx"
+      ],
+      "implementation": "Jinkeda archive",
+      "license": "Unverified upstream license",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "LICENSE_BLOCKED",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "YES",
+      "missing": "No source copy permitted; DPM has no comprehensive target-verified transform adapter yet.",
+      "userValueCategories": [
+        "LAYOUT",
+        "PATH",
+        "AUTOMATION"
+      ],
+      "availability": "LICENSE_BLOCKED",
+      "phase22Status": "LICENSE_BLOCKED"
+    },
+    {
+      "name": "Effects and appearance",
+      "whatItDoes": "Applies or inspects Illustrator effects, opacity, blends, and appearance settings.",
+      "source": "JINKEDA",
+      "sourceFiles": [
+        "illustrator_mcp/tools/archive/effects.py",
+        "illustrator_mcp/tools/archive/styling.py"
+      ],
+      "implementation": "Jinkeda archive",
+      "license": "Unverified upstream license",
+      "illustrator261Status": "UNKNOWN",
+      "fusionStatus": "LICENSE_BLOCKED",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "YES",
+      "missing": "No source copy permitted; effect serialization/version support needs research.",
+      "userValueCategories": [
+        "ADVANCED",
+        "LAYOUT",
+        "COLOR"
+      ],
+      "availability": "LICENSE_BLOCKED",
+      "phase22Status": "LICENSE_BLOCKED"
+    },
+    {
+      "name": "Color replacement",
+      "whatItDoes": "Replaces matching colors in a chosen scope.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/replace-color.ts"
+      ],
+      "implementation": "path-item color traversal",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs bounded scope, current-color guards, and spot/gradient policy.",
+      "userValueCategories": [
+        "COLOR",
+        "BATCH_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Save, close, undo, and redo",
+      "whatItDoes": "Persists a document, closes it, or changes global Illustrator history.",
+      "source": "MULTIPLE",
+      "sourceFiles": [
+        "src/tools/modify/save-document.ts",
+        "src/tools/modify/close-document.ts",
+        "src/tools/modify/undo.ts",
+        "jsx/SaveAllDocs.jsx",
+        "forceCloseOtherDocuments.jsx"
+      ],
+      "implementation": "IE3JP / Creold / Alexander scripts",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "INTEGRATED_INTERNAL",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "YES",
+      "missing": "DPM already exposes work-copy save. Close/undo/redo remain unexposed because they can affect unrelated docs/history.",
+      "userValueCategories": [
+        "AUTOMATION",
+        "TEMPLATE_PRODUCTION"
+      ],
+      "availability": "INTEGRATED_INTERNAL",
+      "phase22Status": "INTEGRATED_INTERNAL"
+    },
+    {
+      "name": "Export PNG, JPEG, SVG, PDF",
+      "whatItDoes": "Writes production deliverables in standard Illustrator output formats.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/export/export.ts",
+        "src/tools/export/export-pdf.ts"
+      ],
+      "implementation": "Document.exportFile / saveAs",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs DPM output-path/Master side-effect policy and focused file-result tests.",
+      "userValueCategories": [
+        "EXPORT",
+        "BATCH_PRODUCTION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Preflight and separation checks",
+      "whatItDoes": "Finds missing links/fonts, color-space, overprint, and print-preparation issues.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/utility/preflight-check.ts",
+        "src/tools/read/get-overprint-info.ts",
+        "src/tools/read/get-separation-info.ts"
+      ],
+      "implementation": "bounded Illustrator document scans",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs DPM result schema, scanner bounds, and Illustrator 26.1 validation.",
+      "userValueCategories": [
+        "PREFLIGHT",
+        "EXPORT",
+        "AUTOMATION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Variables and datasets",
+      "whatItDoes": "Binds variables/datasets to artwork for repeatable data-driven variations.",
+      "source": "IE3JP",
+      "sourceFiles": [
+        "src/tools/modify/manage-datasets.ts"
+      ],
+      "implementation": "variables / datasets management",
+      "license": "MIT",
+      "illustrator261Status": "UNKNOWN",
+      "fusionStatus": "INTEGRATED_INTERNAL",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "YES",
+      "missing": "Needs a clear DPM data contract, CSV integration design, and 26.1 compatibility proof.",
+      "userValueCategories": [
+        "BATCH_PRODUCTION",
+        "TEMPLATE_PRODUCTION",
+        "AUTOMATION"
+      ],
+      "availability": "INTEGRATED_INTERNAL",
+      "phase22Status": "INTEGRATED_INTERNAL"
+    },
+    {
+      "name": "Symbols",
+      "whatItDoes": "Lists symbol definitions and places reusable symbol instances.",
+      "source": "MULTIPLE",
+      "sourceFiles": [
+        "src/tools/read/get-symbols.ts",
+        "jsx/PlaceSymbols.jsx"
+      ],
+      "implementation": "IE3JP reader / Creold placement script",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs deterministic definition lookup and safe placement/transform API.",
+      "userValueCategories": [
+        "TEMPLATE_PRODUCTION",
+        "LAYOUT",
+        "AUTOMATION"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Crop marks",
+      "whatItDoes": "Adds print crop marks around selected artwork or artboards.",
+      "source": "ALEXANDER",
+      "sourceFiles": [
+        "libraries/AI_PS_Library.js",
+        "cropulka.jsx"
+      ],
+      "implementation": "addCropMarks / crop scripts",
+      "license": "MIT",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "PUBLIC_CANDIDATE",
+      "publicMcpStatus": "CANDIDATE_FOR_REAL_QA",
+      "needsNewCode": "YES",
+      "missing": "Needs an explicit geometry and target-artboard contract.",
+      "userValueCategories": [
+        "PREFLIGHT",
+        "EXPORT",
+        "LAYOUT"
+      ],
+      "availability": "PUBLIC_CANDIDATE",
+      "phase22Status": "PUBLIC_CANDIDATE",
+      "phase23QaStatus": "BLOCKED_TEST_FIXTURE",
+      "phase23QaEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed.",
+      "phase23FinalPublicStatus": "PUBLIC_CANDIDATE",
+      "functionalStatus": "BLOCKED_TEST_FIXTURE",
+      "testedVersions": [],
+      "legacy26_1Status": "UNVERIFIED"
+    },
+    {
+      "name": "Patterns",
+      "whatItDoes": "Creates and applies repeating artwork patterns.",
+      "source": "JINKEDA",
+      "sourceFiles": [
+        "illustrator_mcp/tools/archive/patterns.py"
+      ],
+      "implementation": "Jinkeda archive",
+      "license": "Unverified upstream license",
+      "illustrator261Status": "UNKNOWN",
+      "fusionStatus": "LICENSE_BLOCKED",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "YES",
+      "missing": "No source copy permitted; a safe DPM pattern contract is not defined.",
+      "userValueCategories": [
+        "COLOR",
+        "ADVANCED",
+        "TEMPLATE_PRODUCTION"
+      ],
+      "availability": "LICENSE_BLOCKED",
+      "phase22Status": "LICENSE_BLOCKED"
+    },
+    {
+      "name": "Adobe GenAI / AI Assistant",
+      "whatItDoes": "Uses newer Adobe AI/Firefly assistant functions.",
+      "source": "DPM",
+      "sourceFiles": [
+        "research/adobe-official-mcp-extracted/registry/likely-public-tools.json"
+      ],
+      "implementation": "Official binary registry evidence only",
+      "license": "Not applicable",
+      "illustrator261Status": "NEWER_VERSION_ONLY",
+      "fusionStatus": "NEWER_ADOBE_DEPENDENCY",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "YES",
+      "missing": "No mature open-source implementation is available and Illustrator 26.1 is not a suitable target.",
+      "userValueCategories": [
+        "GENAI",
+        "ADVANCED"
+      ],
+      "availability": "NEWER_ADOBE_DEPENDENCY",
+      "phase22Status": "NEWER_ADOBE_DEPENDENCY"
+    },
+    {
+      "name": "DPM CSV/Excel-to-template batch orchestration",
+      "whatItDoes": "Maps rows of production data to verified template fields, creates work copies, and coordinates exports across many jobs.",
+      "source": "DPM",
+      "sourceFiles": [],
+      "implementation": "No complete donor workflow found",
+      "license": "Not applicable",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "DEVELOPMENT_REQUIRED",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "YES",
+      "missing": "DPM-specific mapping, job lifecycle, recovery, and output orchestration.",
+      "userValueCategories": [
+        "BATCH_PRODUCTION",
+        "TEMPLATE_PRODUCTION",
+        "AUTOMATION"
+      ],
+      "availability": "DEVELOPMENT_REQUIRED",
+      "phase22Status": "DEVELOPMENT_REQUIRED"
+    },
+    {
+      "name": "QR generation and placement workflow",
+      "whatItDoes": "Creates a QR payload, renders it, and places it into a verified Illustrator work copy.",
+      "source": "DPM",
+      "sourceFiles": [],
+      "implementation": "No complete compatible donor implementation found",
+      "license": "Not applicable",
+      "illustrator261Status": "SUPPORTED_WITH_ADAPTER",
+      "fusionStatus": "DEVELOPMENT_REQUIRED",
+      "publicMcpStatus": "NOT_EXPOSED",
+      "needsNewCode": "YES",
+      "missing": "QR encoder/rendering plus DPM placement/orchestration contract.",
+      "userValueCategories": [
+        "BATCH_PRODUCTION",
+        "TEMPLATE_PRODUCTION",
+        "AUTOMATION"
+      ],
+      "availability": "DEVELOPMENT_REQUIRED",
+      "phase22Status": "DEVELOPMENT_REQUIRED"
+    }
+  ],
+  "statusDefinitions": {
+    "INTEGRATED_PUBLIC": "Implemented and exposed after applicable validation.",
+    "PUBLIC_CANDIDATE": "Fused internally; deferred from new public registration pending the Phase 2.3 Illustrator validation.",
+    "INTEGRATED_INTERNAL": "Fused, fixed internal operation or retained DPM primitive; not independently exposed.",
+    "LICENSE_BLOCKED": "Potential source exists but its exact revision lacks a verified compatible license.",
+    "TECHNICALLY_BLOCKED": "No safe reusable implementation is available without creating new undocumented Illustrator behavior.",
+    "DEVELOPMENT_REQUIRED": "Genuine DPM-specific core workflow creation remains required.",
+    "NEWER_ADOBE_DEPENDENCY": "Requires newer or private Adobe services with no reusable Illustrator 26.1 replacement."
+  },
+  "phase22Summary": {
+    "startingAvailable": 33,
+    "remainingAvailable": 0,
+    "integratedInternal": 5,
+    "publicCandidate": 28,
+    "licenseBlocked": 0,
+    "technicallyBlocked": 0,
+    "note": "The 33 licensed/reusable entries are accounted for in available-backlog.json. Broader catalog entries retain independent source/licensing status."
+  },
+  "phase23Qa": {
+    "functionalQaVersion": "30.8.1",
+    "functionalQaStatus": "BLOCKED_TEST_FIXTURE",
+    "legacy26_1Status": "UNVERIFIED",
+    "publicCandidatesBlocked": 28,
+    "publicCandidatesPromoted": 0,
+    "fixtureEvidence": "The fixed fixture builder timed out before saving a master. A subsequent read-only probe listed only the unsaved temporary document. A fixed no-save close command also timed out. No user artwork was opened or changed."
+  }
+}

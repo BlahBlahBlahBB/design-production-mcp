@@ -1,0 +1,12 @@
+{
+  "CFBundleName": "AIAgenticSystem",
+  "CFBundleIdentifier": "com.adobe.illustrator.plugins.AIAgenticSystem",
+  "CFBundleInfoDictionaryVersion": "6.0",
+  "CFBundleGetInfoHTML": "AIAgenticSystem version 30.9.0, Copyright © 1987-2026 Adobe Inc. All rights reserved.",
+  "CFBundleVersion": "30.9.0",
+  "CFBundleExecutable": "AIAgenticSystem",
+  "CFBundleDisplayName": "AIAgenticSystem",
+  "CFBundlePackageType": "BNDL",
+  "CFBundleShortVersionString": "AIAgenticSystem version 30.9.0",
+  "provenance": "plutil conversion of the copied plug-in Info.plist"
+}

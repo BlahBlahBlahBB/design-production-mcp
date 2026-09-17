@@ -1,0 +1,68 @@
+{
+  "root": "/private/tmp/dpm-phase-2.3a-qa/work/",
+  "method": "EXACT_EXTENDSCRIPT_CLOSE_DONOTSAVECHANGES",
+  "attempts": [
+    {
+      "documentPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789627156271-27-Symbols.ai",
+      "beforeCount": 83,
+      "afterCount": 82,
+      "closeMethod": "EXACT_EXTENDSCRIPT_CLOSE_DONOTSAVECHANGES",
+      "result": "PASS",
+      "error": null,
+      "timestamp": "2026-09-17T07:03:23.566Z"
+    },
+    {
+      "documentPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789627154759-26-Preflight-and-separation-checks.ai",
+      "beforeCount": 82,
+      "afterCount": 81,
+      "closeMethod": "EXACT_EXTENDSCRIPT_CLOSE_DONOTSAVECHANGES",
+      "result": "PASS",
+      "error": null,
+      "timestamp": "2026-09-17T07:03:25.553Z"
+    },
+    {
+      "documentPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789627152270-25-Export-PNG-JPEG-SVG-PDF.ai",
+      "beforeCount": 81,
+      "afterCount": 80,
+      "closeMethod": "EXACT_EXTENDSCRIPT_CLOSE_DONOTSAVECHANGES",
+      "result": "PASS",
+      "error": null,
+      "timestamp": "2026-09-17T07:03:27.836Z"
+    },
+    {
+      "documentPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789627150505-24-Color-replacement.ai",
+      "beforeCount": 80,
+      "afterCount": 79,
+      "closeMethod": "EXACT_EXTENDSCRIPT_CLOSE_DONOTSAVECHANGES",
+      "result": "PASS",
+      "error": null,
+      "timestamp": "2026-09-17T07:03:29.739Z"
+    },
+    {
+      "documentPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789627148838-23-Arrange-and-z-order.ai",
+      "beforeCount": 79,
+      "afterCount": 78,
+      "closeMethod": "EXACT_EXTENDSCRIPT_CLOSE_DONOTSAVECHANGES",
+      "result": "PASS",
+      "error": null,
+      "timestamp": "2026-09-17T07:03:47.510Z"
+    },
+    {
+      "documentPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789627147387-22-Layers-and-move-to-layer.ai",
+      "beforeCount": 78,
+      "afterCount": 77,
+      "closeMethod": "EXACT_EXTENDSCRIPT_CLOSE_DONOTSAVECHANGES",
+      "result": "FAIL",
+      "error": "ILLUSTRATOR_TIMEOUT: Command failed: osascript /var/folders/vy/zb67cjxx24s7vzjf8wblc4l00000gp/T/design-production-mcp-UImF9x/run-865beecf-3020-4079-ae36-65ee8670d5a1.scpt\n (timed out after 30000ms)",
+      "timestamp": "2026-09-17T07:04:20.209Z"
+    }
+  ],
+  "startedAt": "2026-09-17T07:03:19.698Z",
+  "startingCount": 84,
+  "successfullyClosed": 6,
+  "remainingCount": 0,
+  "lastClosedPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789627147387-22-Layers-and-move-to-layer.ai",
+  "lastUpdated": "2026-09-17T07:21:49.159Z",
+  "completedAt": "2026-09-17T07:21:49.159Z",
+  "finalOpenQaWorkCopies": 0
+}

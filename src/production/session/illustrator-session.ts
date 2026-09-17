@@ -20,8 +20,27 @@ import {
   type ObjectUpdateRequest,
   type RectangleRequest,
   type TextFrameRequest,
+  type SelectObjectsRequest,
+  type DuplicateObjectsRequest,
+  type GroupObjectsRequest,
+  type UngroupObjectRequest,
+  type AlignObjectsRequest,
+  type DistributeObjectsRequest,
+  selectObjects,
+  clearSelection,
+  duplicateObjects,
+  groupObjects,
+  ungroupObject,
+  alignObjects,
+  distributeObjects,
 } from "../mutation/editing.js";
 import type { ObjectSummary } from "../../executor/read-schema.js";
+import type { ObjectLocator } from "../../executor/read-schema.js";
+import {
+  fitArtboardToSelection, placeImage, rearrangeArtboards, relinkImage, runExpand, runPathfinder,
+  type ArtboardLayout, type ExpandOptions, type PathfinderMode, type PlaceImageRequest,
+} from "../../illustrator/legacy/adapters/donor-capabilities.js";
+import { executeBacklogOperation, type BacklogOperationRequest } from "../../illustrator/legacy/donor-backed/backlog-operations.js";
 
 /** Persistence can legitimately exceed the ordinary interactive transport deadline. */
 export const DEFAULT_SAVE_WORK_COPY_TIMEOUT_MS = 300_000;
@@ -221,6 +240,23 @@ export class IllustratorProductionSession {
   async createTextFrame(workPath: string, request: TextFrameRequest): Promise<MutationResult<ObjectSummary>> { return this.withContext("create-text-frame", (context) => createTextFrame(this.bridge, context, workPath, request)); }
   async updateObject(workPath: string, request: ObjectUpdateRequest): Promise<MutationResult<ObjectSummary>> { return this.withContext("update-object", (context) => updateObject(this.bridge, context, workPath, request)); }
   async setFillStroke(workPath: string, request: FillStrokeRequest): Promise<MutationResult<ObjectSummary>> { return this.withContext("set-fill-stroke", (context) => setFillStroke(this.bridge, context, workPath, request)); }
+  async selectObjects(workPath: string, request: SelectObjectsRequest) { return this.withContext("select-objects", (context) => selectObjects(this.bridge, context, workPath, request)); }
+  async clearSelection(workPath: string) { return this.withContext("clear-selection", (context) => clearSelection(this.bridge, context, workPath)); }
+  async duplicateObjects(workPath: string, request: DuplicateObjectsRequest) { return this.withContext("duplicate-objects", (context) => duplicateObjects(this.bridge, context, workPath, request)); }
+  async groupObjects(workPath: string, request: GroupObjectsRequest) { return this.withContext("group-objects", (context) => groupObjects(this.bridge, context, workPath, request)); }
+  async ungroupObject(workPath: string, request: UngroupObjectRequest) { return this.withContext("ungroup-object", (context) => ungroupObject(this.bridge, context, workPath, request)); }
+  async alignObjects(workPath: string, request: AlignObjectsRequest) { return this.withContext("align-objects", (context) => alignObjects(this.bridge, context, workPath, request)); }
+  async distributeObjects(workPath: string, request: DistributeObjectsRequest) { return this.withContext("distribute-objects", (context) => distributeObjects(this.bridge, context, workPath, request)); }
+  async pathfinderObjects(workPath: string, locators: ObjectLocator[], mode: PathfinderMode) { return this.selectThen(workPath, locators, "pathfinder-objects", () => this.withContext("pathfinder-objects", (context) => runPathfinder(this.bridge, context, workPath, mode))); }
+  async expandObjects(workPath: string, locators: ObjectLocator[], options: ExpandOptions) { return this.selectThen(workPath, locators, "expand-objects", () => this.withContext("expand-objects", (context) => runExpand(this.bridge, context, workPath, options))); }
+  async relinkImage(workPath: string, locator: ObjectLocator, newPath: string) { return this.selectThen(workPath, [locator], "relink-image", () => this.withContext("relink-image", (context) => relinkImage(this.bridge, context, workPath, newPath))); }
+  async fitArtboardToObjects(workPath: string, locators: ObjectLocator[]) { return this.selectThen(workPath, locators, "fit-artboard-to-objects", () => this.withContext("fit-artboard-to-objects", (context) => fitArtboardToSelection(this.bridge, context, workPath))); }
+  async placeImage(workPath: string, request: PlaceImageRequest) { return this.withContext("place-image", (context) => placeImage(this.bridge, context, workPath, request)); }
+  async rearrangeArtboards(workPath: string, layout: ArtboardLayout, rowsOrColumns: number, spacing: number) { return this.withContext("rearrange-artboards", (context) => rearrangeArtboards(this.bridge, context, workPath, layout, rowsOrColumns, spacing)); }
+  /** Closed internal Phase 2 donor-operation surface; never accepts raw JSX. */
+  async runBacklogOperation(workPath: string, request: BacklogOperationRequest) {
+    return this.withContext(`donor-${request.operation}`, (context) => executeBacklogOperation(this.bridge, context, workPath, request));
+  }
 
   /** Called only by the managed registry after a successful read result. */
   async refreshAfterVerifiedRead(workPath: string): Promise<MutationResult<{ refreshed: true }>> {
@@ -280,6 +316,13 @@ export class IllustratorProductionSession {
 
   private workCopyRequired<T>(operation: string): MutationResult<T> {
     return { ok: false, contextState: "QUARANTINED", error: mutationError("WORK_COPY_REQUIRED", "identity", operation, "No verified work-copy identity exists for this session.") };
+  }
+
+  private async selectThen<T>(workPath: string, locators: ObjectLocator[], operation: string, run: () => Promise<MutationResult<T>>): Promise<MutationResult<T>> {
+    if (!Array.isArray(locators) || locators.length === 0) return this.workCopyRequired(operation);
+    const selected = await this.selectObjects(workPath, { locators, replaceSelection: true });
+    if (!selected.ok) return { ok: false, error: selected.error, contextState: selected.contextState };
+    return run();
   }
 
   private async withContext<T>(operation: string, run: (context: SafeMutationContext) => Promise<MutationResult<T>>): Promise<MutationResult<T>> {

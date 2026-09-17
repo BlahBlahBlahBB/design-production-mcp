@@ -1,0 +1,206 @@
+{
+  "testId": "P23A-C01R-expand-no-fill",
+  "capability": "Object Expand with component controls",
+  "publicMcpTool": "expand_objects",
+  "fixtureMasterPath": "/private/tmp/dpm-phase-2.3a-qa/DPM-QA-VECTOR.ai",
+  "freshWorkCopyPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789631264806-P23A-C01R-expand-no-fill.ai",
+  "applicationName": "Adobe Illustrator 2026 Stable",
+  "illustratorVersion": "30.8.1",
+  "inputParameters": {
+    "object": true,
+    "fill": false
+  },
+  "structuralPrecondition": {
+    "inventory": {
+      "documentCount": 1,
+      "qaWorkCopies": [
+        "/private/tmp/dpm-phase-2.3a-qa/work/1789631264806-P23A-C01R-expand-no-fill.ai"
+      ],
+      "documents": [
+        {
+          "name": "1789631264806-P23A-C01R-expand-no-fill.ai",
+          "path": "/private/tmp/dpm-phase-2.3a-qa/work/1789631264806-P23A-C01R-expand-no-fill.ai"
+        }
+      ]
+    },
+    "structure": {
+      "activePath": "/private/tmp/dpm-phase-2.3a-qa/work/1789631264806-P23A-C01R-expand-no-fill.ai",
+      "pageItems": 7,
+      "pathItems": 5,
+      "groupItems": 0,
+      "compoundPathItems": 0,
+      "placedItems": [],
+      "namedItems": [
+        {
+          "name": "qa-open-stroke",
+          "typename": "PathItem",
+          "bounds": [
+            30,
+            50,
+            160,
+            50
+          ],
+          "filled": false,
+          "stroked": true,
+          "strokeWidth": 6,
+          "pathPoints": 2
+        },
+        {
+          "name": "qa-rect-b",
+          "typename": "PathItem",
+          "bounds": [
+            80,
+            175,
+            180,
+            95
+          ],
+          "filled": true,
+          "stroked": true,
+          "strokeWidth": 1,
+          "pathPoints": 4
+        },
+        {
+          "name": "qa-rect-a",
+          "typename": "PathItem",
+          "bounds": [
+            30,
+            200,
+            130,
+            120
+          ],
+          "filled": true,
+          "stroked": true,
+          "strokeWidth": 4,
+          "pathPoints": 4
+        }
+      ]
+    },
+    "stableBeforeExecution": {
+      "name": "Adobe Illustrator",
+      "version": "30.8.1",
+      "documentCount": 1
+    }
+  },
+  "executionResult": {
+    "ok": true,
+    "value": {
+      "action": "DPMExpand_mu5890jk_1",
+      "actionSet": "DPMExpandSet_mu5890jk_1",
+      "actionFile": "/var/folders/vy/zb67cjxx24s7vzjf8wblc4l00000gp/T/dpm-expand-mu5890jk_1.aia",
+      "selectionCount": 1
+    },
+    "contextState": "REFRESH_REQUIRED"
+  },
+  "structuralPostcondition": {
+    "structure": {
+      "activePath": "/private/tmp/dpm-phase-2.3a-qa/work/1789631264806-P23A-C01R-expand-no-fill.ai",
+      "pageItems": 7,
+      "pathItems": 5,
+      "groupItems": 0,
+      "compoundPathItems": 0,
+      "placedItems": [],
+      "namedItems": [
+        {
+          "name": "qa-open-stroke",
+          "typename": "PathItem",
+          "bounds": [
+            30,
+            50,
+            160,
+            50
+          ],
+          "filled": false,
+          "stroked": true,
+          "strokeWidth": 6,
+          "pathPoints": 2
+        },
+        {
+          "name": "qa-rect-b",
+          "typename": "PathItem",
+          "bounds": [
+            80,
+            175,
+            180,
+            95
+          ],
+          "filled": true,
+          "stroked": true,
+          "strokeWidth": 1,
+          "pathPoints": 4
+        },
+        {
+          "name": "qa-rect-a",
+          "typename": "PathItem",
+          "bounds": [
+            30,
+            200,
+            130,
+            120
+          ],
+          "filled": true,
+          "stroked": true,
+          "strokeWidth": 4,
+          "pathPoints": 4
+        }
+      ]
+    },
+    "refresh": {
+      "ok": true,
+      "value": {
+        "refreshed": true
+      },
+      "contextState": "READY"
+    },
+    "stableAfterExecution": {
+      "name": "Adobe Illustrator",
+      "version": "30.8.1",
+      "documentCount": 1
+    },
+    "masterSha256Before": "30e23f2ae6c2e949666485afa42d93ec0084602ffcedfa8ca780b5707833df26",
+    "masterSha256After": "30e23f2ae6c2e949666485afa42d93ec0084602ffcedfa8ca780b5707833df26",
+    "verification": {
+      "passed": false,
+      "controlsUnchanged": true,
+      "targetChanged": false
+    }
+  },
+  "classification": "FAIL_DONOR",
+  "failureDetail": "The corrected Action executed successfully but did not produce the required structural change on the selected fixture; no additional Expand changes or retries are authorized in this phase.",
+  "semanticReclassification": {
+    "classification": "INCONCLUSIVE_FIXTURE_SEMANTICS",
+    "reason": "The selected target was a plain stroked PathItem. Object=true/fill=false may legitimately leave a non-complex PathItem structurally unchanged; dedicated stroke and SymbolItem fixtures are required before judging the Expand donor implementation.",
+    "recordedAt": "2026-09-17T08:00:00.000Z"
+  },
+  "cleanupResult": {
+    "method": "EXACT_NORMALIZED_EXTENDSCRIPT_CLOSE_DONOTSAVECHANGES",
+    "closeResult": {
+      "ok": true,
+      "value": {
+        "closedPath": "/private/tmp/dpm-phase-2.3a-qa/work/1789631264806-P23A-C01R-expand-no-fill.ai"
+      }
+    },
+    "before": {
+      "documentCount": 1,
+      "qaWorkCopies": [
+        "/private/tmp/dpm-phase-2.3a-qa/work/1789631264806-P23A-C01R-expand-no-fill.ai"
+      ],
+      "documents": [
+        {
+          "name": "1789631264806-P23A-C01R-expand-no-fill.ai",
+          "path": "/private/tmp/dpm-phase-2.3a-qa/work/1789631264806-P23A-C01R-expand-no-fill.ai"
+        }
+      ]
+    },
+    "after": {
+      "documentCount": 0,
+      "qaWorkCopies": [],
+      "documents": []
+    },
+    "passed": true
+  },
+  "beforeDocumentCount": 0,
+  "afterDocumentCount": 0,
+  "maximumSimultaneousQaDocuments": 1,
+  "durationMs": 23983,
+  "timestamp": "2026-09-17T07:47:44.806Z"
+}

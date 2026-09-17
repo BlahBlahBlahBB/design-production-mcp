@@ -1,0 +1,632 @@
+{
+  "generatedAt": "2026-09-17",
+  "count": 33,
+  "items": [
+    {
+      "capability": "Safe work-copy mutation",
+      "donor": "DPM",
+      "donorSourceFiles": [
+        "src/production/session/managed-sessions.ts",
+        "src/production/mutation/context.ts"
+      ],
+      "donorImplementation": "ManagedSessionRegistry / SafeMutationContext",
+      "license": "MIT",
+      "currentDpmStatus": "DPM_EXISTING",
+      "currentPublicMcpStatus": "EXISTING_TOOL",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DPM_EXISTING",
+      "finalStatus": "INTEGRATED_INTERNAL",
+      "integratedDestination": "src/production/session/managed-sessions.ts; src/production/mutation/context.ts",
+      "publicCandidate": false,
+      "blocker": null,
+      "integrationNote": "Retained or registered as a fixed internal operation under DPM work-copy safety; no new MCP tool is added in Phase 2.2."
+    },
+    {
+      "capability": "Deterministic object selection",
+      "donor": "DPM",
+      "donorSourceFiles": [
+        "src/executor/object-finding.ts",
+        "src/executor/structure-read.ts"
+      ],
+      "donorImplementation": "findObjects / ObjectLocator",
+      "license": "MIT",
+      "currentDpmStatus": "DPM_EXISTING",
+      "currentPublicMcpStatus": "EXISTING_TOOL",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DPM_EXISTING",
+      "finalStatus": "INTEGRATED_INTERNAL",
+      "integratedDestination": "src/executor/object-finding.ts; src/executor/structure-read.ts",
+      "publicCandidate": false,
+      "blocker": null,
+      "integrationNote": "Retained or registered as a fixed internal operation under DPM work-copy safety; no new MCP tool is added in Phase 2.2."
+    },
+    {
+      "capability": "Basic shape and text creation",
+      "donor": "DPM",
+      "donorSourceFiles": [
+        "src/production/mutation/editing.ts"
+      ],
+      "donorImplementation": "createRectangle / createEllipse / createLine / createTextFrame",
+      "license": "MIT",
+      "currentDpmStatus": "DPM_EXISTING",
+      "currentPublicMcpStatus": "EXISTING_TOOL",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DPM_EXISTING",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/production/mutation/editing.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Safe object grouping and duplication",
+      "donor": "DPM",
+      "donorSourceFiles": [
+        "src/production/mutation/editing.ts"
+      ],
+      "donorImplementation": "duplicateObjects / groupObjects / ungroupObject",
+      "license": "MIT",
+      "currentDpmStatus": "DPM_EXISTING",
+      "currentPublicMcpStatus": "EXISTING_TOOL",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DPM_EXISTING",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/production/mutation/editing.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Geometry alignment and distribution",
+      "donor": "DPM",
+      "donorSourceFiles": [
+        "src/production/mutation/editing.ts"
+      ],
+      "donorImplementation": "alignObjects / distributeObjects",
+      "license": "MIT",
+      "currentDpmStatus": "DPM_EXISTING",
+      "currentPublicMcpStatus": "EXISTING_TOOL",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DPM_EXISTING",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/production/mutation/editing.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Document, layer, image, font, color, and structure inspection",
+      "donor": "DPM",
+      "donorSourceFiles": [
+        "src/executor/local-illustrator-bridge.ts",
+        "src/executor/inspection-read.ts",
+        "src/executor/structure-read.ts"
+      ],
+      "donorImplementation": "IllustratorReadBridge",
+      "license": "MIT",
+      "currentDpmStatus": "DPM_EXISTING",
+      "currentPublicMcpStatus": "EXISTING_TOOL",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DPM_EXISTING",
+      "finalStatus": "INTEGRATED_INTERNAL",
+      "integratedDestination": "src/executor/structure-read.ts",
+      "publicCandidate": false,
+      "blocker": null,
+      "integrationNote": "Retained or registered as a fixed internal operation under DPM work-copy safety; no new MCP tool is added in Phase 2.2."
+    },
+    {
+      "capability": "Place linked or embedded image",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/place-image.ts"
+      ],
+      "donorImplementation": "buildPlaceImageJsx",
+      "license": "MIT",
+      "currentDpmStatus": "IMPORTED_INTERNAL",
+      "currentPublicMcpStatus": "NOT_EXPOSED",
+      "remainingIntegrationWork": [],
+      "originalStatus": "IMPORTED_INTERNAL",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/links.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Relink a placed image",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/manage-linked-images.ts"
+      ],
+      "donorImplementation": "buildRelinkSelectedImageJsx",
+      "license": "MIT",
+      "currentDpmStatus": "IMPORTED_INTERNAL",
+      "currentPublicMcpStatus": "NOT_EXPOSED",
+      "remainingIntegrationWork": [],
+      "originalStatus": "IMPORTED_INTERNAL",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/links.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Embed a placed image",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/manage-linked-images.ts",
+        "src/tools/modify/place-image.ts"
+      ],
+      "donorImplementation": "buildPlaceImageJsx",
+      "license": "MIT",
+      "currentDpmStatus": "IMPORTED_INTERNAL",
+      "currentPublicMcpStatus": "NOT_EXPOSED",
+      "remainingIntegrationWork": [],
+      "originalStatus": "IMPORTED_INTERNAL",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/links.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Rearrange artboards",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/manage-artboards.ts"
+      ],
+      "donorImplementation": "buildRearrangeArtboardsJsx",
+      "license": "MIT",
+      "currentDpmStatus": "IMPORTED_INTERNAL",
+      "currentPublicMcpStatus": "NOT_EXPOSED",
+      "remainingIntegrationWork": [],
+      "originalStatus": "IMPORTED_INTERNAL",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/artboards.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Fit active artboard to selected artwork",
+      "donor": "CREOLD",
+      "donorSourceFiles": [
+        "jsx/FitArtboardsToArtwork.jsx"
+      ],
+      "donorImplementation": "buildFitActiveArtboardToSelectionJsx",
+      "license": "MIT",
+      "currentDpmStatus": "IMPORTED_INTERNAL",
+      "currentPublicMcpStatus": "NOT_EXPOSED",
+      "remainingIntegrationWork": [],
+      "originalStatus": "IMPORTED_INTERNAL",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/creold-compat.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Object Expand with component controls",
+      "donor": "ALEXANDER",
+      "donorSourceFiles": [
+        "libraries/AI_PS_Library.js"
+      ],
+      "donorImplementation": "buildExpandAction",
+      "license": "MIT",
+      "currentDpmStatus": "IMPORTED_INTERNAL",
+      "currentPublicMcpStatus": "NOT_EXPOSED",
+      "remainingIntegrationWork": [],
+      "originalStatus": "IMPORTED_INTERNAL",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/actions.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Pathfinder operations",
+      "donor": "ALEXANDER",
+      "donorSourceFiles": [
+        "libraries/AI_PS_Library.js"
+      ],
+      "donorImplementation": "buildPathfinderAction",
+      "license": "MIT",
+      "currentDpmStatus": "IMPORTED_INTERNAL",
+      "currentPublicMcpStatus": "NOT_EXPOSED",
+      "remainingIntegrationWork": [],
+      "originalStatus": "IMPORTED_INTERNAL",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/actions.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Convert text to outlines",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/convert-to-outlines.ts"
+      ],
+      "donorImplementation": "TextFrameItem.createOutline",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Compound paths",
+      "donor": "MULTIPLE",
+      "donorSourceFiles": [
+        "compoundFix.jsx",
+        "illustrator_mcp/tools/archive/composite.py"
+      ],
+      "donorImplementation": "Alexander script / Jinkeda candidate",
+      "license": "MIT for Alexander; Jinkeda unverified",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Clipping masks",
+      "donor": "MULTIPLE",
+      "donorSourceFiles": [
+        "libraries/AI_PS_Library.js",
+        "MaskArtboards.jsx",
+        "illustrator_mcp/tools/archive/composite.py"
+      ],
+      "donorImplementation": "Alexander Action / Creold script / Jinkeda candidate",
+      "license": "MIT except Jinkeda unverified",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Offset path and path cleanup",
+      "donor": "MULTIPLE",
+      "donorSourceFiles": [
+        "minusOffset.jsx",
+        "illustrator_mcp/tools/archive/paths.py"
+      ],
+      "donorImplementation": "Alexander script / Jinkeda candidate",
+      "license": "MIT for Alexander; Jinkeda unverified",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Editable SVG import",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/import-svg-as-editable.ts",
+        "inlineSVGToAI.jsx"
+      ],
+      "donorImplementation": "temporary document import/copy",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Rasterize artwork",
+      "donor": "ALEXANDER",
+      "donorSourceFiles": [
+        "libraries/AI_PS_Library.js"
+      ],
+      "donorImplementation": "Object.prototype.toRaster",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Image Trace / vectorization",
+      "donor": "CREOLD",
+      "donorSourceFiles": [
+        "jsx/BatchTrace.jsx"
+      ],
+      "donorImplementation": "Batch Trace",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Path text",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/create-path-text.ts"
+      ],
+      "donorImplementation": "textFrames.pathText",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Formatted text replacement",
+      "donor": "CREOLD",
+      "donorSourceFiles": [
+        "jsx/ReplaceFormattedText.jsx",
+        "jsx/MultiEditText.jsx"
+      ],
+      "donorImplementation": "formatted text replacement scripts",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Character, paragraph, and graphic styles",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/apply-text-style.ts",
+        "src/tools/modify/apply-graphic-style.ts"
+      ],
+      "donorImplementation": "characterStyles / paragraphStyles / graphicStyles",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Gradients and swatches",
+      "donor": "MULTIPLE",
+      "donorSourceFiles": [
+        "src/tools/modify/create-gradient.ts",
+        "src/tools/modify/manage-swatches.ts",
+        "jsx/ConvertToGradient.jsx",
+        "jsx/HexToSwatches.jsx"
+      ],
+      "donorImplementation": "IE3JP gradient/swatch tools; Creold conversion/palette scripts",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Layers and move-to-layer",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/manage-layers.ts",
+        "src/tools/modify/move-to-layer.ts"
+      ],
+      "donorImplementation": "Document.layers / PageItem.move",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Arrange and z-order",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/set-z-order.ts"
+      ],
+      "donorImplementation": "PageItem.zOrder",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Color replacement",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/replace-color.ts"
+      ],
+      "donorImplementation": "path-item color traversal",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Save, close, undo, and redo",
+      "donor": "MULTIPLE",
+      "donorSourceFiles": [
+        "src/tools/modify/save-document.ts",
+        "src/tools/modify/close-document.ts",
+        "src/tools/modify/undo.ts",
+        "jsx/SaveAllDocs.jsx",
+        "forceCloseOtherDocuments.jsx"
+      ],
+      "donorImplementation": "IE3JP / Creold / Alexander scripts",
+      "license": "MIT",
+      "currentDpmStatus": "DPM_EXISTING",
+      "currentPublicMcpStatus": "EXISTING_TOOL",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DPM_EXISTING",
+      "finalStatus": "INTEGRATED_INTERNAL",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": false,
+      "blocker": null,
+      "integrationNote": "Retained or registered as a fixed internal operation under DPM work-copy safety; no new MCP tool is added in Phase 2.2."
+    },
+    {
+      "capability": "Export PNG, JPEG, SVG, PDF",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/export/export.ts",
+        "src/tools/export/export-pdf.ts"
+      ],
+      "donorImplementation": "Document.exportFile / saveAs",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Preflight and separation checks",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/utility/preflight-check.ts",
+        "src/tools/read/get-overprint-info.ts",
+        "src/tools/read/get-separation-info.ts"
+      ],
+      "donorImplementation": "bounded Illustrator document scans",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Variables and datasets",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/manage-datasets.ts"
+      ],
+      "donorImplementation": "variables / datasets management",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "INTEGRATED_INTERNAL",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": false,
+      "blocker": null,
+      "integrationNote": "Retained or registered as a fixed internal operation under DPM work-copy safety; no new MCP tool is added in Phase 2.2."
+    },
+    {
+      "capability": "Symbols",
+      "donor": "MULTIPLE",
+      "donorSourceFiles": [
+        "src/tools/read/get-symbols.ts",
+        "jsx/PlaceSymbols.jsx"
+      ],
+      "donorImplementation": "IE3JP reader / Creold placement script",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    },
+    {
+      "capability": "Crop marks",
+      "donor": "IE3JP",
+      "donorSourceFiles": [
+        "src/tools/modify/create-crop-marks.ts"
+      ],
+      "donorImplementation": "fixed TrimMark command with style preference",
+      "license": "MIT",
+      "currentDpmStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "currentPublicMcpStatus": "CANDIDATE_FOR_USER_DECISION",
+      "remainingIntegrationWork": [],
+      "originalStatus": "DONOR_FOUND_NOT_IMPORTED",
+      "finalStatus": "PUBLIC_CANDIDATE",
+      "integratedDestination": "src/illustrator/legacy/donor-backed/backlog-operations.ts",
+      "publicCandidate": true,
+      "blocker": null,
+      "integrationNote": "Fused as a fixed internal operation with DPM work-copy safety; suitable for public exposure only after Phase 2.3 Illustrator validation."
+    }
+  ],
+  "startingAvailable": 33,
+  "remainingAvailable": 0,
+  "phase22Summary": {
+    "integratedInternal": 5,
+    "publicCandidate": 28,
+    "licenseBlocked": 0,
+    "technicallyBlocked": 0
+  }
+}

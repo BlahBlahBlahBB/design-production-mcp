@@ -8,7 +8,7 @@ import path from "node:path";
 import type { IllustratorReadBridge, IllustratorStatus, ScriptResult } from "../src/executor/bridge.js";
 import type { DocumentInfo, FindObjectsCriteria, FindObjectsOptions, FindObjectsResult } from "../src/executor/read-schema.js";
 import { createWorkCopyIdentity, SafeMutationContext } from "../src/production/mutation/context.js";
-import { createLine, createRectangle, updateObject } from "../src/production/mutation/editing.js";
+import { alignObjects, clearSelection, createLine, createRectangle, distributeObjects, duplicateObjects, groupObjects, selectObjects, ungroupObject, updateObject } from "../src/production/mutation/editing.js";
 import { IllustratorProductionSession } from "../src/production/session/illustrator-session.js";
 import { ManagedSessionRegistry } from "../src/production/session/managed-sessions.js";
 import { createDesignProductionMcpServer } from "../src/mcp/server.js";
@@ -29,7 +29,7 @@ class B1Bridge implements IllustratorReadBridge {
     }
     if (script.includes("verified-read-refresh")) return { ok:true, value:{path:"/tmp/work.ai"} as T };
     if (script.includes("d.save();")) return { ok:true, value:{path:"/tmp/work.ai",saved:true} as T };
-    if (script.includes("return {ok:true,value:summary") || script.includes("return {ok:true,value:after}")) return { ok:true, value:{ok:true,value:{typename:"PathItem",name:"",layerPath:"0",ancestry:["layer:0"],collectionPath:"layers/0/pageItems/0",locator:{kind:"document-session-structural",typename:"PathItem",name:"",layerPath:"0",ancestry:["layer:0"],collectionPath:"layers/0/pageItems/0"},locked:false,hidden:false,bounds:null,contentsPreview:null,contentsLength:null}} as T };
+    if (script.includes("return {ok:true,value:summary") || script.includes("return {ok:true,value:after}") || script.includes("return {ok:true,value:out}") || script.includes("return {ok:true,value:{selectionCount") || script.includes("return {ok:true,value:{childCount")) return { ok:true, value:{ok:true,value:{typename:"PathItem",name:"",layerPath:"0",ancestry:["layer:0"],collectionPath:"layers/0/pageItems/0",locator:{kind:"document-session-structural",typename:"PathItem",name:"",layerPath:"0",ancestry:["layer:0"],collectionPath:"layers/0/pageItems/0"},locked:false,hidden:false,bounds:null,contentsPreview:null,contentsLength:null}} as T };
     return { ok:true, value:{} as T };
   }
   async getDocumentInfo(): Promise<ScriptResult<DocumentInfo>> { return {ok:true,value:{name:"work.ai",path:"/tmp/work.ai",saved:true,modified:null,modifiedSupported:false,colorSpace:"RGB",width:null,height:null,rulerUnits:null,artboardCount:1,layerCount:1,textFrameCount:0,placedImageCount:0,activeArtboardIndex:0}}; }
@@ -119,4 +119,40 @@ test("B1 MCP server lists safe tools and rejects writes without a managed sessio
   const read=await client.callTool({name:"get_document_info",arguments:{}}); assert.equal(read.isError,false);
   const write=await client.callTool({name:"create_rectangle",arguments:{sessionId:"00000000-0000-4000-8000-000000000000",x:0,y:0,width:1,height:1}}); assert.equal(write.isError,true);
   await client.close(); await server.close();
+});
+
+const target = { locator:{kind:"document-session-structural" as const,typename:"PathItem",name:"rect",layerPath:"0",ancestry:["layer:0"],collectionPath:"layers/0/pageItems/0"},expected:{typename:"PathItem",name:"rect"} };
+
+test("B2 selection requires a managed session and preflights before changing selection", async () => {
+  const bridge=new B1Bridge(); const registry=new ManagedSessionRegistry(bridge);
+  const denied=await registry.selectObjects("00000000-0000-4000-8000-000000000000",{locators:[target.locator]}); assert.equal(denied.ok,false);
+  const selected=await selectObjects(bridge,verifiedContext(),"/tmp/work.ai",{locators:[target.locator]}); assert.equal(selected.ok,true);
+  const script=bridge.scripts.at(-1) ?? ""; assert.ok(script.indexOf("for(var i=0;i<locators.length;i++)") < script.indexOf("d.selection=null"));
+});
+
+test("B2 clear selection remains available while a refresh is required", async () => {
+  const bridge=new B1Bridge(); const context=verifiedContext(); await createRectangle(bridge,context,"/tmp/work.ai",{x:0,y:0,width:1,height:1});
+  assert.equal(context.state,"REFRESH_REQUIRED"); const cleared=await clearSelection(bridge,context,"/tmp/work.ai"); assert.equal(cleared.ok,true); assert.equal(context.state,"REFRESH_REQUIRED");
+});
+
+test("B2 structural operations validate inputs and require a fresh target state", async () => {
+  const bridge=new B1Bridge(); const context=verifiedContext();
+  assert.equal((await duplicateObjects(bridge,context,"/tmp/work.ai",{targets:[target],copies:101})).ok,false);
+  assert.equal((await groupObjects(bridge,context,"/tmp/work.ai",{targets:[target]})).ok,false);
+  const duplicate=await duplicateObjects(bridge,context,"/tmp/work.ai",{targets:[target],offsetX:10,offsetY:0}); assert.equal(duplicate.ok,true); assert.equal(context.state,"REFRESH_REQUIRED");
+  const blocked=await groupObjects(bridge,context,"/tmp/work.ai",{targets:[target,{...target,locator:{...target.locator,collectionPath:"layers/0/pageItems/1"}}]}); assert.equal(blocked.ok,false);
+});
+
+test("B2 group, ungroup, align, and distribute expose deterministic guarded geometry", async () => {
+  const bridge=new B1Bridge(); const context=verifiedContext(); const target2={...target,locator:{...target.locator,collectionPath:"layers/0/pageItems/1"}}; const target3={...target,locator:{...target.locator,collectionPath:"layers/0/pageItems/2"}};
+  const grouped=await groupObjects(bridge,context,"/tmp/work.ai",{targets:[target,target2],name:"g"}); assert.equal(grouped.ok,true); assert.equal(context.state,"REFRESH_REQUIRED");
+  context.refreshAfterVerifiedRead("/tmp/work.ai"); const ungrouped=await ungroupObject(bridge,context,"/tmp/work.ai",{target:{...target,locator:{...target.locator,typename:"GroupItem"},expected:{typename:"GroupItem"}}}); assert.equal(ungrouped.ok,true);
+  context.refreshAfterVerifiedRead("/tmp/work.ai"); const aligned=await alignObjects(bridge,context,"/tmp/work.ai",{targets:[target,target2],mode:"LEFT",reference:"KEY_OBJECT",keyObject:target}); assert.equal(aligned.ok,true); assert.equal(context.state,"READY");
+  const distributed=await distributeObjects(bridge,context,"/tmp/work.ai",{targets:[target,target2,target3],axis:"HORIZONTAL",mode:"GAPS"}); assert.equal(distributed.ok,true); assert.equal(context.state,"READY");
+  assert.match(bridge.scripts.at(-1) ?? "", /step=\(span-used\)/);
+});
+
+test("B2/Phase2 MCP server exposes guarded editing and fused donor tools without an arbitrary script surface", async () => {
+  const server=createDesignProductionMcpServer(new ManagedSessionRegistry(new B1Bridge())); const [ct,st]=InMemoryTransport.createLinkedPair(); const client=new Client({name:"b2-test",version:"1"}); await server.connect(st); await client.connect(ct);
+  const names=(await client.listTools()).tools.map((tool)=>tool.name); for(const name of ["select_objects","clear_selection","duplicate_objects","group_objects","ungroup_object","align_objects","distribute_objects","pathfinder_objects","expand_objects","place_image","relink_image","rearrange_artboards","fit_artboard_to_objects"]) assert.ok(names.includes(name)); assert.ok(!names.some((name)=>name.includes("jsx")||name.includes("script"))); await client.close(); await server.close();
 });
