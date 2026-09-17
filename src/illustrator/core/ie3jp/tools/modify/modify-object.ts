@@ -138,6 +138,11 @@ if (preflight) {
       }
 
       var verifiedState = verifyItem(item, coordSystem, abRect);
+      if (item.typename === "TextFrame") {
+        try {
+          verifiedState.fill = colorToObject(item.textRange.characterAttributes.fillColor);
+        } catch(e) {}
+      }
       if (errors.length > 0) {
         var result = { success: false, uuid: params.uuid, coordinateSystem: coordSystem, errors: errors, verified: verifiedState };
         if (fontCandidates !== null) { result.font_candidates = fontCandidates; }
