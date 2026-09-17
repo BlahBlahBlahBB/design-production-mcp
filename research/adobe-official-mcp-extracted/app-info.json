@@ -1,0 +1,16 @@
+{
+  "applicationPath": "/Applications/Adobe Illustrator (Beta)/Adobe Illustrator.app",
+  "bundleIdentifier": "com.adobe.illustratorBeta",
+  "displayName": "Adobe Illustrator",
+  "bundleName": "Illustrator (Beta)",
+  "shortVersion": "30.9.0",
+  "bundleVersion": "30.9.0",
+  "adobeProductBuild": "66",
+  "executableName": "Adobe Illustrator",
+  "executablePath": "/Applications/Adobe Illustrator (Beta)/Adobe Illustrator.app/Contents/MacOS/Adobe Illustrator",
+  "architecture": "arm64",
+  "discovery": {
+    "metadataQuery": "mdfind kMDItemCFBundleIdentifier == com.adobe.illustratorbeta returned no indexed result; the installed bundle was then verified by its Info.plist and code signature.",
+    "bundleIdentifierCaseNote": "The installed Info.plist uses com.adobe.illustratorBeta (capital B)."
+  }
+}

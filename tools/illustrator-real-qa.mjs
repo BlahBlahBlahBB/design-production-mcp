@@ -170,6 +170,7 @@ async function main() {
       const selected = named.find((item) => item.name === objectName);
       if (!selected) throw new Error(`Named text object not found in the read-only snapshot: ${objectName}`);
       if (selected.locked || selected.hidden) throw new Error(`Selected named text object is not editable: ${objectName}`);
+      expectedCurrentContents = selected.contents;
       report.target = { mode: "name", name: objectName, index: selected.index, originalContents: selected.contents };
     } else {
       const defaultIndex = String(editable[0].index);
@@ -225,7 +226,7 @@ async function main() {
     console.log(`✓ Work copy created: ${workPath}`);
 
     if (targetMode === "name") {
-      requireOk("replace named text", await session.replaceNamedText(workPath, objectName, nextValue), report);
+      requireOk("replace named text", await session.replaceNamedText(workPath, objectName, nextValue, expectedCurrentContents), report);
       console.log(`✓ Replaced test object '${objectName}' in work copy only`);
     } else {
       requireOk(

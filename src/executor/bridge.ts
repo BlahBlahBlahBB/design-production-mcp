@@ -1,3 +1,27 @@
+import type {
+  ArtboardInfo,
+  ColorInspectionOptions,
+  ColorsResult,
+  ConvertCoordinateRequest,
+  CoordinateConversion,
+  DocumentStructure,
+  DocumentInfo,
+  FindObjectsCriteria,
+  FindObjectsOptions,
+  FindObjectsResult,
+  GroupInfo,
+  GroupsResult,
+  FontListOptions,
+  FontsResult,
+  ImageInspectionOptions,
+  ImagesResult,
+  LayerInfo,
+  SelectionInfo,
+  TextFrameDetail,
+  TextFrameSummary,
+  TextFrameTarget,
+} from "./read-schema.js";
+
 export type IllustratorCapability =
   | "status"
   | "document.read"
@@ -24,4 +48,20 @@ export interface IllustratorBridge {
   readonly id: string;
   detect(): Promise<IllustratorStatus>;
   execute<T = unknown>(script: string, timeoutMs?: number): Promise<ScriptResult<T>>;
+}
+
+export interface IllustratorReadBridge extends IllustratorBridge {
+  getDocumentInfo(): Promise<ScriptResult<DocumentInfo>>;
+  getArtboards(): Promise<ScriptResult<ArtboardInfo[]>>;
+  getLayers(): Promise<ScriptResult<LayerInfo[]>>;
+  getSelection(): Promise<ScriptResult<SelectionInfo>>;
+  listTextFrames(): Promise<ScriptResult<TextFrameSummary[]>>;
+  getTextFrameDetail(target: TextFrameTarget): Promise<ScriptResult<TextFrameDetail>>;
+  getGroups(options?: { maxDepth?: number; maxObjects?: number }): Promise<ScriptResult<GroupsResult>>;
+  getDocumentStructure(options?: { maxDepth?: number; maxObjects?: number }): Promise<ScriptResult<DocumentStructure>>;
+  findObjects(criteria: FindObjectsCriteria, options?: FindObjectsOptions): Promise<ScriptResult<FindObjectsResult>>;
+  convertCoordinate(request: ConvertCoordinateRequest): Promise<ScriptResult<CoordinateConversion>>;
+  getColors(options?: ColorInspectionOptions): Promise<ScriptResult<ColorsResult>>;
+  getImages(options?: ImageInspectionOptions): Promise<ScriptResult<ImagesResult>>;
+  listFonts(options?: FontListOptions): Promise<ScriptResult<FontsResult>>;
 }

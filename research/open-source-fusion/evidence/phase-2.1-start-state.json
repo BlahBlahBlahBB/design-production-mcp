@@ -1,0 +1,28 @@
+{
+  "recordedAt": "2026-09-17",
+  "branch": "phase/2-open-source-fusion",
+  "head": "8fb22aea91346fcd4595d5e19c6eac0f4ef19fed",
+  "stagedFiles": [],
+  "modifiedFiles": [
+    "THIRD_PARTY_NOTICES.md",
+    "src/mcp/server.ts",
+    "src/production/mutation/context.ts",
+    "src/production/mutation/editing.ts",
+    "src/production/session/illustrator-session.ts",
+    "src/production/session/managed-sessions.ts",
+    "tests/b1-editing.test.ts"
+  ],
+  "untrackedPaths": [
+    ".DS_Store",
+    ".local-tools/",
+    "dist/",
+    "docs/open-source-origins.md",
+    "node_modules/",
+    "package-lock.json",
+    "research/",
+    "src/illustrator/",
+    "tests/donor-fusion.test.ts",
+    "tools/b2-real-qa.mjs"
+  ],
+  "preservation": "No reset, clean, stash, deletion, MASTER-artwork modification, new branch, or commit was performed."
+}

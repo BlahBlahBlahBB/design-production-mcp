@@ -1,17 +1,28 @@
 {
   "name": "design-production-mcp",
-  "version": "0.0.1",
-  "private": true,
+  "version": "0.1.0",
   "type": "module",
-  "description": "Local design-production automation core for Adobe Illustrator, intended to sit behind an MCP server.",
+  "description": "Open-source Adobe Illustrator MCP with direct Core tools and separate production work-copy protection.",
   "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && node -e \"require('fs').cpSync('src/illustrator/core/ie3jp/jsx','dist/src/illustrator/core/ie3jp/jsx',{recursive:true})\"",
     "test": "npm run build && node --test dist/tests/*.test.js",
-    "check": "npm run test"
+    "check": "npm run test",
+    "mcp": "npm run build && node dist/src/mcp/stdio.js"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
+    "@types/qrcode": "^1.5.5",
     "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "csv-parse": "7.0.2",
+    "qrcode": "^1.5.4",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "zod": "^4.5.4"
   }
 }

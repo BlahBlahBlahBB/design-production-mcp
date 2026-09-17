@@ -1,0 +1,22 @@
+{
+  "phase": "3-open-source-core",
+  "target": {
+    "application": "Adobe Illustrator 2026 Stable",
+    "version": "30.8.1",
+    "betaUsed": false
+  },
+  "fixture": "one new unsaved disposable 300 x 200 RGB document; closed with SaveOptions.DONOTSAVECHANGES",
+  "results": [
+    { "category": "document read", "tools": ["create_document", "get_document_info"], "status": "PASS" },
+    { "category": "primitive and text", "tools": ["create_rectangle", "create_line", "create_text_frame"], "status": "PASS" },
+    { "category": "layer", "tools": ["manage_layers"], "status": "PASS" },
+    { "category": "place and embed", "tools": ["place_image"], "status": "PASS" },
+    { "category": "relink", "tools": ["place_image", "get_images", "manage_linked_images"], "status": "PASS", "detail": "The exact UUID returned by place_image (and independently reported by get_images) relinked the linked PlacedItem to an existing absolute new_path." },
+    { "category": "Pathfinder", "tools": ["select_objects", "pathfinder_objects"], "status": "PASS" },
+    { "category": "Object Expand", "tools": ["create_line", "select_objects", "expand_objects"], "status": "PASS", "detail": "select_objects established a one-item Illustrator selection, independently observed before the Alexander Action executed successfully." },
+    { "category": "artboard", "tools": ["fit_artboard_to_selection"], "status": "PASS" },
+    { "category": "color and gradient", "tools": ["create_gradient"], "status": "PASS" },
+    { "category": "export", "tools": ["export"], "status": "PASS", "output": "temporary disposable PNG", "outputBytes": 909 }
+  ],
+  "finalDocumentInventory": { "documentCount": 0, "unknownDocumentsAffected": 0 }
+}

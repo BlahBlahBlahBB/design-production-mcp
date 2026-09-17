@@ -1,0 +1,15 @@
+{
+  "observedAt": "2026-09-17",
+  "listener": {
+    "address": "127.0.0.1",
+    "port": 18412,
+    "pid": 25551,
+    "processName": "Adobe Illustrator",
+    "executablePath": "/Applications/Adobe Illustrator (Beta)/Adobe Illustrator.app/Contents/MacOS/Adobe Illustrator",
+    "parentPid": 1,
+    "isMainIllustratorExecutable": true,
+    "isHelperProcess": false,
+    "evidence": "lsof -nP -iTCP:18412 -sTCP:LISTEN identified PID 25551; ps and lsof -p identified the main Illustrator executable."
+  },
+  "safety": "Read-only listener, process, and open-file inspection only. No process was terminated, injected, or otherwise modified."
+}

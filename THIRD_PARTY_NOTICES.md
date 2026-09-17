@@ -1,29 +1,70 @@
 # Third-Party Notices
 
-This project is an independent design-production automation project.
+This project is independently maintained and distributed under the MIT License.
+The notices below apply to third-party code included in, or substantially
+adapted for, the public runtime. Their copyright and license notices remain in
+effect.
 
-## Approved code/reference sources
+## IE3JP — `ie3jp/illustrator-mcp-server`
 
-### ie3jp/illustrator-mcp-server
+- Upstream: <https://github.com/ie3jp/illustrator-mcp-server>
+- Reviewed revision: `1814485cfa24787215f0ec515a6853cb293e1e0a`
 - License: MIT
-- Reviewed revision: `c06f627bcf32dfc474fce8b80f42488c2b2de2e2`
-- Upstream copyright: Copyright (c) 2026 cyocun (IE3)
-- Reviewed implementation files: `src/executor/jsx-runner.ts`, `src/executor/file-transport.ts`
-- Local use: architecture and behavior were adapted into a separately written transport layer covering serialized Illustrator execution, macOS `osascript`/AppleScript → ExtendScript, Windows PowerShell/COM → ExtendScript, temporary result transport, timeout handling, and cleanup.
-- The local implementation is intentionally narrower and uses different APIs/naming to fit `IllustratorBridge` and the production-safety model.
-- Any copied or substantially adapted portions must retain the upstream copyright and MIT permission notice.
+- Copyright: Copyright (c) 2026 cyocun (IE3)
+- Included location: `src/illustrator/core/ie3jp/`
 
-### gherardo200-glitch/illustrator-mcp
+The IE3JP Core registry, tool modules, file transport, JSX helpers, and image
+header utility are copied substantially as-is. The upstream MIT text is
+preserved at `src/illustrator/core/ie3jp/LICENSE`.
+
+Minimal integration changes set Adobe Illustrator 2026 Stable as the default
+target, replace the upstream `p-limit` dependency with a local serialized
+promise queue, copy JSX helpers at build time, and register DPM Production
+tools separately. The copied Core continues to operate on the current active
+Illustrator document.
+
+## Alexander Ladygin — `Alexander-Ladygin/illustrator-scripts`
+
+- Upstream: <https://github.com/Alexander-Ladygin/illustrator-scripts>
+- Reviewed revision: `fc7625410b62c833fce100f67cf18a97588279c5`
 - License: MIT
-- Upstream copyright: Copyright (c) 2026 gherardo200-glitch
-- Intended use: secondary implementation reference for AppleScript → ExtendScript execution and MCP safety patterns.
-- No source from this repository has been copied into the Phase 1 implementation at the time of this notice update.
+- Copyright: Copyright (c) 2018 Alexander Ladygin
 
-## Architecture-only reference
+Fixed Action payload generation derived from `libraries/AI_PS_Library.js` is
+used by `expand_objects` and `pathfinder_objects`. DPM wraps those fixed
+operations in a typed current-selection envelope; it does not expose arbitrary
+Action payloads.
 
-### jinkeda/Illustrator_MCP
-At Phase 0 review time, the repository README advertised MIT but the repository did not expose a root LICENSE file through the reviewed GitHub state. Until licensing is independently confirmed, no source code from this repository may be copied or adapted. Architecture ideas may be studied without copying implementation.
+## Creold / Sergey Osokin — `creold/illustrator-scripts`
+
+- Upstream: <https://github.com/creold/illustrator-scripts>
+- Reviewed revision: `9b3e3eeade9ba748f41612ec4697bb6a5c2489c2`
+- License: MIT
+- Copyright: Copyright (c) 2025 Sergey Osokin
+
+Fixed non-interactive DOM behavior is adapted for the Creold Core wrappers:
+artboard fitting, image tracing, formatted-text replacement, and artboard
+duplication. Donor dialogs and arbitrary script execution are not included.
+
+## SheetJS Community Edition — `xlsx`
+
+- Distribution: <https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz>
+- Pinned version: `0.20.3`
+- License: Apache-2.0
+- Copyright: Copyright (C) 2012-present SheetJS LLC
+
+The production input-format helper uses the official SheetJS Community Edition
+package to read the first worksheet of uploaded spreadsheet data. Its API use
+is unchanged from the previous dependency version.
+
+## Not included: Jinkeda
+
+`jinkeda/Illustrator_MCP` was reviewed only as an architecture candidate. Its
+license was not positively verified from a root repository license file. No
+source code from that repository is included in this project.
 
 ## Policy
 
-Do not import third-party source code without first recording its repository, exact revision, license, files/sections used, and local modifications in this document.
+Before adding third-party source, record its upstream repository, exact
+revision, license, imported portions, and local changes in this document and
+in [the origins record](docs/open-source-origins.md).

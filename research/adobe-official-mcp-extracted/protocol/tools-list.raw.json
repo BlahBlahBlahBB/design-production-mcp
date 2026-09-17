@@ -1,0 +1,12 @@
+{
+  "captureStatus": "not_captured",
+  "reason": "The configured localhost MCP endpoint requires a bearer token. Its configured token environment variable was not available to this task's shell or launchd environment, and the official MCP tool namespace was not loaded into this task. No token was read, printed, copied, or persisted.",
+  "attemptedMethods": ["initialize", "tools/list"],
+  "endpoint": "http://localhost:18412/v1/mcp",
+  "authentication": "<REDACTED>",
+  "staticAlternative": {
+    "available": true,
+    "source": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+    "description": "The native MCPToolkit binary contains a JSON-shaped embedded registry with 28 modules and declared toolCount values totaling 90. This is static implementation evidence, not a tools/list response and must not be treated as one."
+  }
+}

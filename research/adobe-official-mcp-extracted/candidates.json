@@ -1,0 +1,49 @@
+[
+  {
+    "name": "AIAgenticSystem",
+    "role": "HTTP MCP host / transport / authentication / dispatch",
+    "sourcePath": "/Applications/Adobe Illustrator (Beta)/Adobe Illustrator.app/Contents/Required/Plug-ins/Extensions/AIAgenticSystem.aip",
+    "copiedPath": "copied-files/Required/Plug-ins/Extensions/AIAgenticSystem.aip",
+    "binaryPath": "/Applications/Adobe Illustrator (Beta)/Adobe Illustrator.app/Contents/Required/Plug-ins/Extensions/AIAgenticSystem.aip/Contents/MacOS/AIAgenticSystem",
+    "fileType": "Mach-O 64-bit bundle arm64",
+    "classification": "native implementation",
+    "sizeBytes": 5402656,
+    "sha256": "9decbfb576d6bcaf0d7b5b341377f09b2e5a718a8b8b3d12387a1e1d145de875",
+    "architecture": ["arm64"],
+    "humanReadable": false,
+    "mcpRelated": true,
+    "evidence": [
+      "Contains literal /v1/mcp, tools/call, initialize, Authorization, Bearer, and 127.0.0.1 listener diagnostics.",
+      "Contains source-path string PlugInDev/AIAgenticSystem/Source/MCPHosting/MCPServer.cpp.",
+      "Contains AIMCPServer, MCPHTTPTransport, EnableMCPServer, EnableMCPAuth, and MCP Server Suite identifiers."
+    ],
+    "runtimeDependencies": ["aifm.framework", "SPBasic.framework", "MacMemory.framework", "uxtech.framework", "AppKit", "Foundation", "Security"]
+  },
+  {
+    "name": "MCPToolkit",
+    "role": "Native tool registry and Illustrator operation executor",
+    "sourcePath": "/Applications/Adobe Illustrator (Beta)/Adobe Illustrator.app/Contents/Required/Plug-ins/Extensions/MCPToolkit.aip",
+    "copiedPath": "copied-files/Required/Plug-ins/Extensions/MCPToolkit.aip",
+    "binaryPath": "/Applications/Adobe Illustrator (Beta)/Adobe Illustrator.app/Contents/Required/Plug-ins/Extensions/MCPToolkit.aip/Contents/MacOS/MCPToolkit",
+    "fileType": "Mach-O 64-bit bundle arm64",
+    "classification": "native implementation with readable embedded schema strings",
+    "sizeBytes": 3762224,
+    "sha256": "9aaddbe737cfbf6750f4c43a8e9b8c3113a483ed3dde5fec65bca6919069e3f6",
+    "architecture": ["arm64"],
+    "humanReadable": false,
+    "mcpRelated": true,
+    "embeddedRegistry": {
+      "location": "ASCII string table beginning near strings(1) line 2458",
+      "schemaVersion": "1.0.0",
+      "moduleCount": 28,
+      "declaredToolCount": 90,
+      "format": "JSON-shaped registry text embedded in the native binary; not a separately shipped JS/JSON source file"
+    },
+    "evidence": [
+      "Contains inputSchema, outputSchema, externalAccess and 28 module records with declared toolCount values totaling 90.",
+      "Contains MCPToolkit::Background, ExecuteTool, MCP_Tool_, and Illustrator suite diagnostics.",
+      "Contains source-path strings under PlugInDev/MCPToolkit/Source/."
+    ],
+    "runtimeDependencies": ["aifm.framework", "SPBasic.framework", "MacMemory.framework", "uxtech.framework", "AppKit", "Foundation"]
+  }
+]
