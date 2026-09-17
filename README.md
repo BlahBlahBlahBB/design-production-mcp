@@ -4,7 +4,8 @@
 
 这个项目把多个成熟的 Illustrator 开源能力整合到同一个 MCP 中，并保留 DPM 自己的生产安全能力。普通 Illustrator 操作可以直接作用于当前文档；只有需要保护 MASTER 文件的生产流程，才使用独立的 Work Copy 安全机制。
 
-当前版本：**v0.1.0**
+当前版本：**v0.1.0**  
+发布说明：[RELEASE_NOTES.md](RELEASE_NOTES.md)
 
 ## 目前能做什么
 
