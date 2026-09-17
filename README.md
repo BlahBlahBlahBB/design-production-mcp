@@ -26,8 +26,8 @@ unverified. Windows is currently unverified for this packaged release.
 ## Quick Install
 
 ```bash
-git clone <repository-url>
-cd <repository-directory>
+git clone https://github.com/BlahBlahBlahBB/design-production-mcp.git
+cd design-production-mcp
 ./install.command
 ```
 
@@ -40,7 +40,7 @@ when it completes.
 ## Manual Install
 
 ```bash
-npm ci
+npm ci --include=dev
 npm run build
 ```
 
@@ -51,7 +51,7 @@ with absolute paths on your Mac. The compiled stdio server entrypoint is
 ```toml
 [mcp_servers.design-production-illustrator]
 command = "/absolute/path/to/node"
-args = ["/absolute/path/to/illustrator-mcp/dist/src/mcp/stdio.js"]
+args = ["/absolute/path/to/design-production-mcp/dist/src/mcp/stdio.js"]
 ```
 
 ## Verify Installation
