@@ -2,7 +2,23 @@ node_modules/
 dist/
 .local-tools/
 .DS_Store
+.codex/
+.env
+.env.*
+!.env.example
+coverage/
+*.log
+
+# Local Illustrator QA inputs, outputs, and disposable work copies.
+qa/
+fixtures/private/
+*.ai
+*.ait
+*.eps
 research/**/.DS_Store
+research/**/work/
+research/**/fixtures/
+*.aia
 
 # Local static-extraction artifacts, retained outside source control.
 research/adobe-official-mcp-extracted/copied-files/

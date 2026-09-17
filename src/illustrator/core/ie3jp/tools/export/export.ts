@@ -410,7 +410,7 @@ export function register(server: McpServer): void {
        annotations: WRITE_IDEMPOTENT_ANNOTATIONS,
     },
     async (params) => {
-      // macOS の /tmp は /private/tmp へのシンボリックリンク。
+      // macOS temporary paths can be symbolic links.
       // Illustrator の exportFile() はシンボリックリンク経由のパスに書き込めない場合があるため、
       // Node.js 側で実パスに解決してから渡す。
       const resolvedParams = { ...params };
