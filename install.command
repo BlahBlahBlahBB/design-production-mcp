@@ -35,23 +35,23 @@ NODE_VERSION="$($NODE_BIN --version)"
 NODE_MAJOR="$($NODE_BIN -p 'Number(process.versions.node.split(".")[0])')"
 
 if [[ "$NODE_MAJOR" -lt 20 ]]; then
-  echo "检测到不受支持的 Node.js 版本：$NODE_VERSION" >&2
-  echo "当前 Node 路径：$NODE_BIN" >&2
+  echo "检测到不受支持的 Node.js 版本：${NODE_VERSION}" >&2
+  echo "当前 Node 路径：${NODE_BIN}" >&2
   print_node_help
   exit 1
 fi
 
 if [[ -z "$NPM_BIN" ]]; then
-  echo "检测到 Node.js $NODE_VERSION，但未检测到 npm。" >&2
-  echo "当前 Node 路径：$NODE_BIN" >&2
+  echo "检测到 Node.js ${NODE_VERSION}，但未检测到 npm。" >&2
+  echo "当前 Node 路径：${NODE_BIN}" >&2
   echo "请安装包含 npm 的完整 Node.js 20+ 发行版，然后重新运行安装器。" >&2
   echo "Node.js 官网：https://nodejs.org/" >&2
   exit 1
 fi
 
 NPM_VERSION="$($NPM_BIN --version)"
-echo "检测到 Node.js $NODE_VERSION：$NODE_BIN"
-echo "检测到 npm $NPM_VERSION：$NPM_BIN"
+echo "检测到 Node.js ${NODE_VERSION}：${NODE_BIN}"
+echo "检测到 npm ${NPM_VERSION}：${NPM_BIN}"
 
 cd "$ROOT"
 echo "正在安装依赖…"
@@ -61,7 +61,7 @@ echo "正在构建 Illustrator MCP…"
 
 ENTRYPOINT="$ROOT/dist/src/mcp/stdio.js"
 if [[ ! -f "$ENTRYPOINT" ]]; then
-  echo "构建完成后未找到 MCP 入口：$ENTRYPOINT" >&2
+  echo "构建完成后未找到 MCP 入口：${ENTRYPOINT}" >&2
   exit 1
 fi
 
