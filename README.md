@@ -20,6 +20,8 @@
   - 1 个 DPM 状态工具 `illustrator_status`
 - **DPM Production：3 个公开生产安全工具**
 
+<br>
+
 ### Illustrator Core
 
 Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创建 Work Copy。
@@ -41,6 +43,8 @@ Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创�
 完整的 74 个 Core 工具清单见：
 
 [docs/illustrator-core-tools.md](docs/illustrator-core-tools.md)
+
+<br>
 
 ### DPM Production
 
@@ -100,6 +104,8 @@ DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** �
 
 推荐优先使用 **方式 A：直接把安装指令发给 Agent**。如果你习惯自己用终端，也可以使用方式 B。
 
+<br>
+
 ## 🔘 方式 A：直接发给 Agent 自动安装
 
 适用于能够在你的 Mac 上执行本机终端命令的 Codex / Agent。
@@ -154,6 +160,8 @@ https://github.com/BlahBlahBlahBB/design-production-mcp
 10. 如果全部成功，明确告诉我：
    “请完全退出并重新打开 Codex，然后打开 Adobe Illustrator 2026 Stable，新建会话并让 Codex 调用 `illustrator_status`。”
 ```
+
+<br>
 
 ## 🔘 方式 B：终端一键安装
 
