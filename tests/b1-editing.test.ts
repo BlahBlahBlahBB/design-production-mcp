@@ -111,13 +111,15 @@ test("B1 filesystem copy failure issues no managed session", async () => {
   if (!result.ok) assert.equal(result.error.code, "WORK_COPY_COPY_VERIFICATION_FAILED");
 });
 
-test("B1 MCP server lists safe tools and rejects writes without a managed session", async () => {
+test("Core MCP exposes direct IE3JP tools while DPM Production keeps work-copy writes isolated", async () => {
   const registry=new ManagedSessionRegistry(new B1Bridge()); const server=createDesignProductionMcpServer(registry);
   const [clientTransport,serverTransport]=InMemoryTransport.createLinkedPair();
   const client=new Client({name:"b1-test",version:"1"}); await server.connect(serverTransport); await client.connect(clientTransport);
-  const tools=await client.listTools(); assert.ok(tools.tools.some((tool)=>tool.name==="create_rectangle")); assert.ok(!tools.tools.some((tool)=>tool.name.includes("script")));
-  const read=await client.callTool({name:"get_document_info",arguments:{}}); assert.equal(read.isError,false);
-  const write=await client.callTool({name:"create_rectangle",arguments:{sessionId:"00000000-0000-4000-8000-000000000000",x:0,y:0,width:1,height:1}}); assert.equal(write.isError,true);
+  const tools=await client.listTools(); const rectangle=tools.tools.find((tool)=>tool.name==="create_rectangle");
+  assert.ok(rectangle); assert.ok(!("sessionId" in (rectangle.inputSchema.properties ?? {})));
+  for(const name of ["get_document_info","create_rectangle","place_image","manage_artboards","create_work_copy","reconcile_work_copy","dpm_save_work_copy"]) assert.ok(tools.tools.some((tool)=>tool.name===name));
+  assert.ok(!tools.tools.some((tool)=>tool.name.includes("jsx")||tool.name.includes("script")));
+  const productionWrite=await client.callTool({name:"dpm_save_work_copy",arguments:{sessionId:"00000000-0000-4000-8000-000000000000"}}); assert.equal(productionWrite.isError,true);
   await client.close(); await server.close();
 });
 
@@ -152,7 +154,7 @@ test("B2 group, ungroup, align, and distribute expose deterministic guarded geom
   assert.match(bridge.scripts.at(-1) ?? "", /step=\(span-used\)/);
 });
 
-test("B2/Phase2 MCP server exposes guarded editing and fused donor tools without an arbitrary script surface", async () => {
+test("Core MCP preserves the IE3JP direct tool registry without an arbitrary script surface", async () => {
   const server=createDesignProductionMcpServer(new ManagedSessionRegistry(new B1Bridge())); const [ct,st]=InMemoryTransport.createLinkedPair(); const client=new Client({name:"b2-test",version:"1"}); await server.connect(st); await client.connect(ct);
-  const names=(await client.listTools()).tools.map((tool)=>tool.name); for(const name of ["select_objects","clear_selection","duplicate_objects","group_objects","ungroup_object","align_objects","distribute_objects","pathfinder_objects","expand_objects","place_image","relink_image","rearrange_artboards","fit_artboard_to_objects"]) assert.ok(names.includes(name)); assert.ok(!names.some((name)=>name.includes("jsx")||name.includes("script"))); await client.close(); await server.close();
+  const names=(await client.listTools()).tools.map((tool)=>tool.name); for(const name of ["select_objects","duplicate_objects","group_objects","ungroup_objects","align_objects","place_image","manage_linked_images","manage_artboards","convert_to_outlines","create_gradient","export","get_document_info","expand_objects","pathfinder_objects","fit_artboard_to_selection","image_trace_selection","replace_formatted_text","duplicate_active_artboard"]) assert.ok(names.includes(name)); assert.ok(!names.some((name)=>name.includes("jsx")||name.includes("script"))); await client.close(); await server.close();
 });
