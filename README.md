@@ -22,7 +22,7 @@
 
 <br>
 
-### Illustrator Core
+### 🔻 Illustrator Core
 
 Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创建 Work Copy。
 
@@ -46,7 +46,7 @@ Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创�
 
 <br>
 
-### DPM Production
+### 🔻 DPM Production
 
 DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** 的生产流程。
 
