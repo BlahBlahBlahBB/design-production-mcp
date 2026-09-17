@@ -210,16 +210,31 @@ Codex 会根据任务组合 Core 工具和 DPM Production 工具，不需要为�
 
 ## 快速安装
 
-### 1. 安装 Node.js
+### 1. 检查 Node.js
 
-先确保电脑已经安装 Node.js 20 或更高版本：
+本项目需要 **Node.js 20 或更高版本**。先在终端运行：
 
 ```bash
 node -v
 npm -v
 ```
 
-如果 `node -v` 显示 `v20` 或更高版本即可。
+如果 `node -v` 显示 `v20.x.x` 或更高版本，可以继续安装。
+
+如果没有安装 Node.js，或者显示 `v18`、`v16` 等旧版本，请先从 Node.js 官网安装 Node.js 20+：
+
+https://nodejs.org/
+
+如果你已经使用 `nvm`、`fnm`、`asdf`、`n` 等 Node 版本管理器，也可以直接把当前终端切换到 Node 20+。
+
+安装或切换版本后，建议重新打开终端，再确认：
+
+```bash
+node -v
+npm -v
+```
+
+> 安装器不会自动修改你的 Node 环境，也不会自动安装 Homebrew / nvm。这样可以避免破坏用户已有的开发环境。
 
 ### 2. 下载项目
 
@@ -242,13 +257,14 @@ cd design-production-mcp
 
 1. 检查 macOS
 2. 检查 Node.js / npm
-3. 执行 `npm ci --include=dev`
-4. 编译 MCP
-5. 找到当前真实的 Node 可执行路径
-6. 找到 MCP 编译入口 `dist/src/mcp/stdio.js`
-7. 备份 `~/.codex/config.toml`
-8. 自动写入 / 更新 `design-production-illustrator` MCP 配置
-9. 保留其他已有 Codex 配置
+3. 如果 Node 版本低于 20，显示当前版本、当前 Node 路径和明确的升级提示
+4. 执行 `npm ci --include=dev`
+5. 编译 MCP
+6. 找到当前真实的 Node 可执行路径
+7. 找到 MCP 编译入口 `dist/src/mcp/stdio.js`
+8. 备份 `~/.codex/config.toml`
+9. 自动写入 / 更新 `design-production-illustrator` MCP 配置
+10. 保留其他已有 Codex 配置
 
 安装器可以重复运行，不会重复添加多个 MCP 配置。
 
@@ -275,6 +291,45 @@ illustrator_status
 ```
 
 如果能正常返回 Illustrator 状态，说明 MCP 已安装成功。
+
+## 安装问题排查
+
+### 提示 Node 版本过低
+
+如果安装器显示类似：
+
+```text
+检测到不受支持的 Node.js 版本：v18.x.x
+当前 Node 路径：/usr/local/bin/node
+```
+
+说明当前终端实际使用的 Node 版本低于 20。先升级或切换到 Node 20+，然后重新打开终端并确认：
+
+```bash
+node -v
+which node
+```
+
+如果你明明已经安装了新版本，但 `node -v` 仍显示旧版本，通常是当前终端的 `PATH` 或 Node 版本管理器仍指向旧版本。
+
+### 提示找不到 `./install.command`
+
+说明当前终端不在项目目录。先进入项目文件夹：
+
+```bash
+cd /你的/design-production-mcp/路径
+./install.command
+```
+
+### GitHub HTTPS 拉取失败
+
+如果浏览器能打开 GitHub，但 Git 出现 HTTPS / SSL 连接问题，并且你已经配置 GitHub SSH，可以把当前仓库 remote 改为 SSH：
+
+```bash
+git remote set-url origin git@github.com:BlahBlahBlahBB/design-production-mcp.git
+```
+
+然后重试 `git pull` / `git fetch`。
 
 ## 手动安装
 
