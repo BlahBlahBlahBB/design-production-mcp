@@ -9,7 +9,7 @@
 
 ## 目前能做什么
 
-当前公开能力共分为两部分：
+当前公开能力分为两部分：
 
 - **Illustrator Core：74 个公开工具**
   - 67 个来自 IE3JP `illustrator-mcp-server`
@@ -20,129 +20,27 @@
 
 ### Illustrator Core
 
-Core 工具直接操作 **Illustrator 当前打开的文档**，不需要先创建 Work Copy。
+Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创建 Work Copy。
 
 主要能力包括：
 
-#### 文档与会话
-
-- 新建、打开、关闭、保存文档
-- 读取文档信息和文档结构
-- 切换 Illustrator 目标版本
-- Undo
-- 读取 MCP / Illustrator Bridge 状态
-
-#### 基础绘图
-
-- 矩形
-- 椭圆
-- 直线
-- 自定义路径
-- 普通文字
-- 路径文字
-
-#### 对象编辑
-
-- 查找对象
-- 选择对象
-- 删除对象
-- 复制对象
-- 群组 / 解组
-- 对齐
-- 修改对象属性
-- 调整层级顺序
-- 移动到指定图层
-- 坐标转换
-
-#### 文字
-
-- 创建文字框
-- 列出全部文字框
-- 获取文字框详情
-- 应用文字样式
-- 列出文字样式
-- 检查文字一致性
-- 文字转轮廓
-- 格式化文字替换
-- 字体列表
-
-#### 颜色与样式
-
-- 读取文档颜色
-- 管理 Swatches
-- 创建 Gradient
-- 替换颜色
-- 放置色块
-- 指定颜色配置文件
-- Graphic Style
-- 对比度检查
-- 提取 Design Tokens
-- 生成 Style Guide
-
-#### 图片与 SVG
-
-- 放置图片
-- 读取图片信息
-- Relink 链接图片
-- Embed 图片
-- 导入可编辑 SVG
-- Image Trace / 图像描摹
-
-#### 图层与画板
-
-- 读取图层
-- 管理图层
-- 读取画板
-- 管理画板
-- Fit Artboard to Selection
-- Duplicate Active Artboard
-
-#### Pathfinder 与 Expand
-
-- Pathfinder Unite
-- Minus Front
-- Minus Back
-- Intersect
-- Exclude
-- Divide
-- Trim
-- Merge
-- Crop
-- Outline
-- Object > Expand
-- 可控制 Object / Fill / Stroke / Gradient 展开项
-
-`expand_objects` 作用于 Illustrator 当前选区；可以先使用 `select_objects` 按 UUID 选中对象，再执行 Expand。
-
-#### Symbols 与数据
-
-- 读取 Symbols
-- 放置 Symbol
-- 管理 Datasets
-
-#### 输出与印前
-
-- PNG / JPEG / SVG 等导出
-- PDF 导出
-- Preflight 检查
-- Overprint 信息
-- Separation 信息
-- Crop Marks
-
-#### 其他分析能力
-
-- 获取 Groups
-- 获取 Guidelines
-- 获取 Path Items
-- 获取 Effects
-- 获取当前 Selection
-- Resize for Variation
+- 文档：新建、打开、关闭、保存、读取文档信息和结构、Undo、切换 Illustrator 目标版本
+- 绘图：矩形、椭圆、直线、自定义路径、普通文字、路径文字
+- 对象：查找、选择、删除、复制、群组、解组、对齐、修改属性、层级顺序、移动图层、坐标转换
+- 文字：文字框读取与创建、样式、格式化替换、转轮廓、字体列表、文字一致性检查
+- 颜色与样式：颜色、Swatches、Gradient、Graphic Style、颜色替换、Design Tokens、Style Guide
+- 图片与 SVG：Place、Relink、Embed、读取图片信息、可编辑 SVG、Image Trace
+- 图层与画板：图层管理、画板管理、Fit Artboard to Selection、Duplicate Active Artboard
+- Pathfinder：Unite、Minus Front、Minus Back、Intersect、Exclude、Divide、Trim、Merge、Crop、Outline
+- Expand：支持 Object / Fill / Stroke / Gradient 展开项
+- Symbols / Datasets
+- 输出与印前：PNG / JPEG / SVG、PDF、Preflight、Overprint、Separation、Crop Marks
 
 完整的 74 个 Core 工具清单见：
 
 [docs/illustrator-core-tools.md](docs/illustrator-core-tools.md)
 
-## DPM Production
+### DPM Production
 
 DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** 的生产流程。
 
@@ -152,19 +50,7 @@ DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** �
 - `reconcile_work_copy`：当大型 AI 文件打开较慢时，重新确认工作副本身份
 - `dpm_save_work_copy`：只允许保存已授权的工作副本，拒绝把 MASTER 当作目标保存
 
-内部还保留了：
-
-- `SafeMutationContext`
-- `ObjectLocator`
-- Managed Session
-- Timeout Quarantine
-- 模板指纹 / 模板基础设施
-- 确定性文字替换
-- QR 生成基础
-- CSV 解析
-- Excel 第一工作表解析
-
-这些内部能力为后续模板和批量生产工作流预留，不会强制套在普通 Core 编辑操作上。
+内部还保留了 `SafeMutationContext`、`ObjectLocator`、Managed Session、Timeout Quarantine、模板基础设施、QR、CSV 和 Excel 解析等能力，为后续批量生产工作流预留。
 
 详细说明见：
 
@@ -172,9 +58,9 @@ DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** �
 
 ## 适合怎么用
 
-这个 MCP 的设计目标不是让你逐个手动调用 74 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
+这个 MCP 的目标不是让你手动记住 74 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
 
-例如可以直接对 Codex 说：
+例如可以直接说：
 
 > 读取当前 Illustrator 文档，找出所有文字框，把姓名改成张三，把部门改成设计部，然后导出 PDF。
 
@@ -182,15 +68,9 @@ DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** �
 
 > 找到当前链接图片并替换成指定的新图片，保持位置和尺寸不变。
 
-或者：
-
-> 选中这两个对象执行 Pathfinder Unite，然后把结果导出成 SVG。
-
-对于生产文件，可以要求：
+对于重要生产文件，可以要求：
 
 > 不允许修改 MASTER，先创建 Work Copy，再完成替换和导出。
-
-Codex 会根据任务组合 Core 工具和 DPM Production 工具，不需要为每一种模板重新开发一套 MCP。
 
 ## 已验证环境
 
@@ -208,18 +88,77 @@ Codex 会根据任务组合 Core 工具和 DPM Production 工具，不需要为�
 - Illustrator 26.1 目前仍属于 **未正式认证**
 - Windows 当前也属于 **未正式认证**
 
-## 快速安装
+# 安装
+
+推荐优先使用 **方式 A：直接把安装指令发给 Agent**。如果你习惯自己用终端，也可以使用方式 B。
+
+## 方式 A：直接发给 Agent 自动安装
+
+适用于能够在你的 Mac 上执行本机终端命令的 Codex / Agent。
+
+推荐模型：**GPT-5.6 Luna / Medium**。安装和环境检查不需要 Sol。
+
+把下面整个代码框原样发给 Agent：
+
+```text
+请在这台 Mac 上安装下面这个 Illustrator MCP：
+
+https://github.com/BlahBlahBlahBB/design-production-mcp
+
+目标：安装并配置 `design-production-illustrator` 本地 stdio MCP，让 Codex 重启后可以直接调用 Illustrator 工具。
+
+请按下面规则执行：
+
+1. 先确认当前系统是 macOS。
+2. 检查 Git、Node.js、npm：
+   - Node.js 必须 >= 20。
+   - 如果 Node.js 缺失或低于 20，先告诉我检测到的版本和路径，并给出最小升级方案。
+   - 未经我明确确认，不要自动安装 Homebrew、nvm，也不要擅自修改系统 Node 环境。
+3. 如果本机已经存在这个仓库：
+   - 先确认它确实是 `BlahBlahBlahBB/design-production-mcp`。
+   - 检查工作区是否干净。
+   - 如果有未提交改动，停止并告诉我，不要覆盖。
+   - 如果干净，切换到 `main` 并同步 `origin/main`。
+4. 如果本机没有仓库：
+   - 克隆到用户目录下的 `design-production-mcp` 文件夹。
+   - 默认先使用 HTTPS。
+   - 如果 HTTPS 因 SSL / TLS 失败，并且 `ssh -T git@github.com` 已认证成功，可以改用 SSH：
+     `git@github.com:BlahBlahBlahBB/design-production-mcp.git`
+5. 进入项目目录后运行：
+   `./install.command`
+6. 安装器应完成：
+   - `npm ci --include=dev`
+   - TypeScript build
+   - 生成 `dist/src/mcp/stdio.js`
+   - 备份 `~/.codex/config.toml`
+   - 写入或更新且只保留一个 `[mcp_servers.design-production-illustrator]` 配置
+7. 安装完成后检查：
+   - `dist/src/mcp/stdio.js` 存在
+   - `~/.codex/config.toml` 中 `design-production-illustrator` 只出现一次
+   - 配置中的 Node 路径和 MCP entrypoint 都是绝对路径且真实存在
+8. 不要修改任何 Illustrator 文档，不要启动 Adobe Illustrator Beta。
+9. 完成后只汇报：
+   - Node 版本和路径
+   - 项目实际安装路径
+   - build 是否成功
+   - Codex MCP 配置是否成功
+   - 是否需要我采取额外操作
+10. 如果全部成功，明确告诉我：
+   “请完全退出并重新打开 Codex，然后打开 Adobe Illustrator 2026 Stable，新建会话并让 Codex 调用 `illustrator_status`。”
+```
+
+## 方式 B：终端一键安装
 
 ### 1. 检查 Node.js
 
-本项目需要 **Node.js 20 或更高版本**。先在终端运行：
+本项目需要 **Node.js 20 或更高版本**：
 
 ```bash
 node -v
 npm -v
 ```
 
-如果 `node -v` 显示 `v20.x.x` 或更高版本，可以继续安装。
+如果 `node -v` 显示 `v20.x.x` 或更高版本，可以继续。
 
 如果没有安装 Node.js，或者显示 `v18`、`v16` 等旧版本，请先从 Node.js 官网安装 Node.js 20+：
 
@@ -227,18 +166,9 @@ https://nodejs.org/
 
 如果你已经使用 `nvm`、`fnm`、`asdf`、`n` 等 Node 版本管理器，也可以直接把当前终端切换到 Node 20+。
 
-安装或切换版本后，建议重新打开终端，再确认：
-
-```bash
-node -v
-npm -v
-```
-
-> 安装器不会自动修改你的 Node 环境，也不会自动安装 Homebrew / nvm。这样可以避免破坏用户已有的开发环境。
+> 安装器不会自动修改你的 Node 环境，也不会自动安装 Homebrew / nvm，避免破坏用户已有的开发环境。
 
 ### 2. 下载项目
-
-在终端运行：
 
 ```bash
 git clone https://github.com/BlahBlahBlahBB/design-production-mcp.git
@@ -247,93 +177,85 @@ cd design-production-mcp
 
 ### 3. 一键安装 MCP
 
-运行：
-
 ```bash
 ./install.command
 ```
 
-安装器会自动完成：
+安装器会自动：
 
 1. 检查 macOS
 2. 检查 Node.js / npm
-3. 如果 Node 版本低于 20，显示当前版本、当前 Node 路径和明确的升级提示
+3. 检查 Node 版本是否 >= 20
 4. 执行 `npm ci --include=dev`
 5. 编译 MCP
-6. 找到当前真实的 Node 可执行路径
-7. 找到 MCP 编译入口 `dist/src/mcp/stdio.js`
+6. 找到真实 Node 可执行路径
+7. 检查 MCP 入口 `dist/src/mcp/stdio.js`
 8. 备份 `~/.codex/config.toml`
-9. 自动写入 / 更新 `design-production-illustrator` MCP 配置
-10. 保留其他已有 Codex 配置
+9. 写入 / 更新 `design-production-illustrator`
+10. 保留其他 Codex 配置，并避免重复 MCP 条目
 
-安装器可以重复运行，不会重复添加多个 MCP 配置。
-
-如果系统提示没有执行权限，可以先运行：
+如果系统提示没有执行权限：
 
 ```bash
 chmod +x install.command uninstall.command
 ./install.command
 ```
 
-### 4. 重启 Codex
+## 安装后验证
 
 安装完成后：
 
 1. 完全退出 Codex
 2. 重新打开 Codex
-3. 打开 Adobe Illustrator 2026 Stable
+3. 打开 **Adobe Illustrator 2026 Stable**
 4. 新建一个 Codex 会话
-
-然后让 Codex 调用：
+5. 发送下面这段：
 
 ```text
-illustrator_status
+请调用 `design-production-illustrator` MCP 的 `illustrator_status`。
+只读取状态，不要修改任何 Illustrator 文档。
+告诉我 Illustrator 是否连接成功、当前 Illustrator 版本，以及这个 MCP 是否已经可用。
 ```
 
-如果能正常返回 Illustrator 状态，说明 MCP 已安装成功。
+如果能正常返回 Illustrator 状态，说明安装成功。
+
+平时正常使用时不需要手动写工具名，可以直接用自然语言描述 Illustrator 任务。
 
 ## 安装问题排查
 
-### 提示 Node 版本过低
+### Node 版本过低
 
-如果安装器显示类似：
+如果安装器提示 Node 版本低于 20，会显示当前 Node 版本和路径。请升级或切换到 Node 20+ 后重新运行安装器。
 
-```text
-检测到不受支持的 Node.js 版本：v18.x.x
-当前 Node 路径：/usr/local/bin/node
-```
-
-说明当前终端实际使用的 Node 版本低于 20。先升级或切换到 Node 20+，然后重新打开终端并确认：
+确认当前实际版本：
 
 ```bash
 node -v
 which node
 ```
 
-如果你明明已经安装了新版本，但 `node -v` 仍显示旧版本，通常是当前终端的 `PATH` 或 Node 版本管理器仍指向旧版本。
+如果明明安装了新版但仍显示旧版，通常是当前终端的 `PATH` 或 Node 版本管理器仍指向旧版本。
 
-### 提示找不到 `./install.command`
+### 找不到 `./install.command`
 
-说明当前终端不在项目目录。先进入项目文件夹：
+说明当前终端不在项目目录：
 
 ```bash
 cd /你的/design-production-mcp/路径
 ./install.command
 ```
 
-### GitHub HTTPS 拉取失败
+### GitHub HTTPS / SSL 拉取失败
 
-如果浏览器能打开 GitHub，但 Git 出现 HTTPS / SSL 连接问题，并且你已经配置 GitHub SSH，可以把当前仓库 remote 改为 SSH：
+如果浏览器能打开 GitHub，但 Git HTTPS 失败，并且 GitHub SSH 已认证成功，可以切换当前仓库 remote：
 
 ```bash
 git remote set-url origin git@github.com:BlahBlahBlahBB/design-production-mcp.git
 ```
 
-然后重试 `git pull` / `git fetch`。
+然后重新执行 `git pull` / `git fetch`。
 
 ## 手动安装
-
-如果不想使用一键安装器，也可以手动安装：
 
 ```bash
 git clone https://github.com/BlahBlahBlahBB/design-production-mcp.git
@@ -364,7 +286,7 @@ node -p 'process.execPath'
 
 ## 卸载
 
-如果只想从 Codex 中移除这个 MCP，而不删除项目源码：
+在项目目录运行：
 
 ```bash
 ./uninstall.command
@@ -376,14 +298,7 @@ node -p 'process.execPath'
 [mcp_servers.design-production-illustrator]
 ```
 
-不会删除：
-
-- 你的 Illustrator 文件
-- 项目源码
-- 其他 MCP
-- 其他 Codex 配置
-
-卸载前同样会备份 Codex 配置。
+不会删除 Illustrator 文件、项目源码、其他 MCP 或其他 Codex 配置。卸载前同样会备份 Codex 配置。
 
 ## Core 与 Production 的区别
 
