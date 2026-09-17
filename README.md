@@ -1,4 +1,4 @@
-# Illustrator MCP
+# 🗂️ Illustrator MCP
 
 一套面向 **Adobe Illustrator + Codex** 的开源 MCP 工具集。
 
