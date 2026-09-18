@@ -1,3 +1,17 @@
+# v0.4.0 发布说明
+
+## Mixed-script typography + Illustrator 2022–2026 compatibility
+
+- 扩展现有 `set_typography`：新增批量 `script_rules.han` / `script_rules.latin`，可在同一个 TextFrame 内为中文与英文分别设置字体、字重及其它安全 Character formatting；仍保持一次 MCP 调用、一次后台 JSX 执行。
+- `get_typography_metrics` 新增紧凑 `script_runs` 读回，用于验证 Han / Latin 实际字体与字重；不破坏已有 official-compatible typography fields、`font_runs` 与 `mixed_fields`。
+- 默认脚本规则固定：CJK / 全角标点跟随 Han；ASCII 数字与标点跟随 Latin；空格、Tab、CR/LF 以及未识别字符保持原格式，不由 script rules 主动修改。
+- 缺失字体不会静默替换：按 rule/property 明确返回 `FONT_NOT_FOUND` / 依赖状态。
+- 增加 Illustrator 2022–2026 兼容策略与 `compatibility-check.command` / `npm run compatibility:check`。2026 Stable 30.8.1 为 maintainer verified；2022–2025 为 `SUPPORTED_UNVERIFIED`，不虚假宣称已实机验证。
+- 2026 Stable 30.8.1 compatibility smoke：16 PASS、0 FAIL、1 SKIPPED（无外部图片 fixture）；50 个 TextFrame 混合脚本字体、段落左对齐、跨调用 UUID 与 +200pt 移动均完成真实读回。
+- 保留 v0.3.1 native Illustrator UUID 主路径与 legacy note UUID fallback，不重新设计对象身份层。
+
+---
+
 # v0.3.1 发布说明
 
 ## Native Illustrator UUID identity
@@ -131,8 +145,3 @@ Illustrator 26.1 和 Windows 当前仍属于未正式认证环境。
 
 - `THIRD_PARTY_NOTICES.md`
 - `docs/open-source-origins.md`
-# v0.4.0
-
-- Extend the existing `set_typography` tool with batch mixed-script Han/Latin character rules and compact script-run readback.
-- Add an Illustrator 2022–2026 compatibility policy and disposable-document compatibility checker. Only Illustrator 2026 Stable 30.8.1 is maintainer verified; 2022–2025 remain supported but unverified.
-- Preserve the v0.3.1 native UUID identity implementation and legacy note fallback unchanged.
