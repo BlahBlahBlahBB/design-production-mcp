@@ -255,15 +255,30 @@ else try {
     return dpmFinalizeScriptProperties(states, result);
   }
   var results=[], failed=[];
+  function preflightStoryWritable(story, storyIndex) {
+    try {
+      var frames = story.textFrames;
+      var frameCount = frames.length;
+      if (!frameCount) return { ok:false, story_index:storyIndex, reason:'Story has no text frames' };
+      for (var fi = 0; fi < frameCount; fi++) {
+        var frame = frames[fi];
+        var locked = frame.locked;
+        var hidden = frame.hidden;
+        var editable = frame.editable;
+        if (locked) return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'locked' };
+        if (hidden) return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'hidden' };
+        if (editable === false) return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'not editable' };
+      }
+      return { ok:true, story_index:storyIndex, text_frame_count:frameCount };
+    } catch (storySafetyError) {
+      return { ok:false, story_index:storyIndex, reason:'Unable to verify Story text-frame safety: ' + storySafetyError.message };
+    }
+  }
   function applyTarget(item, uuid, storyIndex, isStory) {
     if (!item) { failed.push({uuid:uuid,story_index:storyIndex,reason:'No object found matching target'}); return; }
     if (!isStory) {
-      try { if (item.typename !== 'TextFrame') { failed.push({uuid:uuid,story_index:storyIndex,reason:'Object is not a TextFrame'}); return; } }
-      catch (typeError) { failed.push({uuid:uuid,story_index:storyIndex,reason:typeError.message}); return; }
-      var isLocked = false, isHidden = false;
-      try { isLocked = item.locked === true; } catch (_) {}
-      try { isHidden = item.hidden === true; } catch (_) {}
-      if (isLocked || isHidden) { failed.push({uuid:uuid,story_index:storyIndex,reason:isLocked?'locked':'hidden'}); return; }
+      if (item.typename !== 'TextFrame') { failed.push({uuid:uuid,story_index:storyIndex,reason:'Object is not a TextFrame'}); return; }
+      if (item.locked || item.hidden) { failed.push({uuid:uuid,story_index:storyIndex,reason:item.locked?'locked':'hidden'}); return; }
     }
     var log={uuid:uuid, story_index:storyIndex, verified_properties:[], failed_properties:[], unsupported_properties:[]}, c=params.character, p=params.paragraph;
     if (c) { if (c.font_name || c.font_family) { var font=resolveFont(c, item.textRange.characterAttributes.textFont); if (!font) log.unsupported_properties.push({property:'font_family',code:'FONT_DEPENDENT',message:'Requested font family/style is unavailable in this Illustrator installation.'}); else { try { item.textRange.characterAttributes.textFont=font; for (var fc=0; fc<item.characters.length; fc++) item.characters[fc].characterAttributes.textFont=font; var actualFont=item.textRange.characterAttributes.textFont; log.verified_properties.push({property:'font_family',readback:{font_family:actualFont.family,font_style:actualFont.style,font_name:actualFont.name},matches:true}); } catch(e) { log.unsupported_properties.push({property:'font_family',code:'FONT_DEPENDENT',message:e.message}); } } }
@@ -284,12 +299,22 @@ else try {
   if (useAllStories && ids.length) {
     writeResultFile(RESULT_PATH,{error:true,message:'Specify either all_stories=true or uuids, not both.'});
   } else if (useAllStories) {
-    for (var si=0; si<doc.stories.length; si++) {
-      try { applyTarget(doc.stories[si], null, si, true); }
-      catch (storyError) { failed.push({story_index:si,reason:storyError.message}); }
+    var storySafety = [], storySafetyFailed = false;
+    for (var spi=0; spi<doc.stories.length; spi++) {
+      var safety = preflightStoryWritable(doc.stories[spi], spi);
+      storySafety.push(safety);
+      if (!safety.ok) { storySafetyFailed = true; failed.push(safety); }
     }
-    var allSucceeded = failed.length === 0; for (var ri = 0; ri < results.length; ri++) if (!results[ri].success) allSucceeded = false;
-    writeResultFile(RESULT_PATH,{success:allSucceeded,details:{requested_count:doc.stories.length,updated_count:results.length,failed_count:failed.length,target_mode:'all_stories'},results:results,failed_objects:failed});
+    if (storySafetyFailed) {
+      writeResultFile(RESULT_PATH,{success:false,details:{requested_count:doc.stories.length,updated_count:0,failed_count:failed.length,target_mode:'all_stories',preflight:'FAILED_NO_MUTATION'},results:[],failed_objects:failed,story_safety:storySafety});
+    } else {
+      for (var si=0; si<doc.stories.length; si++) {
+        try { applyTarget(doc.stories[si], null, si, true); }
+        catch (storyError) { failed.push({story_index:si,reason:storyError.message}); }
+      }
+      var allSucceeded = failed.length === 0; for (var ri = 0; ri < results.length; ri++) if (!results[ri].success) allSucceeded = false;
+      writeResultFile(RESULT_PATH,{success:allSucceeded,details:{requested_count:doc.stories.length,updated_count:results.length,failed_count:failed.length,target_mode:'all_stories',preflight:'PASS'},results:results,failed_objects:failed,story_safety:storySafety});
+    }
   } else if (ids.length) {
     for (var i=0; i<ids.length; i++) applyTarget(findItemByUUID(ids[i]), ids[i], null, false);
     var allSucceeded2 = failed.length === 0; for (var ri2 = 0; ri2 < results.length; ri2++) if (!results[ri2].success) allSucceeded2 = false;
@@ -308,7 +333,7 @@ export function register(server: McpServer): void {
   }, async (params) => executeToolJsx(readJsx, params));
   server.registerTool('set_typography', {
     title: 'Set Typography',
-    description: 'Set explicitly supplied character and paragraph formatting in one background JSX execution. Pass uuids for explicit TextFrame targets. For document-wide typography, use all_stories=true so the write operates through Story text directly and does not depend on doc.textFrames wrappers or PageItem UUIDs. Do not combine target modes. `character` applies target-wide first; optional `script_rules.han` and `.latin` then override only matching Han/Latin characters. CJK/full-width punctuation defaults to Han; ASCII digits and punctuation default to Latin; spaces, tabs, CR/LF, and unclassified characters are left unchanged by script rules. Paragraph formatting remains target-wide. Specify a script font by exact `font_name` or exact `font_family` plus `font_style`; missing fonts do not fall back and are reported per rule/property.',
+    description: 'Set explicitly supplied character and paragraph formatting in one background JSX execution. Pass uuids for explicit TextFrame targets. For document-wide typography, use all_stories=true so the write operates through Story text directly and does not depend on doc.textFrames wrappers or PageItem UUIDs. Before any Story mutation, every Story text frame must pass locked/hidden/editable safety preflight; if safety cannot be verified, the call fails with zero mutations. Do not combine target modes. `character` applies target-wide first; optional `script_rules.han` and `.latin` then override only matching Han/Latin characters. CJK/full-width punctuation defaults to Han; ASCII digits and punctuation default to Latin; spaces, tabs, CR/LF, and unclassified characters are left unchanged by script rules. Paragraph formatting remains target-wide. Specify a script font by exact `font_name` or exact `font_family` plus `font_style`; missing fonts do not fall back and are reported per rule/property.',
     inputSchema: { uuids: uuids.optional(), all_stories: allStories, character: characterSchema.optional(), script_rules: scriptRulesSchema.optional(), paragraph: paragraphSchema.optional() }, annotations: WRITE_ANNOTATIONS,
   }, async (params) => executeToolJsx(writeJsx, params));
 }
