@@ -14,12 +14,14 @@ const ROUTING_BLOCK = `${ROUTING_START}
 For Adobe Illustrator tasks:
 
 - Use the \`design-production-illustrator\` MCP as the primary interface whenever the requested operation is supported by this MCP.
-- Prefer MCP read/write tools over Computer Use, browser automation, Adobe Illustrator Beta integrations, or UI inspection.
-- Do not use \`Com.adobe.illustratorbeta\`, Adobe Illustrator Beta, browser automation, or Computer Use for Illustrator document inspection or editing when the MCP can perform the task.
+- Prefer MCP read/write tools over Computer Use, browser automation, Adobe Illustrator Beta integrations, Adobe's official Illustrator MCP, or UI inspection.
+- Do not use \`Com.adobe.illustratorbeta\`, Adobe Illustrator Beta, Adobe Illustrator Official MCP, browser automation, or Computer Use for Illustrator document inspection or editing unless the user explicitly asks for that backend.
 - Target Adobe Illustrator Stable by default. Do not launch Illustrator Beta unless the user explicitly asks for Beta.
 - For read-only requests, use MCP read tools directly.
 - For important production files where the MASTER must be protected, use the DPM Production work-copy flow.
-- If the MCP is unavailable, fails, or lacks a required capability, stop and explain the gap. Do not silently fall back to Computer Use or Illustrator Beta; only use a fallback after explicit user approval.
+- If the MCP is unavailable, fails, or lacks a required capability, stop and explain the gap and any possible partial mutation. Do not silently fall back to another Illustrator backend; only use one after explicit user approval.
+- Never automatically invoke Undo after a failed write. State the observed state and wait for explicit user direction.
+- For multi-object work, use \`set_appearance\` for a shared appearance and \`modify_objects\` for different per-object changes; verify batches with \`get_visual_appearance\`. Do not loop \`modify_object\` calls when a batch tool applies.
 ${ROUTING_END}`;
 
 function usage() {
@@ -85,7 +87,8 @@ async function writeWithBackup(targetPath, content, label = "Codex configuration
 const [operation, nodePath, entrypoint] = process.argv.slice(2);
 if (operation !== "install" && operation !== "uninstall") usage();
 
-const codexHome = path.join(os.homedir(), ".codex");
+// Test-only override keeps installer regression tests from touching a user's Codex setup.
+const codexHome = process.env.DPM_CODEX_HOME || path.join(os.homedir(), ".codex");
 const configPath = path.join(codexHome, "config.toml");
 const agentsPath = path.join(codexHome, "AGENTS.md");
 

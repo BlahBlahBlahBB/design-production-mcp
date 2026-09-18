@@ -38,6 +38,9 @@ import { register as registerCreateLine } from './modify/create-line.js';
 import { register as registerCreateTextFrame } from './modify/create-text-frame.js';
 import { register as registerCreatePath } from './modify/create-path.js';
 import { register as registerModifyObject } from './modify/modify-object.js';
+import { register as registerModifyObjects } from './modify/modify-objects.js';
+import { register as registerSetAppearance } from './modify/set-appearance.js';
+import { register as registerGetVisualAppearance } from './read/get-visual-appearance.js';
 import { register as registerConvertToOutlines } from './modify/convert-to-outlines.js';
 import { register as registerApplyColorProfile } from './modify/apply-color-profile.js';
 import { register as registerPlaceImage } from './modify/place-image.js';
@@ -87,6 +90,7 @@ export function registerAllTools(server: McpServer): void {
 
   // Phase 2: 読み取り系ツール
   registerGetTextFrameDetail(server);
+  registerGetVisualAppearance(server);
   registerGetColors(server);
   registerGetPathItems(server);
   registerGetGuidelines(server);
@@ -116,6 +120,8 @@ export function registerAllTools(server: McpServer): void {
   registerCreateTextFrame(server);
   registerCreatePath(server);
   registerModifyObject(server);
+  registerModifyObjects(server);
+  registerSetAppearance(server);
   registerConvertToOutlines(server);
   registerApplyColorProfile(server);
   registerPlaceImage(server);

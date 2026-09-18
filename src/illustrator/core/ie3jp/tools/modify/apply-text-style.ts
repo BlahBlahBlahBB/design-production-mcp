@@ -111,7 +111,7 @@ export function register(server: McpServer): void {
       annotations: WRITE_ANNOTATIONS,
     },
     async (params) => {
-      const result = await executeJsx(applyJsxCode, params, { activate: true });
+      const result = await executeJsx(applyJsxCode, params);
       return formatToolResult(result);
     },
   );

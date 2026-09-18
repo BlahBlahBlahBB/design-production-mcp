@@ -1,3 +1,15 @@
+# v0.1.1 发布说明
+
+## Illustrator Core 批量后台写入
+
+- 新增 `set_appearance`、`get_visual_appearance`、`modify_objects`；Core 现有 **77** 个公开工具。
+- `modify_object` 继续兼容单对象调用，但复用批量修改核心，且不再激活 Illustrator。
+- 普通 DOM Core 操作及 heavy 操作默认后台运行；只有固定 Action / 菜单路径（Expand、Pathfinder、Image Trace）显式激活 Illustrator。
+- TextFrame 外观写入和验证均以真实 character attributes 为准，批量读取会报告 mixed fill/stroke。
+- 安装器写入 batch-first、无 Beta/官方 MCP/Computer Use 自动回退、无自动 Undo 的路由规则。
+
+---
+
 # v0.1.0 发布说明
 
 这是 Design Production MCP 的首个公开版本。

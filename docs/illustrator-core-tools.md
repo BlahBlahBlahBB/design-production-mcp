@@ -52,6 +52,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `get_overprint_info` | 检查 Overprint 信息。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_path_items` | 读取 PathItem 信息。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_selection` | 读取当前 Illustrator 选区。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
+| `get_visual_appearance` | 批量读取对象真实外观；TextFrame 从字符属性读取并报告混合颜色。 | IE3JP | IE3JP JSX | 是 | 否 | 通过 |
 | `get_separation_info` | 检查分色信息。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_symbols` | 读取 Symbols。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_text_frame_detail` | 获取指定文字框的详细信息。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
@@ -69,6 +70,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `manage_linked_images` | Relink 或 Embed 放置图片。 | IE3JP | IE3JP JSX | 是 | 否 | 通过 |
 | `manage_swatches` | 管理 Swatches。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `modify_object` | 修改选中对象的属性。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
+| `modify_objects` | 一次执行多个对象的不同属性修改并返回逐对象真实验证。 | IE3JP | IE3JP JSX | 是 | 否 | 通过 |
 | `move_to_layer` | 将选区移动到指定图层。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `open_document` | 打开 Illustrator 文档。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `pathfinder_objects` | 执行固定的 Pathfinder 模式。 | Alexander | Alexander Action | 是 | 否 | 通过 |
@@ -83,16 +85,17 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `save_document` | 保存当前文档。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `select_objects` | 按条件选择对象。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `set_illustrator_version` | 指定要连接的已安装 Illustrator 版本。 | IE3JP | IE3JP transport configuration | 是 | 否 | 待验证 |
+| `set_appearance` | 一次为多个对象设置相同 fill/stroke/opacity/hidden/locked。 | IE3JP | IE3JP JSX | 是 | 否 | 通过 |
 | `set_workflow` | 设置坐标 / Workflow 偏好。 | IE3JP | IE3JP session state | 是 | 否 | 待验证 |
 | `set_z_order` | 调整对象堆叠顺序。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `undo` | 撤销上一次 Illustrator 操作。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `ungroup_objects` | 解组选中的群组。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 
-Illustrator Core 公开工具总数：**74**。
+Illustrator Core 公开工具总数：**77**。
 
 来源统计：
 
-- IE3JP：**67**
+- IE3JP：**70**
 - Alexander Ladygin：**2**
 - Creold / Sergey Osokin：**4**
 - DPM：**1**（`illustrator_status`）

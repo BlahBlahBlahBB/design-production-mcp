@@ -241,7 +241,7 @@ export function register(server: McpServer): void {
       annotations: WRITE_ANNOTATIONS,
     },
     async (params) => {
-      const result = await executeToolJsx(jsxCode, params, { activate: true });
+      const result = await executeToolJsx(jsxCode, params);
       // Inject active coordinate system into the response for the bleed note
       const coordSystem = await resolveCoordinateSystem(undefined);
       const coordNote =

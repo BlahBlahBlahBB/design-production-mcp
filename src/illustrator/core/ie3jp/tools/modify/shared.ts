@@ -126,11 +126,6 @@ function applyOptionalFill(item, colorObj) {
 
   if (item.typename === "TextFrame") {
     var textColor = createColor(colorObj);
-
-    // Apply once to the whole range for empty/new text defaults, then explicitly
-    // apply to every character. Some Illustrator documents can report the
-    // range-level CharacterAttributes color without updating existing character
-    // runs, so per-character assignment is required for reliable production use.
     item.textRange.characterAttributes.fillColor = textColor;
     for (var ti = 0; ti < item.characters.length; ti++) {
       item.characters[ti].characterAttributes.fillColor = textColor;
@@ -162,5 +157,39 @@ function applyStroke(item, strokeObj, defaultStroked) {
     item.strokeColor = createColor(strokeObj.color);
     item.stroked = true;
   }
+}
+`;
+
+/** Character attributes are authoritative for TextFrame appearance. */
+export const TEXT_APPEARANCE_HELPERS_JSX = `
+function applyTextAppearance(item, fillObj, strokeObj) {
+  var chars = item.characters;
+  if (typeof fillObj !== "undefined") {
+    var fill = createColor(fillObj);
+    item.textRange.characterAttributes.fillColor = fill;
+    for (var fi = 0; fi < chars.length; fi++) chars[fi].characterAttributes.fillColor = fill;
+  }
+  if (typeof strokeObj !== "undefined" && strokeObj !== null) {
+    if (typeof strokeObj.width === "number") {
+      item.textRange.characterAttributes.strokeWeight = strokeObj.width;
+      for (var wi = 0; wi < chars.length; wi++) chars[wi].characterAttributes.strokeWeight = strokeObj.width;
+    }
+    if (strokeObj.color) {
+      var stroke = createColor(strokeObj.color);
+      item.textRange.characterAttributes.strokeColor = stroke;
+      for (var si = 0; si < chars.length; si++) chars[si].characterAttributes.strokeColor = stroke;
+    }
+  }
+}
+function readTextAppearance(item) {
+  var chars = item.characters, firstFill = null, firstStroke = null, fillMixed = false, strokeMixed = false;
+  for (var ai = 0; ai < chars.length; ai++) {
+    var attrs = chars[ai].characterAttributes, fill = colorToObject(attrs.fillColor), stroke = colorToObject(attrs.strokeColor);
+    if (firstFill === null) firstFill = fill; else if (jsonStringify(fill) !== jsonStringify(firstFill)) fillMixed = true;
+    if (firstStroke === null) firstStroke = stroke; else if (jsonStringify(stroke) !== jsonStringify(firstStroke)) strokeMixed = true;
+  }
+  if (firstFill === null) firstFill = colorToObject(item.textRange.characterAttributes.fillColor);
+  if (firstStroke === null) firstStroke = colorToObject(item.textRange.characterAttributes.strokeColor);
+  return { character_count: chars.length, fill: firstFill, fill_mixed: fillMixed, stroke: firstStroke, stroke_mixed: strokeMixed };
 }
 `;

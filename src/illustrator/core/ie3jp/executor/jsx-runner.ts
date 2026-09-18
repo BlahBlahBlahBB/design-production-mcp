@@ -331,13 +331,14 @@ export async function executeJsx(
 }
 
 /**
- * 重い処理用の JSX 実行（タイムアウト延長 + Illustrator をフォアグラウンドに）
+ * 重い処理用の JSX 実行。heavy はタイムアウトだけを意味し、前面化はしない。
  */
 export async function executeJsxHeavy(
   jsxCode: string,
   params?: unknown,
+  options?: { activate?: boolean },
 ): Promise<JsxResult> {
-  return executeJsx(jsxCode, params, { timeout: TIMEOUT_HEAVY, activate: true });
+  return executeJsx(jsxCode, params, { timeout: TIMEOUT_HEAVY, activate: options?.activate ?? false });
 }
 
 // ─── デバッグ用エクスポート ──────────────────────────────────────────────────

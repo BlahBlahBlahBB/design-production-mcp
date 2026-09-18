@@ -4,7 +4,7 @@
 
 这个项目把多个成熟的 Illustrator 开源能力整合到同一个 MCP 中，并保留 DPM 自己的生产安全能力。普通 Illustrator 操作可以直接作用于当前文档；只有需要保护 MASTER 文件的生产流程，才使用独立的 Work Copy 安全机制。
 
-当前版本：**v0.1.0**  
+当前版本：**v0.1.1**
 发布说明：[RELEASE_NOTES.md](RELEASE_NOTES.md)
 
 <br>
@@ -13,8 +13,8 @@
 
 当前公开能力分为两部分：
 
-- **Illustrator Core：74 个公开工具**
-  - 67 个来自 IE3JP `illustrator-mcp-server`
+- **Illustrator Core：77 个公开工具**
+  - 70 个来自 IE3JP `illustrator-mcp-server`
   - 2 个来自 Alexander Ladygin
   - 4 个来自 Creold / Sergey Osokin
   - 1 个 DPM 状态工具 `illustrator_status`
@@ -24,7 +24,11 @@
 
 ### 🔻 Illustrator Core
 
-Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创建 Work Copy。
+Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创建 Work Copy。普通 DOM 读写默认后台执行，不会主动把 Illustrator 拉到前台；只有 Expand、Pathfinder 等 Action / 菜单路径才会激活 Illustrator。
+
+多对象工作采用 batch-first：统一外观使用 `set_appearance`，不同对象属性使用 `modify_objects`，并用 `get_visual_appearance` 一次读取真实 DOM 外观（TextFrame 读取真实 character attributes，混合文字会明确标记）。`modify_object` 保留为单对象兼容接口。
+
+Stable Illustrator MCP 独立运行，不依赖 Adobe 官方 Beta MCP。DPM 工具失败时，Agent 必须报告失败与可能的部分修改，不会静默改用 Beta、官方 MCP、Computer Use、浏览器或 UI 自动化，也不会自动连续 Undo。
 
 主要能力包括：
 
@@ -40,7 +44,7 @@ Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创�
 - Symbols / Datasets
 - 输出与印前：PNG / JPEG / SVG、PDF、Preflight、Overprint、Separation、Crop Marks
 
-完整的 74 个 Core 工具清单见：
+完整的 77 个 Core 工具清单见：
 
 [docs/illustrator-core-tools.md](docs/illustrator-core-tools.md)
 
@@ -66,7 +70,7 @@ DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** �
 
 ## ⭕️ 适合怎么用
 
-这个 MCP 的目标不是让你手动记住 74 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
+这个 MCP 的目标不是让你手动记住 77 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
 
 例如可以直接说：
 

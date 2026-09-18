@@ -25,7 +25,7 @@ export async function executeToolJsx(
     : baseParams;
 
   const result = options?.heavy
-    ? await executeJsxHeavy(jsxCode, resolvedParams)
+    ? await executeJsxHeavy(jsxCode, resolvedParams, { activate: options?.activate ?? false })
     : await executeJsx(jsxCode, resolvedParams, { activate: options?.activate ?? false });
 
   return formatToolResult(result);
