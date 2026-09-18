@@ -140,8 +140,28 @@ if (preflight) {
       var verifiedState = verifyItem(item, coordSystem, abRect);
       if (item.typename === "TextFrame") {
         try {
-          verifiedState.fill = colorToObject(item.textRange.characterAttributes.fillColor);
-        } catch(e) {}
+          var firstCharacterFill = null;
+          var textFillUniform = true;
+
+          for (var vti = 0; vti < item.characters.length; vti++) {
+            var characterFill = colorToObject(item.characters[vti].characterAttributes.fillColor);
+            if (firstCharacterFill === null) {
+              firstCharacterFill = characterFill;
+            } else if (jsonStringify(characterFill) !== jsonStringify(firstCharacterFill)) {
+              textFillUniform = false;
+            }
+          }
+
+          if (firstCharacterFill !== null) {
+            verifiedState.fill = firstCharacterFill;
+          } else {
+            verifiedState.fill = colorToObject(item.textRange.characterAttributes.fillColor);
+          }
+          verifiedState.textFillUniform = textFillUniform;
+          verifiedState.textCharacterCount = item.characters.length;
+        } catch(e) {
+          errors.push("text fill verification: " + e.message);
+        }
       }
       if (errors.length > 0) {
         var result = { success: false, uuid: params.uuid, coordinateSystem: coordSystem, errors: errors, verified: verifiedState };
