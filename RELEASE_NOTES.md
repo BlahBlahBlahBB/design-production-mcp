@@ -1,3 +1,15 @@
+# v0.3.1 发布说明
+
+## Native Illustrator UUID identity
+
+- Core 现优先使用 Illustrator 24+ 的 `PageItem.uuid` 和
+  `Document.getPageItemFromUuid()`，从而在独立 JSX / MCP 执行之间保持对象身份。
+- 旧 DPM `PageItem.note` UUID 仅作为兼容回退保留。无法读到 native UUID 且 note
+  写入无法读回确认时会明确失败，不会返回无法再次定位的临时 UUID。
+- 所有 Core 继续复用同一 shared UUID helper；duplicate 操作也不再另行生成未验证 UUID。
+
+---
+
 # v0.3.0 发布说明
 
 ## Comprehensive Illustrator typography control

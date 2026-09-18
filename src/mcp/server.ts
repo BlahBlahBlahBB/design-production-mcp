@@ -14,7 +14,7 @@ import { ManagedSessionRegistry } from "../production/session/managed-sessions.j
 export function createDesignProductionMcpServer(
   production = new ManagedSessionRegistry(new LocalIllustratorBridge()),
 ): McpServer {
-  const server = new McpServer({ name: "design-production-mcp", version: "0.3.0" });
+  const server = new McpServer({ name: "design-production-mcp", version: "0.3.1" });
   registerIe3jpCoreTools(server);
   registerAlexanderTools(server);
   registerCreoldTools(server);

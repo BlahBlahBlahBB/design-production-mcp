@@ -117,6 +117,26 @@ test("typography stays a two-tool batch Core surface with honest Classic DOM lim
   assert.match(align, /DO NOT USE FOR PARAGRAPH\/TEXT JUSTIFICATION/);
 });
 
+test("shared UUID identity prefers Illustrator native UUIDs and keeps verified legacy fallback", async () => {
+  const helper = await source("src/illustrator/core/ie3jp/jsx/helpers/common.jsx");
+  const duplicate = await source("src/illustrator/core/ie3jp/tools/modify/duplicate-objects.ts");
+  const ensure = helper.slice(helper.indexOf("function ensureUUID"), helper.indexOf("// --- カラー変換"));
+  const find = helper.slice(helper.indexOf("function findItemByUUID"), helper.indexOf("// --- レイヤー解決"));
+  // Native PageItem.uuid comes before any legacy PageItem.note access.
+  assert.ok(ensure.indexOf("_getNativeUUID(pageItem)") < ensure.indexOf("pageItem.note"));
+  assert.match(ensure, /if \(nativeUUID\) return nativeUUID/);
+  // The only generated fallback is read back from note; failure is explicit.
+  assert.match(helper, /persisted === uuid/);
+  assert.match(ensure, /Unable to establish a persistent UUID/);
+  // Native Document lookup is verified; an older note UUID remains searchable.
+  assert.match(find, /getPageItemFromUuid\(uuid\)/);
+  assert.match(find, /_getNativeUUID\(nativeItem\) === uuid/);
+  assert.match(find, /_uuidIndex\[uuid\] \|\| null/);
+  // Duplicate uses the one shared helper instead of inventing an unpersisted ID.
+  assert.match(duplicate, /ensureUUID\(dup, true\)/);
+  assert.doesNotMatch(duplicate, /var newUuid = generateUUID/);
+});
+
 test("Stable AppleScript transport addresses the Stable bundle without a broken POSIX tell target", async () => {
   const transport = await source("src/illustrator/core/ie3jp/executor/file-transport.ts");
   assert.match(transport, /tell application id "com\.adobe\.illustrator"/);

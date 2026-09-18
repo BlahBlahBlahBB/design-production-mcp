@@ -60,20 +60,10 @@ if (preflight) {
           }
         }
 
-        // 複製は元オブジェクトの note(UUID含む)を継承するため、新しいUUIDを強制割り当て
-        var newUuid = generateUUID();
-        try {
-          var dupNote = dup.note || "";
-          var oldUuid = extractUUIDFromNote(dupNote);
-          if (oldUuid) {
-            // UUID部分だけ置換し、メタデータ(::key=value)は保持
-            dup.note = newUuid + dupNote.substring(36);
-          } else {
-            dup.note = newUuid;
-          }
-        } catch(e) {
-          // note 書き込み不可の場合はそのまま
-        }
+        // Native PageItem.uuid is unique for a duplicate. Older hosts fall back
+        // through the shared helper, which verifies note persistence before it
+        // returns a replacement legacy UUID.
+        var newUuid = ensureUUID(dup, true);
         results.push({ sourceUuid: params.uuids[i], newUuid: newUuid, verified: verifyItem(dup) });
       }
 

@@ -162,21 +162,46 @@ function setNoteMeta(item, key, value) {
   try { item.note = note; } catch(e) {}
 }
 
-function ensureUUID(pageItem) {
-  // note プロパティに UUID がなければ遅延割り当て
+function _getNativeUUID(pageItem) {
+  // Illustrator 24+ owns this UUID and preserves it across JSX executions.
+  // Keep this read deliberately small: some wrapper types throw on .uuid.
+  try {
+    var nativeUUID = pageItem.uuid;
+    if (nativeUUID && typeof nativeUUID === "string") return nativeUUID;
+  } catch(e) {}
+  return "";
+}
+
+function _writeLegacyNoteUUID(pageItem, oldNote) {
+  var uuid = generateUUID();
+  var note = oldNote || "";
+  var oldUUID = extractUUIDFromNote(note);
+  var nextNote = oldUUID ? uuid + note.substring(36) : uuid + note;
+  try {
+    pageItem.note = nextNote;
+    // Assignment is not enough: locked/wrapped objects can reject it silently.
+    var persisted = extractUUIDFromNote(pageItem.note || "");
+    if (persisted === uuid) return uuid;
+  } catch(e) {}
+  return "";
+}
+
+function ensureUUID(pageItem, forceLegacyNewUUID) {
+  // Native UUID is the primary identity system. Never write PageItem.note when
+  // Illustrator exposes a valid native UUID, including duplicated PageItems.
+  var nativeUUID = _getNativeUUID(pageItem);
+  if (nativeUUID) return nativeUUID;
+
+  // Legacy documents may already contain DPM note UUIDs. Preserve that lookup.
   var note = "";
   try { note = pageItem.note || ""; } catch(e) { /* note がないオブジェクトもある */ }
-
   var uuid = extractUUIDFromNote(note);
-  if (uuid) return uuid;
+  if (uuid && !forceLegacyNewUUID) return uuid;
 
-  uuid = generateUUID();
-  try {
-    pageItem.note = uuid;
-  } catch(e) {
-    // ロックされたオブジェクト等で書き込み不可の場合はそのまま返す
-  }
-  return uuid;
+  uuid = _writeLegacyNoteUUID(pageItem, note);
+  if (uuid) return uuid;
+  // Do not manufacture an ID which another MCP call cannot locate.
+  throw new Error("Unable to establish a persistent UUID for this PageItem");
 }
 
 // --- カラー変換 ---
@@ -476,6 +501,17 @@ function _indexContainer(container) {
 }
 
 function findItemByUUID(uuid) {
+  var doc = app.activeDocument;
+  // Native lookup is O(1) and is the only primary path for Illustrator 24+.
+  // A returned wrapper must still prove its native UUID before it is trusted.
+  try {
+    if (doc.getPageItemFromUuid) {
+      var nativeItem = doc.getPageItemFromUuid(uuid);
+      if (nativeItem && _getNativeUUID(nativeItem) === uuid) return nativeItem;
+    }
+  } catch(e) {
+    // Missing API, invalid native UUID, or wrapper incompatibility: legacy below.
+  }
   if (!_uuidIndex) _buildUUIDIndex();
   return _uuidIndex[uuid] || null;
 }
