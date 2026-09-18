@@ -2,6 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { executeToolJsx } from './tool-executor.js';
 import { colorSchema, coerceBoolean, READ_ANNOTATIONS, WRITE_ANNOTATIONS } from './modify/shared.js';
+import { SCRIPT_CLASSIFIER_JSX } from './typography-script-rules.js';
 
 /*
  * Typography deliberately has one batch reader and one batch writer.  The reader
@@ -83,12 +84,29 @@ const paragraphSchema = z.object({
   mojikumi: z.string().optional(),
 }).strict();
 
+export const scriptRuleSchema = characterSchema.superRefine((rule, context) => {
+  const hasFontRequest = Boolean(rule.font_name || rule.font_family || rule.font_style);
+  if (hasFontRequest && !rule.font_name && !(rule.font_family && rule.font_style)) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Specify font_name or both font_family and font_style for script_rules.',
+      path: ['font_family'],
+    });
+  }
+});
+
+export const scriptRulesSchema = z.object({
+  han: scriptRuleSchema.optional(),
+  latin: scriptRuleSchema.optional(),
+}).strict();
+
 const readJsx = `
 var preflight = preflightChecks();
 if (preflight) writeResultFile(RESULT_PATH, preflight);
 else try {
   var params = readParamsFile(PARAMS_PATH), doc = app.activeDocument;
   function safe(o, p) { try { return o[p]; } catch (_) { return undefined; } }
+  ${SCRIPT_CLASSIFIER_JSX}
   function same(a, b) { return jsonStringify(a) === jsonStringify(b); }
   function uniform(values) { var result = { value: undefined, mixed: false }; if (!values.length) return result; result.value = values[0]; for (var i = 1; i < values.length; i++) if (!same(result.value, values[i])) { result.value = null; result.mixed = true; break; } return result; }
   function fontEntry(attrs) {
@@ -104,16 +122,34 @@ else try {
   function justify(value) { try { if (value === Justification.LEFT) return 'left'; if (value === Justification.CENTER) return 'center'; if (value === Justification.RIGHT) return 'right'; if (value === Justification.FULLJUSTIFYLASTLINELEFT) return 'justify_last_left'; if (value === Justification.FULLJUSTIFYLASTLINECENTER) return 'justify_last_center'; if (value === Justification.FULLJUSTIFYLASTLINERIGHT) return 'justify_last_right'; if (value === Justification.FULLJUSTIFY) return 'justify_all'; } catch (_) {} return String(value); }
   function leadingType(value) { try { if (value === AutoLeadingType.BOTTOMTOBOTTOM) return 'bottom_to_bottom'; if (value === AutoLeadingType.TOPTOTOP) return 'top_to_top'; } catch (_) {} return String(value); }
   function metric(tf, uuid) {
-    var chars = tf.characters, attrs = [], runs = [], seenFonts = {};
+    var chars = tf.characters, attrs = [], runs = [], seenFonts = {}, charFontNames = [], charFonts = [];
     for (var ci = 0; ci < chars.length; ci++) {
       var ca = chars[ci].characterAttributes, f = fontEntry(ca), key = jsonStringify(f);
+      charFonts.push(f);
+      var charFontName = '';
+      try { charFontName = ca.textFont.name || ''; } catch (_) {}
+      charFontNames.push(charFontName);
       attrs.push(ca);
       if (!seenFonts[key]) { runs.push(f); seenFonts[key] = true; }
     }
+    var scriptRuns = [], activeRun = null;
+    for (var sri = 0; sri < chars.length; sri++) {
+      var script = dpmClassifyTextCharacter(chars, sri);
+      if (script !== 'han' && script !== 'latin') { activeRun = null; continue; }
+      var runFont = charFonts[sri], runFontName = charFontNames[sri] || '';
+      var runKey = script + '|' + runFontName + '|' + runFont.font_family + '|' + runFont.font_style + '|' + runFont.is_font_missing;
+      if (activeRun && activeRun._key === runKey && activeRun.end === sri) activeRun.end = sri + 1;
+      else {
+        activeRun = { script: script, start: sri, end: sri + 1, font_name:runFontName, font_family: runFont.font_family, font_style: runFont.font_style, is_font_missing: runFont.is_font_missing, _key: runKey };
+        scriptRuns.push(activeRun);
+      }
+    }
+    for (var sri2 = 0; sri2 < scriptRuns.length; sri2++) delete scriptRuns[sri2]._key;
     var source = attrs.length ? attrs : [tf.textRange.characterAttributes], properties = {
       text_length: tf.contents.length,
       text_content: tf.contents,
-      font_runs: runs
+      font_runs: runs,
+      script_runs: scriptRuns
     };
     try { properties.has_text_overflow = tf.overflows; } catch (_) {}
     if (runs.length) { properties.font_family = runs[0].font_family; properties.font_style = runs[0].font_style; properties.is_font_missing = runs[0].is_font_missing; properties.is_font_embeddable = runs[0].is_font_embeddable; }
@@ -138,6 +174,7 @@ if (preflight) writeResultFile(RESULT_PATH, preflight);
 else try {
   var params = readParamsFile(PARAMS_PATH), doc = app.activeDocument;
   function safeGet(o, p) { try { return o[p]; } catch (_) { return undefined; } }
+  ${SCRIPT_CLASSIFIER_JSX}
   function makeColor(c) { if (!c || c.type === 'none') return new NoColor(); if (c.type === 'rgb') { var rgb = new RGBColor(); rgb.red=c.r; rgb.green=c.g; rgb.blue=c.b; return rgb; } if (c.type === 'cmyk') { var cmyk = new CMYKColor(); cmyk.cyan=c.c; cmyk.magenta=c.m; cmyk.yellow=c.y; cmyk.black=c.k; return cmyk; } var gray = new GrayColor(); gray.gray=c.value; return gray; }
   function colorValue(c) { try { return colorToObject(c); } catch (_) { return null; } }
   function enumValue(group, value) {
@@ -161,6 +198,45 @@ else try {
   var versionKeys = { bunri_kinshi:true, kinsoku_order:true, kurikaeshi_moji_shori:true, mojikumi:true, every_line_composer:true };
   function failureCode(key, isCharacter, message) { if (isCharacter && otKeys[key]) return 'FONT_DEPENDENT'; if (versionKeys[key]) return 'VERSION_DEPENDENT'; if (String(message).indexOf('Enumerated value expected') >= 0 || String(message).indexOf('greater than maximum') >= 0) return 'INVALID_VALUE'; return 'NOT_EXPOSED_BY_CLASSIC_DOM'; }
   function apply(attrs, map, values, isCharacter, log) { for (var k in map) if (values && typeof values[k] !== 'undefined') { var prop = map[k], expected = values[k]; try { attrs[prop] = valueFor(prop, expected); var actual = reportValue(attrs, prop); log.verified_properties.push({ property:k, readback:actual, matches: equality(expected, actual) }); if (!equality(expected, actual)) log.failed_properties.push({ property:k, code:'READBACK_MISMATCH', readback:actual }); } catch (e) { log.unsupported_properties.push({ property:k, code:failureCode(k, isCharacter, e.message), message:e.message }); } } }
+  function applyScriptRule(item, script, rule) {
+    var chars = item.characters, indexes = [], states = {}, requestedFont = Boolean(rule.font_name || rule.font_family);
+    for (var i = 0; i < chars.length; i++) if (dpmClassifyTextCharacter(chars, i) === script) indexes.push(i);
+    var result = { script:script, matched_characters:indexes.length, properties:[], success:true };
+    if (!indexes.length) { result.status = 'NO_MATCH'; return result; }
+    var resolved = dpmResolveScriptFont(rule, app.textFonts);
+    if (requestedFont && !resolved.font) {
+      dpmAddScriptOutcome(states, 'font', 'failed', 'FONT_NOT_FOUND');
+      result.requested_font = { font_name:rule.font_name || null, font_family:rule.font_family || null, font_style:rule.font_style || null };
+      if (resolved.styles.length) result.available_styles = resolved.styles;
+    }
+    for (var ci = 0; ci < indexes.length; ci++) {
+      var index = indexes[ci], attrs = chars[index].characterAttributes;
+      if (requestedFont && resolved.font) {
+        try {
+          attrs.textFont = resolved.font;
+          var actualFont = attrs.textFont;
+          var fontMatches = (rule.font_name ? actualFont.name === rule.font_name : actualFont.family === rule.font_family && actualFont.style === rule.font_style);
+          dpmAddScriptOutcome(states, 'font', fontMatches ? 'applied' : 'failed', fontMatches ? null : 'READBACK_MISMATCH', { font_name:actualFont.name, font_family:actualFont.family, font_style:actualFont.style });
+        } catch (fontError) { dpmAddScriptOutcome(states, 'font', 'unsupported', 'FONT_DEPENDENT'); }
+      }
+      if (typeof rule.leading !== 'undefined' && typeof rule.auto_leading === 'undefined') {
+        try { attrs.autoLeading = false; } catch (_) { dpmAddScriptOutcome(states, 'auto_leading', 'unsupported', 'NOT_EXPOSED_BY_CLASSIC_DOM'); }
+      }
+      for (var key in characterMap) if (typeof rule[key] !== 'undefined') {
+        var domKey = characterMap[key];
+        try {
+          attrs[domKey] = valueFor(domKey, rule[key]);
+          var actual = reportValue(attrs, domKey);
+          dpmAddScriptOutcome(states, key, equality(rule[key], actual) ? 'applied' : 'failed', 'READBACK_MISMATCH', actual);
+        } catch (propertyError) { dpmAddScriptOutcome(states, key, 'unsupported', failureCode(key, true, propertyError.message)); }
+      }
+      if (typeof rule.kerning !== 'undefined') {
+        try { chars[index].kerning = rule.kerning; var actualKerning = chars[index].kerning; dpmAddScriptOutcome(states, 'kerning', equality(rule.kerning, actualKerning) ? 'applied' : 'failed', 'READBACK_MISMATCH', actualKerning); }
+        catch (kerningError) { dpmAddScriptOutcome(states, 'kerning', 'unsupported', 'NOT_EXPOSED_BY_CLASSIC_DOM'); }
+      }
+    }
+    return dpmFinalizeScriptProperties(states, result);
+  }
   var results=[], failed=[];
   for (var i=0; i<params.uuids.length; i++) { var uuid=params.uuids[i], item=findItemByUUID(uuid); if (!item) { failed.push({uuid:uuid,reason:'No object found matching UUID'}); continue; } if (item.typename !== 'TextFrame') { failed.push({uuid:uuid,reason:'Object is not a TextFrame'}); continue; } if (item.locked || item.hidden) { failed.push({uuid:uuid,reason:item.locked?'locked':'hidden'}); continue; }
     var log={uuid:uuid, verified_properties:[], failed_properties:[], unsupported_properties:[]}, c=params.character, p=params.paragraph;
@@ -168,6 +244,12 @@ else try {
       if (typeof c.leading !== 'undefined' && typeof c.auto_leading === 'undefined') { item.textRange.characterAttributes.autoLeading = false; for (var li=0; li<item.characters.length; li++) item.characters[li].characterAttributes.autoLeading = false; log.verified_properties.push({property:'auto_leading',readback:false,matches:true,implicit_for:'leading'}); }
       apply(item.textRange.characterAttributes, characterMap, c, true, log); for (var ci=0; ci<item.characters.length; ci++) apply(item.characters[ci].characterAttributes, characterMap, c, true, {verified_properties:[],failed_properties:[],unsupported_properties:[]});
       if (typeof c.kerning !== 'undefined') { try { for (var ki=0; ki<item.characters.length; ki++) item.characters[ki].kerning=c.kerning; var kr=[]; for (var kj=0; kj<item.characters.length; kj++) kr.push(item.characters[kj].kerning); var ok=true; for (var kk=0; kk<kr.length; kk++) if (String(kr[kk]) !== String(c.kerning)) ok=false; log.verified_properties.push({property:'kerning',readback:kr,matches:ok}); if (!ok) log.failed_properties.push({property:'kerning',code:'READBACK_MISMATCH',readback:kr}); } catch(e) { log.unsupported_properties.push({property:'kerning',code:'NOT_EXPOSED_BY_CLASSIC_DOM',message:e.message}); } }
+    }
+    if (params.script_rules) {
+      log.script_rules = {};
+      if (params.script_rules.han) log.script_rules.han = applyScriptRule(item, 'han', params.script_rules.han);
+      if (params.script_rules.latin) log.script_rules.latin = applyScriptRule(item, 'latin', params.script_rules.latin);
+      for (var sr in log.script_rules) if (!log.script_rules[sr].success) log.failed_properties.push({ property:'script_rules.' + sr, code:'PARTIAL_SCRIPT_RULE_FAILURE' });
     }
     if (p) for (var pi=0; pi<item.paragraphs.length; pi++) apply(item.paragraphs[pi].paragraphAttributes, paragraphMap, p, false, log);
     log.success=log.failed_properties.length===0 && log.unsupported_properties.length===0; results.push(log);
@@ -185,7 +267,7 @@ export function register(server: McpServer): void {
   }, async (params) => executeToolJsx(readJsx, params));
   server.registerTool('set_typography', {
     title: 'Set Typography',
-    description: 'Set only explicitly supplied character and paragraph formatting on one or more TextFrames in one background JSX execution. Direct formatting belongs here; use apply_text_style for named styles, replace_formatted_text for content, list_fonts/replace-font workflows for document-wide font changes, and set_appearance for non-text appearance. Returns per-property DOM readback. FONT_DEPENDENT means the requested font or OpenType feature could not be applied; NOT_EXPOSED_BY_CLASSIC_DOM is never reported as success.',
-    inputSchema: { uuids, character: characterSchema.optional(), paragraph: paragraphSchema.optional() }, annotations: WRITE_ANNOTATIONS,
+    description: 'Set explicitly supplied character and paragraph formatting on one or more TextFrames in one background JSX execution. `character` applies frame-wide first; optional `script_rules.han` and `.latin` then override only matching Han/Latin characters. CJK/full-width punctuation defaults to Han; ASCII digits and punctuation default to Latin; spaces, tabs, CR/LF, and unclassified characters are left unchanged by script rules. Paragraph formatting remains frame-wide. Specify a script font by exact `font_name` or exact `font_family` plus `font_style`; missing fonts do not fall back and are reported per rule/property. Returns compact per-rule/per-property status and DOM readback. FONT_DEPENDENT means an OpenType feature could not be applied; NOT_EXPOSED_BY_CLASSIC_DOM is never reported as success.',
+    inputSchema: { uuids, character: characterSchema.optional(), script_rules: scriptRulesSchema.optional(), paragraph: paragraphSchema.optional() }, annotations: WRITE_ANNOTATIONS,
   }, async (params) => executeToolJsx(writeJsx, params));
 }

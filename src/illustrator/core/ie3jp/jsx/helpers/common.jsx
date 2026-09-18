@@ -354,9 +354,9 @@ function getArtboardIndexForItem(item) {
 // （Adobe 公式の scripting changelog でも API 追加は 24.0 が最後）。
 var MIN_ILLUSTRATOR_VERSION = 24;
 
-// 実機で検証済みの下限（Illustrator 2024 = v28）。
-// これ未満は「動くはずだが未検証」の扱いで、警告を添えて実行する。
-var VERIFIED_ILLUSTRATOR_VERSION = 28;
+// Supported targets are Illustrator 2022–2026 (internal v26–v30).
+// Only this exact application build has maintainer real-machine verification.
+var VERIFIED_ILLUSTRATOR_VERSION = "30.8.1";
 
 // 未検証バージョンで実行中に立つ警告。writeResultFile() が全ツールの結果に付与する。
 var _versionWarning = null;
@@ -369,11 +369,11 @@ function checkIllustratorVersion() {
       message: "Illustrator 2020 (v24) or later is required (current: " + app.version + ")"
     };
   }
-  if (ver < VERIFIED_ILLUSTRATOR_VERSION) {
+  if (app.version !== VERIFIED_ILLUSTRATOR_VERSION) {
     _versionWarning =
-      "Illustrator " + app.version + " is below the verified baseline. " +
-      "This server is tested only on Illustrator 2024 (v28) and later. " +
-      "Older versions are expected to work but are unverified \u2014 " +
+      "Illustrator " + app.version + " is not the maintainer-verified build. " +
+      "Supported targets are Illustrator 2022 (v26) through 2026 (v30), but only Stable 30.8.1 has maintainer real-machine verification. " +
+      "Illustrator 2022–2025 remain supported but unverified \u2014 " +
       "please report anything broken at https://github.com/ie3jp/illustrator-mcp-server/issues";
   }
   return null;

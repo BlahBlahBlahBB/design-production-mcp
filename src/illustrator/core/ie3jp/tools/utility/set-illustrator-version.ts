@@ -9,17 +9,15 @@ export function register(server: McpServer): void {
     {
       title: 'Set Illustrator Version',
       description:
-        'Diagnostic routing only. Use only when the user explicitly requests an Illustrator version or multiple running instances genuinely need disambiguation. Stable is the default; do not call merely to confirm connectivity. ' +
-        'Specify a version year (e.g. "2024", "2025"). ' +
-        'If Illustrator is already running, connects to the running instance regardless of version. ' +
-        'If not running, launches the specified version. ' +
-        'Use clear: true to reset to default behavior (connect to any running Illustrator).',
+        'Diagnostic routing hint only. Stable is the default; do not call merely to confirm connectivity. ' +
+        'Supported target years are 2022–2026. On a machine with one installed/running Stable version, ordinary Core operations use that instance. ' +
+        'macOS AppleEvents use a shared Stable bundle id, so multiple simultaneously running Stable versions cannot be reliably distinguished; Windows COM also cannot select among multiple versions. ' +
+        'This tool never selects Beta and does not claim exact multi-instance routing. Use clear: true to return to the detected single-Stable default.',
       inputSchema: {
         version: z
-          .string()
-          .regex(/^\d{4}$/, 'Version must be a 4-digit year (e.g. "2025")')
+          .enum(['2022', '2023', '2024', '2025', '2026'])
           .optional()
-          .describe('Illustrator version year (e.g. "2024", "2025").'),
+          .describe('Supported Illustrator target year (2022–2026). Exact routing is not guaranteed when multiple Stable instances are running.'),
         clear: z
           .boolean()
           .optional()
@@ -35,7 +33,7 @@ export function register(server: McpServer): void {
             type: 'text' as const,
             text: JSON.stringify({
               status: 'cleared',
-              message: 'Illustrator version reset. Will connect to any running Illustrator.',
+              message: 'Illustrator target reset to the detected Stable default.',
             }),
           }],
         };
@@ -49,8 +47,8 @@ export function register(server: McpServer): void {
             text: JSON.stringify({
               currentVersion: current ?? null,
               message: current
-                ? `Illustrator ${current} is targeted.`
-                : 'No version set. Will connect to any running Illustrator.',
+                ? `Illustrator ${current} Stable is the current target hint.`
+                : 'No installed target path detected; using the default Stable Illustrator AppleEvent/COM target.',
             }),
           }],
         };
@@ -63,7 +61,7 @@ export function register(server: McpServer): void {
           text: JSON.stringify({
             status: 'set',
             version: params.version,
-            message: `Illustrator ${params.version} targeted. If already running, connects to that instance; otherwise launches ${params.version}.`,
+            message: `Illustrator ${params.version} Stable target hint set. Multi-instance routing is not guaranteed.`,
           }),
         }],
       };

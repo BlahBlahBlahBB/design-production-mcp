@@ -131,3 +131,8 @@ Illustrator 26.1 和 Windows 当前仍属于未正式认证环境。
 
 - `THIRD_PARTY_NOTICES.md`
 - `docs/open-source-origins.md`
+# v0.4.0
+
+- Extend the existing `set_typography` tool with batch mixed-script Han/Latin character rules and compact script-run readback.
+- Add an Illustrator 2022–2026 compatibility policy and disposable-document compatibility checker. Only Illustrator 2026 Stable 30.8.1 is maintainer verified; 2022–2025 remain supported but unverified.
+- Preserve the v0.3.1 native UUID identity implementation and legacy note fallback unchanged.

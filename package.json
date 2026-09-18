@@ -1,6 +1,6 @@
 {
   "name": "design-production-mcp",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "type": "module",
   "description": "Open-source Adobe Illustrator MCP with direct Core tools and separate production work-copy protection.",
   "license": "MIT",
@@ -11,6 +11,7 @@
     "build": "tsc -p tsconfig.json && node -e \"require('fs').cpSync('src/illustrator/core/ie3jp/jsx','dist/src/illustrator/core/ie3jp/jsx',{recursive:true})\"",
     "test": "npm run build && node --test dist/tests/*.test.js",
     "check": "npm run test",
+    "compatibility:check": "npm run build && node scripts/compatibility-check.mjs",
     "mcp": "npm run build && node dist/src/mcp/stdio.js",
     "research:adobe-mcp": "node research/adobe-official-mcp-live/proxy-official-mcp.mjs",
     "research:adobe-mcp:dump": "node research/adobe-official-mcp-live/dump-official-tools.mjs"

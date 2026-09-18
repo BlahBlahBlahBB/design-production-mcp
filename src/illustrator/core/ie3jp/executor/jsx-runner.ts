@@ -57,10 +57,11 @@ function getTransport(): Transport {
 //
 //  会話で set_illustrator_version ツールを使ってバージョンを指定すると、
 //  そのセッション中は指定バージョンの Illustrator に接続する。
-//  未指定時はデフォルトの "Adobe Illustrator" に接続。
+//  未指定時は、見つかった最新の Stable 2022–2026 を想定する。
 //
-//  macOS: フルパスで tell するため、複数バージョン同時起動時も正しく接続。
-//  Windows: COM ProgID にバージョン区別がないため、複数同時起動時の切り替えは不可。
+//  macOS AppleEvent targets one shared Stable bundle id; appPath cannot identify
+//  two simultaneously running Stable instances. Windows COM has the same
+//  single-instance routing limitation. Never target Illustrator Beta.
 //
 
 /**
@@ -79,10 +80,22 @@ export function resolveVersionToPath(
   throw new Error(`Unsupported platform: ${platform}`);
 }
 
-// セッション中のアプリパス（set_illustrator_version で設定）
-const DEFAULT_STABLE_APP_PATH = process.platform === 'darwin'
-  ? '/Applications/Adobe Illustrator 2026/Adobe Illustrator.app'
-  : undefined;
+/** Find an installed Stable target without assuming that 2026 is present. */
+export function resolveDefaultStableAppPath(
+  platform: string = process.platform,
+  appRoot: string = '/Applications',
+): string | undefined {
+  if (platform !== 'darwin') return undefined;
+  for (const year of [2026, 2025, 2024, 2023, 2022]) {
+    const candidate = path.join(appRoot, `Adobe Illustrator ${year}`, 'Adobe Illustrator.app');
+    if (existsSync(candidate)) return candidate;
+  }
+  return undefined;
+}
+
+// Session routing hint. With a single Stable installation, Illustrator's shared
+// bundle id resolves naturally; multiple running versions cannot be guaranteed.
+const DEFAULT_STABLE_APP_PATH = resolveDefaultStableAppPath();
 let _sessionAppPath: string | undefined = DEFAULT_STABLE_APP_PATH;
 
 /**

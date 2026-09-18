@@ -82,9 +82,15 @@ DPM Production 仅用于用户**明确要求**的 **MASTER → Work Copy → 修
 
 <br>
 
-## ⭕️ 已验证环境
+## ⭕️ Illustrator 兼容范围
 
-当前正式验证环境：
+- **Supported target：Adobe Illustrator 2022–2026**（单一 Stable 实例）
+- **Maintainer verified：Adobe Illustrator 2026 Stable 30.8.1**
+- Illustrator 2022–2025 属于 **SUPPORTED_UNVERIFIED**，尚未完成 maintainer 实机测试；这不是“已验证通过”的声明。
+
+可在目标机器运行 `./compatibility-check.command` 或 `npm run compatibility:check` 生成本地安全自检报告。详细状态、测试范围与多版本路由限制见[兼容性说明](docs/illustrator-version-compatibility.md)。
+
+当前 maintainer 实机环境：
 
 - **macOS**
 - **Node.js 20 或更高版本**
@@ -94,9 +100,9 @@ DPM Production 仅用于用户**明确要求**的 **MASTER → Work Copy → 修
 
 说明：
 
-- **不需要 Adobe Illustrator Beta**
-- Illustrator 26.1 目前仍属于 **未正式认证**
-- Windows 当前也属于 **未正式认证**
+- **不需要 Adobe Illustrator Beta**，也不会静默回退到 Beta
+- 2022–2025 仍为未实测目标；请提交本机 compatibility report 供后续社区验证
+- 多个 Stable 版本同时运行时，macOS AppleEvent 与 Windows COM 均不能保证精确地区分实例
 
 <br>
 
@@ -158,7 +164,7 @@ https://github.com/BlahBlahBlahBB/design-production-mcp
    - Codex MCP 配置是否成功
    - 是否需要我采取额外操作
 10. 如果全部成功，明确告诉我：
-   “请完全退出并重新打开 Codex，然后打开 Adobe Illustrator 2026 Stable，新建会话并让 Codex 执行一次最小的只读文档操作。”
+   “请完全退出并重新打开 Codex，然后打开本机安装的 Adobe Illustrator Stable，新建会话并让 Codex 执行一次最小的只读文档操作。”
 ```
 
 <br>
@@ -225,7 +231,7 @@ chmod +x install.command uninstall.command
 
 1. 完全退出 Codex
 2. 重新打开 Codex
-3. 打开 **Adobe Illustrator 2026 Stable**
+3. 打开一个受支持范围内的 **Adobe Illustrator Stable**（2026 Stable 30.8.1 是当前 maintainer 实测版本）
 4. 新建一个 Codex 会话
 5. 发送下面这段：
 
@@ -377,8 +383,8 @@ create_work_copy
 
 项目测试状态：
 
-- `npm test`：**97 / 97 通过**
-- MASTER protection regression：**13 / 13 通过**
+- `npm test`：**109 / 109 通过**
+- MASTER / Work Copy safety regression：包含于 automated suite
 - TypeScript build：通过
 - `npm audit --omit=dev`：**0 个已报告漏洞**
 

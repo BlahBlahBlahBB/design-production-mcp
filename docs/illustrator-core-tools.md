@@ -1,6 +1,6 @@
 # Illustrator Core 工具清单
 
-Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进入 DPM Work Copy 会话。macOS 默认目标是 Adobe Illustrator 2026 Stable；如需指定其他已安装版本，可使用 `set_illustrator_version`。
+Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进入 DPM Work Copy 会话。支持目标为 Adobe Illustrator 2022–2026；macOS 默认检测该范围内最新安装的 Stable。多版本同时运行时，AppleEvent/COM 无法保证精确区分实例，详见[版本兼容性说明](illustrator-version-compatibility.md)。
 
 后端说明：
 

@@ -8,6 +8,7 @@ dist/
 !.env.example
 coverage/
 *.log
+compatibility-report.json
 
 # Local Illustrator QA inputs, outputs, and disposable work copies.
 qa/
