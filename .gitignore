@@ -25,3 +25,6 @@ research/adobe-official-mcp-extracted/copied-files/
 
 # Disposable Phase 2.3 QA harness; historical results remain under research/.
 tools/b2-real-qa.mjs
+
+# Local live traces from the Adobe official MCP research proxy.
+research/adobe-official-mcp-live/output/
