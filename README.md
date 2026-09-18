@@ -4,7 +4,7 @@
 
 这个项目把多个成熟的 Illustrator 开源能力整合到同一个 MCP 中，并保留 DPM 自己的生产安全能力。Core 默认直接操作当前文档；只有用户明确要求保护 MASTER / 保留原稿 / 使用 Work Copy 时，才启用独立的 Production 安全机制。
 
-当前版本：**v0.2.0**
+当前版本：**v0.3.0**
 发布说明：[RELEASE_NOTES.md](RELEASE_NOTES.md)
 
 <br>
@@ -13,7 +13,7 @@
 
 当前公开能力分为两部分：
 
-- **Illustrator Core：81 个公开工具**（构建时从注册表自动计数）
+- **Illustrator Core：83 个公开工具**（构建时从注册表自动计数）
 - **DPM Production：3 个公开生产安全工具**
 
 <br>
@@ -31,7 +31,7 @@ Stable Illustrator MCP 独立运行，不依赖 Adobe Illustrator Beta。DPM 工
 - 文档：新建、打开、关闭、保存、读取文档信息和结构、Undo、切换 Illustrator 目标版本
 - 绘图：矩形、椭圆、直线、自定义路径、普通文字、路径文字
 - 对象：查找、选择、删除、复制、群组、解组、对齐、修改属性、层级顺序、移动图层、坐标转换
-- 文字：文字框读取与创建、样式、格式化替换、转轮廓、字体列表、文字一致性检查
+- 文字：批量 Typography metrics / direct formatting、文字框读取与创建、样式、格式化替换、转轮廓、字体列表、文字一致性检查
 - 颜色与样式：颜色、Swatches、Gradient、Graphic Style、颜色替换、Design Tokens、Style Guide
 - 图片与 SVG：Place、Relink、Embed、读取图片信息、可编辑 SVG、Image Trace
 - 图层与画板：图层管理、画板管理、Fit Artboard to Selection、Duplicate Active Artboard
@@ -66,7 +66,7 @@ DPM Production 仅用于用户**明确要求**的 **MASTER → Work Copy → 修
 
 ## ⭕️ 适合怎么用
 
-这个 MCP 的目标不是让你手动记住 81 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
+这个 MCP 的目标不是让你手动记住 83 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
 
 例如可以直接说：
 

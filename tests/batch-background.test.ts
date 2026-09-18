@@ -96,6 +96,27 @@ test("common transforms and rename are public batch-first Core tools", () => {
   }
 });
 
+test("typography stays a two-tool batch Core surface with honest Classic DOM limits", async () => {
+  const typography = await source("src/illustrator/core/ie3jp/tools/typography-core.ts");
+  const detail = await source("src/illustrator/core/ie3jp/tools/read/get-text-frame-detail.ts");
+  const align = await source("src/illustrator/core/ie3jp/tools/modify/align-objects.ts");
+  const registered = (createDesignProductionMcpServer() as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+  for (const name of ["get_typography_metrics", "set_typography"]) assert.ok(registered[name], `${name} must be registered`);
+  assert.match(typography, /font_runs/);
+  assert.match(typography, /mixed_fields/);
+  assert.match(typography, /FONT_DEPENDENT/);
+  assert.match(typography, /NOT_EXPOSED_BY_CLASSIC_DOM/);
+  assert.match(typography, /auto_leading_amount/);
+  assert.match(typography, /paragraph_alignment/);
+  assert.doesNotMatch(typography, /results\.every/);
+  assert.match(typography, /executeToolJsx\(readJsx, params\)/);
+  assert.doesNotMatch(typography, /activate:\s*true/);
+  assert.match(detail, /autoLeadingAmount/);
+  assert.doesNotMatch(detail, /pa\.leading\s*=/);
+  assert.doesNotMatch(detail, /pa\.autoLeading\s*=/);
+  assert.match(align, /DO NOT USE FOR PARAGRAPH\/TEXT JUSTIFICATION/);
+});
+
 test("Stable AppleScript transport addresses the Stable bundle without a broken POSIX tell target", async () => {
   const transport = await source("src/illustrator/core/ie3jp/executor/file-transport.ts");
   assert.match(transport, /tell application id "com\.adobe\.illustrator"/);

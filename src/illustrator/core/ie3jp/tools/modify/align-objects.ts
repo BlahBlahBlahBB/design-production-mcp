@@ -177,7 +177,7 @@ export function register(server: McpServer): void {
     'align_objects',
     {
       title: 'Align Objects',
-      description: 'Align and/or distribute multiple objects by their UUIDs',
+      description: 'Align and/or distribute multiple artwork objects by their UUIDs. Canvas-spatial only: DO NOT USE FOR PARAGRAPH/TEXT JUSTIFICATION; use set_typography.paragraph.paragraph_alignment for text alignment.',
       inputSchema: {
         uuids: z
           .array(z.string())

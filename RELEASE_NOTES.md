@@ -1,3 +1,16 @@
+# v0.3.0 发布说明
+
+## Comprehensive Illustrator typography control
+
+- 新增两个（且仅两个）批量 Typography Core 工具：`get_typography_metrics` 和 `set_typography`。两者均为一次 MCP 调用、一次后台 JSX 执行、`uuids[]` 批量处理。
+- `get_typography_metrics` 对齐本地捕获的 official `GetTypographyMetrics` 读取语义：文字长度/内容/溢出、全量字体条目、字体/字距/行距/基线/缩放与段落对齐；混合格式明确返回 `mixed_fields`，不伪造首字符值。
+- `set_typography` 只写调用方显式提供的 CharacterAttributes / ParagraphAttributes，并逐属性返回 DOM readback。OpenType 与字体失败返回 `FONT_DEPENDENT`；Classic DOM 未暴露能力返回 `NOT_EXPOSED_BY_CLASSIC_DOM`。
+- 修正旧 `get_text_frame_detail`：character `leading` / `autoLeading` 不再错误地从 ParagraphAttributes 读取；paragraph 读取改为 `autoLeadingAmount` / `leadingType`。
+- `align_objects` 现在明确标注为画布空间对齐，不可用于段落/文字两端对齐；文字命名样式继续由 `apply_text_style` 处理。
+- 完整能力、来源、限制和真机 QA 状态见 `docs/typography-capability-matrix.md`。
+
+---
+
 # v0.2.0 发布说明
 
 ## Official-style Core orchestration

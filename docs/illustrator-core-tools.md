@@ -56,6 +56,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `get_separation_info` | 检查分色信息。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_symbols` | 读取 Symbols。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_text_frame_detail` | 获取指定文字框的详细信息。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
+| `get_typography_metrics` | 批量读取官方语义兼容的文字度量。 | IE3JP + DPM | IE3JP JSX / Classic DOM | 是 | 否 | 待验证 |
 | `group_objects` | 将选中对象成组。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `illustrator_status` | 读取本地 Illustrator Bridge 状态。 | DPM | DPM bridge | 是 | 否 | 待验证 |
 | `image_trace_selection` | 对当前选区执行图像描摹并展开。 | Creold | Creold DOM | 是 | 否 | 待验证 |
@@ -86,19 +87,19 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `select_objects` | 按条件选择对象。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `set_illustrator_version` | 指定要连接的已安装 Illustrator 版本。 | IE3JP | IE3JP transport configuration | 是 | 否 | 待验证 |
 | `set_appearance` | 一次为多个对象设置相同 fill/stroke/opacity/hidden/locked。 | IE3JP | IE3JP JSX | 是 | 否 | 通过 |
+| `set_typography` | 批量设置直接文字与段落格式，并逐属性读回。 | IE3JP + DPM | IE3JP JSX / Classic DOM | 是 | 否 | 待验证 |
 | `set_workflow` | 设置坐标 / Workflow 偏好。 | IE3JP | IE3JP session state | 是 | 否 | 待验证 |
 | `set_z_order` | 调整对象堆叠顺序。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `undo` | 撤销上一次 Illustrator 操作。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `ungroup_objects` | 解组选中的群组。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 
-Illustrator Core 公开工具总数：**77**。
+Illustrator Core 公开工具总数：**83**。
 
-来源统计：
-
-- IE3JP：**70**
-- Alexander Ladygin：**2**
-- Creold / Sergey Osokin：**4**
-- DPM：**1**（`illustrator_status`）
+来源统计以当前注册表为准：IE3JP JSX 是主要直接 Core 路径；
+Alexander Ladygin 提供固定 Action 路径；Creold / Sergey Osokin 提供少量
+非交互 DOM 工具；DPM 仅提供 `illustrator_status`。v0.3.0 的两个
+Typography 工具复用 IE3JP 字符/段落读取与 transport，并以小型 Classic DOM
+批量胶水补齐官方读取语义；它们不是新增的第三方 donor 工具集。
 
 ## 已确认的 30.8.1 使用约定
 

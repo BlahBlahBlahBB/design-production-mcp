@@ -12,7 +12,10 @@ import { READ_ANNOTATIONS } from '../modify/shared.js';
  * @see https://ai-scripting.docsforadobe.dev/jsobjref/TextFrameItem/ — contents, textRanges, paragraphs
  * @see https://ai-scripting.docsforadobe.dev/jsobjref/CharacterAttributes/ — size, textFont, tracking, Tsume, etc.
  *
- * 既知の制限: ParagraphAttributes.leading / .autoLeading は存在しないプロパティ（try/catch で回避中）。
+ * ParagraphAttributes uses autoLeadingAmount / leadingType; CharacterAttributes
+ * owns per-character leading / autoLeading.  This detail tool does not invent
+ * the latter on a paragraph object; use get_typography_metrics for batch-safe
+ * canonical typography metrics.
  */
 const jsxCode = `
 var preflight = preflightChecks();
@@ -64,8 +67,8 @@ if (preflight) {
           var pa = para.paragraphAttributes;
           var paraInfo = {
             text: para.contents,
-            leading: 0,
-            autoLeading: false,
+            autoLeadingAmount: null,
+            leadingType: null,
             firstLineIndent: 0,
             leftIndent: 0,
             rightIndent: 0,
@@ -76,8 +79,8 @@ if (preflight) {
             paragraphStyle: ""
           };
 
-          try { paraInfo.leading = pa.leading; } catch (e) {}
-          try { paraInfo.autoLeading = pa.autoLeading; } catch (e) {}
+          try { paraInfo.autoLeadingAmount = pa.autoLeadingAmount; } catch (e) {}
+          try { paraInfo.leadingType = pa.leadingType; } catch (e) {}
           try { paraInfo.firstLineIndent = pa.firstLineIndent; } catch (e) {}
           try { paraInfo.leftIndent = pa.leftIndent; } catch (e) {}
           try { paraInfo.rightIndent = pa.rightIndent; } catch (e) {}
@@ -88,10 +91,10 @@ if (preflight) {
             if (j === Justification.LEFT) paraInfo.justification = "left";
             else if (j === Justification.CENTER) paraInfo.justification = "center";
             else if (j === Justification.RIGHT) paraInfo.justification = "right";
-            else if (j === Justification.FULLJUSTIFYLASTLINELEFT) paraInfo.justification = "justify-left";
-            else if (j === Justification.FULLJUSTIFYLASTLINECENTER) paraInfo.justification = "justify-center";
-            else if (j === Justification.FULLJUSTIFYLASTLINERIGHT) paraInfo.justification = "justify-right";
-            else if (j === Justification.FULLJUSTIFY) paraInfo.justification = "justify-all";
+            else if (j === Justification.FULLJUSTIFYLASTLINELEFT) paraInfo.justification = "justify_last_left";
+            else if (j === Justification.FULLJUSTIFYLASTLINECENTER) paraInfo.justification = "justify_last_center";
+            else if (j === Justification.FULLJUSTIFYLASTLINERIGHT) paraInfo.justification = "justify_last_right";
+            else if (j === Justification.FULLJUSTIFY) paraInfo.justification = "justify_all";
             else paraInfo.justification = j.toString();
           } catch (e) {}
           try { paraInfo.hyphenation = pa.hyphenation; } catch (e) {}
@@ -228,7 +231,7 @@ export function register(server: McpServer): void {
     {
       title: 'Get Text Frame Detail',
       description:
-        'Get detailed text frame attributes including per-character runs (font, tracking, akiLeft/akiRight, tsume, proportionalMetrics), kerning pairs with manual kerning values (1/1000 em), and paragraph attributes. Returns cssHints for web/CSS reproduction. Note: paragraph leading/autoLeading may return 0 in some ExtendScript versions due to missing API support.',
+        'Get one text frame’s detailed per-character runs (font, tracking, akiLeft/akiRight, tsume, proportionalMetrics), manual kerning pairs (1/1000 em), and paragraph attributes. Paragraph autoLeadingAmount/leadingType are reported from ParagraphAttributes; character leading/autoLeading belong to CharacterAttributes. Use get_typography_metrics for one-call batch metrics.',
       inputSchema: {
         uuid: z.string().describe('UUID of the target text frame'),
         coordinate_system: coordinateSystemSchema,

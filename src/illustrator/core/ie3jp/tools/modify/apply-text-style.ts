@@ -98,7 +98,7 @@ export function register(server: McpServer): void {
     {
       title: 'Apply Text Style',
       description:
-        'Apply a character or paragraph style to a text frame. Note: Illustrator will be activated (brought to foreground) during execution.',
+        'Apply a named character or paragraph style to a text frame in the background. Use set_typography for direct formatting rather than named styles.',
       inputSchema: {
         uuid: z.string().describe('UUID of the text frame'),
         style_type: z.enum(['character', 'paragraph']).describe('Type of style to apply'),
