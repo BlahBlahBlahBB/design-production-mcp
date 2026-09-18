@@ -255,34 +255,30 @@ else try {
     return dpmFinalizeScriptProperties(states, result);
   }
   var results=[], failed=[];
-  function preflightStoryWritable(story, storyIndex) {
+  function preflightStoryReadable(story, storyIndex) {
     try {
-      var frames = story.textFrames;
-      var frameCount = frames.length;
-      if (!frameCount) return { ok:false, story_index:storyIndex, reason:'Story has no text frames' };
-      for (var fi = 0; fi < frameCount; fi++) {
-        var frame = frames[fi];
-        var locked = frame.locked;
-        var hidden = frame.hidden;
-        var editable = frame.editable;
-
-        if (typeof locked !== 'boolean') {
-          return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'locked state unavailable' };
-        }
-        if (typeof hidden !== 'boolean') {
-          return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'hidden state unavailable' };
-        }
-        if (typeof editable !== 'boolean') {
-          return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'editable state unavailable' };
-        }
-
-        if (locked === true) return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'locked' };
-        if (hidden === true) return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'hidden' };
-        if (editable === false) return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'not editable' };
+      // Story is the authoritative text container for document-wide typography.
+      // Do not touch story.textFrames here: some valid Illustrator documents expose
+      // readable Story text while TextFrame collection wrappers throw Error 45
+      // ("Object is invalid"). Probe only the Story/TextRange surfaces we will use.
+      var range = story.textRange;
+      var charCount = story.characters.length;
+      var paragraphCount = story.paragraphs.length;
+      var rangeContents = range.contents;
+      // Touch representative read-only formatting surfaces before any mutation.
+      var charAttrs = range.characterAttributes;
+      if (paragraphCount > 0) {
+        var paragraphAttrs = story.paragraphs[0].paragraphAttributes;
       }
-      return { ok:true, story_index:storyIndex, text_frame_count:frameCount };
-    } catch (storySafetyError) {
-      return { ok:false, story_index:storyIndex, reason:'Unable to verify Story text-frame safety: ' + storySafetyError.message };
+      return {
+        ok:true,
+        story_index:storyIndex,
+        character_count:charCount,
+        paragraph_count:paragraphCount,
+        text_length:String(rangeContents || '').length
+      };
+    } catch (storyReadError) {
+      return { ok:false, story_index:storyIndex, reason:'Story text surface is not readable: ' + storyReadError.message };
     }
   }
   function applyTarget(item, uuid, storyIndex, isStory) {
@@ -310,21 +306,21 @@ else try {
   if (useAllStories && ids.length) {
     writeResultFile(RESULT_PATH,{error:true,message:'Specify either all_stories=true or uuids, not both.'});
   } else if (useAllStories) {
-    var storySafety = [], storySafetyFailed = false;
+    var storyPreflight = [], storyPreflightFailed = false;
     for (var spi=0; spi<doc.stories.length; spi++) {
-      var safety = preflightStoryWritable(doc.stories[spi], spi);
-      storySafety.push(safety);
-      if (!safety.ok) { storySafetyFailed = true; failed.push(safety); }
+      var probe = preflightStoryReadable(doc.stories[spi], spi);
+      storyPreflight.push(probe);
+      if (!probe.ok) { storyPreflightFailed = true; failed.push(probe); }
     }
-    if (storySafetyFailed) {
-      writeResultFile(RESULT_PATH,{success:false,details:{requested_count:doc.stories.length,updated_count:0,failed_count:failed.length,target_mode:'all_stories',preflight:'FAILED_NO_MUTATION'},results:[],failed_objects:failed,story_safety:storySafety});
+    if (storyPreflightFailed) {
+      writeResultFile(RESULT_PATH,{success:false,details:{requested_count:doc.stories.length,updated_count:0,failed_count:failed.length,target_mode:'all_stories',preflight:'FAILED_NO_MUTATION'},results:[],failed_objects:failed,story_preflight:storyPreflight});
     } else {
       for (var si=0; si<doc.stories.length; si++) {
         try { applyTarget(doc.stories[si], null, si, true); }
         catch (storyError) { failed.push({story_index:si,reason:storyError.message}); }
       }
       var allSucceeded = failed.length === 0; for (var ri = 0; ri < results.length; ri++) if (!results[ri].success) allSucceeded = false;
-      writeResultFile(RESULT_PATH,{success:allSucceeded,details:{requested_count:doc.stories.length,updated_count:results.length,failed_count:failed.length,target_mode:'all_stories',preflight:'PASS'},results:results,failed_objects:failed,story_safety:storySafety});
+      writeResultFile(RESULT_PATH,{success:allSucceeded,details:{requested_count:doc.stories.length,updated_count:results.length,failed_count:failed.length,target_mode:'all_stories',preflight:'PASS'},results:results,failed_objects:failed,story_preflight:storyPreflight});
     }
   } else if (ids.length) {
     for (var i=0; i<ids.length; i++) applyTarget(findItemByUUID(ids[i]), ids[i], null, false);
@@ -344,7 +340,7 @@ export function register(server: McpServer): void {
   }, async (params) => executeToolJsx(readJsx, params));
   server.registerTool('set_typography', {
     title: 'Set Typography',
-    description: 'Set explicitly supplied character and paragraph formatting in one background JSX execution. Pass uuids for explicit TextFrame targets. For document-wide typography, use all_stories=true so the write operates through Story text directly and does not depend on doc.textFrames wrappers or PageItem UUIDs. Before any Story mutation, every Story text frame must pass locked/hidden/editable safety preflight; if safety cannot be verified, the call fails with zero mutations. Do not combine target modes. `character` applies target-wide first; optional `script_rules.han` and `.latin` then override only matching Han/Latin characters. CJK/full-width punctuation defaults to Han; ASCII digits and punctuation default to Latin; spaces, tabs, CR/LF, and unclassified characters are left unchanged by script rules. Paragraph formatting remains target-wide. Specify a script font by exact `font_name` or exact `font_family` plus `font_style`; missing fonts do not fall back and are reported per rule/property.',
+    description: 'Set explicitly supplied character and paragraph formatting in one background JSX execution. Pass uuids for explicit TextFrame targets. For document-wide typography, use all_stories=true so the write operates through Story text directly and does not depend on doc.textFrames wrappers or PageItem UUIDs. Before any Story mutation, the Story/TextRange surfaces used by this tool are read-checked in a no-mutation preflight. Story mode intentionally does not dereference story.textFrames because valid documents can expose readable Story text while TextFrame wrappers throw Error 45. Lock/hidden/editable state is not exposed on Story/TextRange; Illustrator write rejection is reported if a Story is not writable. Do not combine target modes. `character` applies target-wide first; optional `script_rules.han` and `.latin` then override only matching Han/Latin characters. CJK/full-width punctuation defaults to Han; ASCII digits and punctuation default to Latin; spaces, tabs, CR/LF, and unclassified characters are left unchanged by script rules. Paragraph formatting remains target-wide. Specify a script font by exact `font_name` or exact `font_family` plus `font_style`; missing fonts do not fall back and are reported per rule/property.',
     inputSchema: { uuids: uuids.optional(), all_stories: allStories, character: characterSchema.optional(), script_rules: scriptRulesSchema.optional(), paragraph: paragraphSchema.optional() }, annotations: WRITE_ANNOTATIONS,
   }, async (params) => executeToolJsx(writeJsx, params));
 }
