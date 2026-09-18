@@ -81,3 +81,18 @@ test('set_typography preserves frame-wide then script override then frame-wide p
   assert.ok(frameCharacter >= 0 && scripts > frameCharacter && paragraph > scripts);
   assert.match(source, /apply\(item\.textRange\.characterAttributes, characterMap, c/);
 });
+
+test('document-wide typography uses Story path without TextFrame UUID discovery', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  assert.match(source, /all_stories/);
+  assert.match(source, /doc\.stories\[si\]/);
+  assert.match(source, /target_mode:'all_stories'/);
+  assert.match(source, /Provide uuids or set all_stories=true/);
+});
+
+test('Story mode keeps explicit UUID targeting available', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  assert.match(source, /findItemByUUID\(ids\[i\]\)/);
+  assert.match(source, /target_mode:'uuids'/);
+  assert.match(source, /Specify either all_stories=true or uuids, not both/);
+});
