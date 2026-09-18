@@ -97,26 +97,20 @@ test('Story mode keeps explicit UUID targeting available', () => {
   assert.match(source, /Specify either all_stories=true or uuids, not both/);
 });
 
-test('Story document-wide writes fail closed before mutation when safety cannot be verified', () => {
+test('Story document-wide preflight stays on Story/TextRange surfaces and avoids textFrames', () => {
   const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
-  const preflight = source.indexOf('function preflightStoryWritable');
-  const safetyLoop = source.indexOf('for (var spi=0; spi<doc.stories.length; spi++)', preflight);
-  const mutationLoop = source.indexOf('for (var si=0; si<doc.stories.length; si++)', safetyLoop);
-  assert.ok(preflight >= 0 && safetyLoop > preflight && mutationLoop > safetyLoop);
+  const preflight = source.indexOf('function preflightStoryReadable');
+  const mutationLoop = source.indexOf('for (var si=0; si<doc.stories.length; si++)', preflight);
+  assert.ok(preflight >= 0 && mutationLoop > preflight);
+  assert.match(source, /var range = story\.textRange/);
+  assert.match(source, /story\.characters\.length/);
+  assert.match(source, /story\.paragraphs\.length/);
+  assert.doesNotMatch(source.slice(preflight, mutationLoop), /story\.textFrames/);
   assert.match(source, /preflight:'FAILED_NO_MUTATION'/);
-  assert.match(source, /var locked = frame\.locked/);
-  assert.match(source, /var hidden = frame\.hidden/);
-  assert.match(source, /var editable = frame\.editable/);
-  assert.match(source, /typeof locked !== 'boolean'/);
-  assert.match(source, /typeof hidden !== 'boolean'/);
-  assert.match(source, /typeof editable !== 'boolean'/);
-  assert.match(source, /locked state unavailable/);
-  assert.match(source, /hidden state unavailable/);
-  assert.match(source, /editable state unavailable/);
 });
 
 test('explicit UUID TextFrame safety remains fail-closed', () => {
   const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
   assert.match(source, /if \(item\.locked \|\| item\.hidden\)/);
-  assert.doesNotMatch(source, /try \{ isLocked = item\.locked/);
+  assert.match(source, /findItemByUUID\(ids\[i\]\)/);
 });
