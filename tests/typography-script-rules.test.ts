@@ -107,6 +107,12 @@ test('Story document-wide writes fail closed before mutation when safety cannot 
   assert.match(source, /var locked = frame\.locked/);
   assert.match(source, /var hidden = frame\.hidden/);
   assert.match(source, /var editable = frame\.editable/);
+  assert.match(source, /typeof locked !== 'boolean'/);
+  assert.match(source, /typeof hidden !== 'boolean'/);
+  assert.match(source, /typeof editable !== 'boolean'/);
+  assert.match(source, /locked state unavailable/);
+  assert.match(source, /hidden state unavailable/);
+  assert.match(source, /editable state unavailable/);
 });
 
 test('explicit UUID TextFrame safety remains fail-closed', () => {
