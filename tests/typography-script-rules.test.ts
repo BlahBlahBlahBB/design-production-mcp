@@ -102,10 +102,14 @@ test('Story document-wide preflight stays on Story/TextRange surfaces and avoids
   const preflight = source.indexOf('function preflightStoryReadable');
   const mutationLoop = source.indexOf('for (var si=0; si<doc.stories.length; si++)', preflight);
   assert.ok(preflight >= 0 && mutationLoop > preflight);
-  assert.match(source, /var range = story\.textRange/);
-  assert.match(source, /story\.characters\.length/);
-  assert.match(source, /story\.paragraphs\.length/);
-  assert.doesNotMatch(source.slice(preflight, mutationLoop), /story\.textFrames/);
+  const preflightSource = source.slice(preflight, mutationLoop);
+  const executablePreflight = preflightSource
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/.*$/gm, '');
+  assert.match(executablePreflight, /var range = story\.textRange/);
+  assert.match(executablePreflight, /story\.characters\.length/);
+  assert.match(executablePreflight, /story\.paragraphs\.length/);
+  assert.doesNotMatch(executablePreflight, /story\.textFrames/);
   assert.match(source, /preflight:'FAILED_NO_MUTATION'/);
 });
 
