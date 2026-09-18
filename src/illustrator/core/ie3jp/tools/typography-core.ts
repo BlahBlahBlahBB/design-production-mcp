@@ -265,8 +265,19 @@ else try {
         var locked = frame.locked;
         var hidden = frame.hidden;
         var editable = frame.editable;
-        if (locked) return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'locked' };
-        if (hidden) return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'hidden' };
+
+        if (typeof locked !== 'boolean') {
+          return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'locked state unavailable' };
+        }
+        if (typeof hidden !== 'boolean') {
+          return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'hidden state unavailable' };
+        }
+        if (typeof editable !== 'boolean') {
+          return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'editable state unavailable' };
+        }
+
+        if (locked === true) return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'locked' };
+        if (hidden === true) return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'hidden' };
         if (editable === false) return { ok:false, story_index:storyIndex, text_frame_index:fi, reason:'not editable' };
       }
       return { ok:true, story_index:storyIndex, text_frame_count:frameCount };
