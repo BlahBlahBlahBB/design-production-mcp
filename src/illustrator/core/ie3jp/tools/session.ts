@@ -183,7 +183,7 @@ export const coordinateSystemSchema = z
   .enum(['artboard-web', 'document'])
   .optional()
   .describe(
-    'Coordinate system. Auto-detected from document by default (CMYK/print → document, RGB/web → artboard-web). artboard-web: origin at active artboard top-left, Y-down. document: Illustrator native coords, origin at bottom-left, Y-up. Call get_document_info to check which system is active.',
+    'Coordinate system. Auto-detected from document by default (CMYK/print → document, RGB/web → artboard-web). artboard-web: origin at active artboard top-left, Y-down. document: Illustrator native coords, origin at bottom-left, Y-up. Do not probe document metadata merely to confirm this default; provide an explicit value only when the task needs it.',
   );
 
 // --- Workflow detection ---

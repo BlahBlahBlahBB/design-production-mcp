@@ -70,7 +70,7 @@ export function register(server: McpServer): void {
     {
       title: 'Select Objects',
       description:
-        'Select objects by UUID. Pass an empty array to deselect all. Selected objects can then be manipulated interactively in Illustrator.',
+        'Select or deselect one or more objects by UUID in one batch. Pass an array even for one object; pass an empty array to deselect all. Do not loop this tool for a selection batch.',
       inputSchema: {
         uuids: z
           .array(z.string())

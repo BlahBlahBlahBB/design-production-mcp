@@ -95,7 +95,7 @@ export function register(server: McpServer): void {
     {
       title: 'Duplicate Objects',
       description:
-        'Duplicate one or more objects, optionally offsetting the copies. Note: Illustrator will be activated (brought to foreground) during execution.',
+        'Duplicate one or more objects in one batch, optionally offsetting the copies. Pass all UUIDs together; do not loop single-object calls. Runs without intentionally bringing Illustrator to the foreground.',
       inputSchema: {
         uuids: z.array(z.string()).min(1).describe('UUIDs of objects to duplicate'),
         offset: z

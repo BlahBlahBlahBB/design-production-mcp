@@ -1,3 +1,15 @@
+# v0.2.0 发布说明
+
+## Official-style Core orchestration
+
+- Core 默认直接操作当前 Illustrator 文档；DPM Production 仅在用户明确要求保护 MASTER / Work Copy 时启用。普通任务不会自动 Work Copy 或保存。
+- 重写 Codex routing：最少必要调用、复用当前回合 UUID、禁止 status/version/document ritual、禁止 Beta/Official MCP/Computer Use 静默回退、禁止自动 Undo。
+- `find_objects` 现在支持 `object_types[]`、按文字/外观/字体等条件批量查询，以及同次 JSX 的 `set_properties`（fill、stroke、stroke_width）；TextFrame 写入走 character attributes。
+- `set_appearance`、`get_visual_appearance` 进一步明确批量与一次验证语义；新增 `move_objects`、`rotate_objects`、`scale_objects`、`rename_objects` 的 batch-first Core API。
+- 研究了实时捕获的 47-tool official schema 与 50-text live trace；比较与 canonical Core 调用模式见 `research/adobe-official-mcp-live/v0.2.0-core-comparison.md`。
+
+---
+
 # v0.1.1 发布说明
 
 ## Illustrator Core 批量后台写入

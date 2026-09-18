@@ -17,7 +17,7 @@ else { try { var params = readParamsFile(PARAMS_PATH); ${BATCH_OBJECT_CORE_JSX}
 export function register(server: McpServer): void {
   server.registerTool('modify_objects', {
     title: 'Modify Objects',
-    description: 'Modify different properties on multiple objects in one background JSX execution. Prefer this over repeated modify_object calls.',
+    description: 'Modify different properties on multiple explicit UUIDs in one background JSX execution. Prefer this over repeated modify_object calls. Reuse UUIDs already returned in the current turn; do not probe again just to modify them.',
     inputSchema: { operations: z.array(z.object({ uuid: z.string(), properties: modifyPropertiesSchema })).min(1), coordinate_system: coordinateSystemSchema },
     annotations: DESTRUCTIVE_ANNOTATIONS,
   }, async (params) => executeToolJsx(jsxCode, params, { resolveCoordinate: true }));

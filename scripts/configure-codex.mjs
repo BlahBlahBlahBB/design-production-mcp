@@ -18,10 +18,13 @@ For Adobe Illustrator tasks:
 - Do not use \`Com.adobe.illustratorbeta\`, Adobe Illustrator Beta, Adobe Illustrator Official MCP, browser automation, or Computer Use for Illustrator document inspection or editing unless the user explicitly asks for that backend.
 - Target Adobe Illustrator Stable by default. Do not launch Illustrator Beta unless the user explicitly asks for Beta.
 - For read-only requests, use MCP read tools directly.
-- For important production files where the MASTER must be protected, use the DPM Production work-copy flow.
+- Ordinary Illustrator requests operate directly on the current document with Core. This includes text, color, images, movement, resize, relink/embed, expand, pathfinder, export, save requests, and batch edits.
+- Use the DPM Production work-copy flow ONLY when the user explicitly asks to protect/preserve a MASTER, create a work copy, work on a copy, or otherwise gives equivalent explicit instruction. Never infer protection from filename, subject matter, document size, saved state, or perceived importance.
+- Without that explicit instruction, never call \`create_work_copy\`, \`reconcile_work_copy\`, or \`dpm_save_work_copy\`; never save merely to create a work-copy flow.
 - If the MCP is unavailable, fails, or lacks a required capability, stop and explain the gap and any possible partial mutation. Do not silently fall back to another Illustrator backend; only use one after explicit user approval.
 - Never automatically invoke Undo after a failed write. State the observed state and wait for explicit user direction.
-- For multi-object work, use \`set_appearance\` for a shared appearance and \`modify_objects\` for different per-object changes; verify batches with \`get_visual_appearance\`. Do not loop \`modify_object\` calls when a batch tool applies.
+- Use the minimum necessary calls. Do not ritual-probe with \`illustrator_status\`, \`set_illustrator_version\`, or \`get_document_info\` before ordinary work. Stable is the default target; change version only on explicit user request or real multi-instance ambiguity. Reuse UUIDs/properties from successful current-turn tool output.
+- Prefer task-level batch tools over chains of atomic calls: use \`find_objects\` with \`set_properties\` for document-wide conditional updates, \`set_appearance\` for a shared change to known UUIDs, \`modify_objects\` for different changes, and batch transform/object tools for common movement or management. Do not loop \`modify_object\` calls when a batch tool applies. Make at most one corresponding \`get_visual_appearance\` call, and only when verification is requested or needed.
 ${ROUTING_END}`;
 
 function usage() {

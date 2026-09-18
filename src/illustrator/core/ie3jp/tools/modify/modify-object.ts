@@ -36,7 +36,7 @@ else { try {
 export function register(server: McpServer): void {
   server.registerTool('modify_object', {
     title: 'Modify Object',
-    description: 'Compatibility tool for one object. Runs in the background. For different changes on several objects use modify_objects; for one shared appearance use set_appearance.',
+    description: 'Single-object compatibility tool. Do not call it repeatedly for a batch. For different changes on several objects use modify_objects; for shared appearance use set_appearance. Runs in the background.',
     inputSchema: { uuid: z.string(), properties: modifyPropertiesSchema, coordinate_system: coordinateSystemSchema },
     annotations: DESTRUCTIVE_ANNOTATIONS,
   }, async (params) => executeToolJsx(jsxCode, params, { resolveCoordinate: true }));

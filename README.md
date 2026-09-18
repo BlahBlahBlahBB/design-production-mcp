@@ -2,9 +2,9 @@
 
 一套面向 **Adobe Illustrator + Codex** 的开源 MCP 工具集。
 
-这个项目把多个成熟的 Illustrator 开源能力整合到同一个 MCP 中，并保留 DPM 自己的生产安全能力。普通 Illustrator 操作可以直接作用于当前文档；只有需要保护 MASTER 文件的生产流程，才使用独立的 Work Copy 安全机制。
+这个项目把多个成熟的 Illustrator 开源能力整合到同一个 MCP 中，并保留 DPM 自己的生产安全能力。Core 默认直接操作当前文档；只有用户明确要求保护 MASTER / 保留原稿 / 使用 Work Copy 时，才启用独立的 Production 安全机制。
 
-当前版本：**v0.1.1**
+当前版本：**v0.2.0**
 发布说明：[RELEASE_NOTES.md](RELEASE_NOTES.md)
 
 <br>
@@ -13,22 +13,18 @@
 
 当前公开能力分为两部分：
 
-- **Illustrator Core：77 个公开工具**
-  - 70 个来自 IE3JP `illustrator-mcp-server`
-  - 2 个来自 Alexander Ladygin
-  - 4 个来自 Creold / Sergey Osokin
-  - 1 个 DPM 状态工具 `illustrator_status`
+- **Illustrator Core：81 个公开工具**（构建时从注册表自动计数）
 - **DPM Production：3 个公开生产安全工具**
 
 <br>
 
 ### 🔻 Illustrator Core
 
-Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创建 Work Copy。普通 DOM 读写默认后台执行，不会主动把 Illustrator 拉到前台；只有 Expand、Pathfinder 等 Action / 菜单路径才会激活 Illustrator。
+Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创建 Work Copy。普通 DOM 读写默认后台执行，不会主动把 Illustrator 拉到前台；只有 Expand、Pathfinder 等 Action / 菜单路径才会激活 Illustrator。Core 不会自行创建 Work Copy，也不会自行保存当前文档。
 
-多对象工作采用 batch-first：统一外观使用 `set_appearance`，不同对象属性使用 `modify_objects`，并用 `get_visual_appearance` 一次读取真实 DOM 外观（TextFrame 读取真实 character attributes，混合文字会明确标记）。`modify_object` 保留为单对象兼容接口。
+多对象工作采用 batch-first：全文档条件式更新优先使用 `find_objects` 的 `set_properties`；已知 UUID 的统一外观使用 `set_appearance`；不同对象属性使用 `modify_objects`；移动、旋转、缩放、重命名也有 batch 工具。只有用户要求实际外观确认时，才用一次 `get_visual_appearance` 读取真实 DOM 外观（TextFrame 读取真实 character attributes，混合文字会明确标记）。`modify_object` 保留为单对象兼容接口。
 
-Stable Illustrator MCP 独立运行，不依赖 Adobe 官方 Beta MCP。DPM 工具失败时，Agent 必须报告失败与可能的部分修改，不会静默改用 Beta、官方 MCP、Computer Use、浏览器或 UI 自动化，也不会自动连续 Undo。
+Stable Illustrator MCP 独立运行，不依赖 Adobe Illustrator Beta。DPM 工具失败时，Agent 必须报告失败与可能的部分修改，不会静默回退到 Adobe 官方 MCP、Beta、Computer Use、浏览器或 UI 自动化，也不会自动 Undo。
 
 主要能力包括：
 
@@ -44,7 +40,7 @@ Stable Illustrator MCP 独立运行，不依赖 Adobe 官方 Beta MCP。DPM 工�
 - Symbols / Datasets
 - 输出与印前：PNG / JPEG / SVG、PDF、Preflight、Overprint、Separation、Crop Marks
 
-完整的 77 个 Core 工具清单见：
+完整的 Core 工具清单见：
 
 [docs/illustrator-core-tools.md](docs/illustrator-core-tools.md)
 
@@ -52,7 +48,7 @@ Stable Illustrator MCP 独立运行，不依赖 Adobe 官方 Beta MCP。DPM 工�
 
 ### 🔻 DPM Production
 
-DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** 的生产流程。
+DPM Production 仅用于用户**明确要求**的 **MASTER → Work Copy → 修改 / 保存** 流程。Agent 绝不根据文件名、内容、大小、已保存状态或“看起来重要”自行启用它。
 
 目前公开 3 个工具：
 
@@ -70,7 +66,7 @@ DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** �
 
 ## ⭕️ 适合怎么用
 
-这个 MCP 的目标不是让你手动记住 77 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
+这个 MCP 的目标不是让你手动记住 81 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
 
 例如可以直接说：
 
@@ -80,7 +76,7 @@ DPM Production 专门用于 **MASTER → Work Copy → 安全修改 / 保存** �
 
 > 找到当前链接图片并替换成指定的新图片，保持位置和尺寸不变。
 
-对于重要生产文件，可以要求：
+需要保护母版时，请明确要求：
 
 > 不允许修改 MASTER，先创建 Work Copy，再完成替换和导出。
 
@@ -162,7 +158,7 @@ https://github.com/BlahBlahBlahBB/design-production-mcp
    - Codex MCP 配置是否成功
    - 是否需要我采取额外操作
 10. 如果全部成功，明确告诉我：
-   “请完全退出并重新打开 Codex，然后打开 Adobe Illustrator 2026 Stable，新建会话并让 Codex 调用 `illustrator_status`。”
+   “请完全退出并重新打开 Codex，然后打开 Adobe Illustrator 2026 Stable，新建会话并让 Codex 执行一次最小的只读文档操作。”
 ```
 
 <br>
@@ -234,9 +230,7 @@ chmod +x install.command uninstall.command
 5. 发送下面这段：
 
 ```text
-请调用 `design-production-illustrator` MCP 的 `illustrator_status`。
-只读取状态，不要修改任何 Illustrator 文档。
-告诉我 Illustrator 是否连接成功、当前 Illustrator 版本，以及这个 MCP 是否已经可用。
+请读取当前 Illustrator 文档的基本结构，不要修改任何内容。告诉我这个 MCP 是否可用。
 ```
 
 如果能正常返回 Illustrator 状态，说明安装成功。
@@ -348,7 +342,7 @@ Core 不要求 Work Copy，行为更接近正常人工操作 Illustrator。
 
 ### DPM Production
 
-适合重要生产文件：
+仅在用户明确要求保护 MASTER / 使用 Work Copy 时：
 
 ```text
 MASTER
@@ -360,7 +354,7 @@ create_work_copy
 修改 / 保存 / 导出
 ```
 
-这条路径专门防止 MASTER 被误保存或被直接写入。
+这条路径专门防止 MASTER 被误保存或被直接写入；它绝不会被 Agent 自动推断启用。
 
 <br>
 
@@ -383,8 +377,8 @@ create_work_copy
 
 项目测试状态：
 
-- `npm test`：**85 / 85 通过**
-- MASTER protection regression：**22 / 22 通过**
+- `npm test`：**97 / 97 通过**
+- MASTER protection regression：**13 / 13 通过**
 - TypeScript build：通过
 - `npm audit --omit=dev`：**0 个已报告漏洞**
 
@@ -412,7 +406,7 @@ Jinkeda / `Illustrator_MCP` 曾用于研究，但因为当时没有从仓库根�
 
 本项目只暴露固定、类型化的 MCP 工具，不提供任意 JSX、Shell 或任意 Illustrator 菜单命令执行入口。
 
-普通 Core 工具会直接修改当前文档；如果文件是不可替代的 MASTER，请使用 DPM Production 的 Work Copy 工作流，或者先手动备份。
+普通 Core 工具会直接修改当前文档。只有当你明确要求保护 MASTER / Work Copy 流程时，Agent 才会使用 DPM Production；否则不会自行创建副本或保存。
 
 ## License
 

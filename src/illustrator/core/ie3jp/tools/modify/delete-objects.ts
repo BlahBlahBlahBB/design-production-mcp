@@ -77,10 +77,9 @@ export function register(server: McpServer): void {
     {
       title: 'Delete Objects',
       description:
-        'Delete one or more objects by UUID (get UUIDs from find_objects / get_layers / get_selection). ' +
-        'Locked objects are skipped unless force_unlock is true. Reversible with the undo tool. ' +
-        'To delete a whole layer use manage_layers instead. ' +
-        'Note: Illustrator will be activated (brought to foreground) during execution.',
+        'Delete one or more explicit UUIDs in one batch (get UUIDs from find_objects / get_layers / get_selection). ' +
+        'Locked objects are skipped unless force_unlock is true; never unlock objects unless that is explicitly requested. ' +
+        'To delete a whole layer use manage_layers instead. Do not automatically invoke Undo after a partial failure; report the returned state and wait for direction. Runs without intentionally bringing Illustrator to the foreground.',
       inputSchema: {
         uuids: z.array(z.string()).min(1).describe('UUIDs of objects to delete'),
         force_unlock: z

@@ -22,7 +22,7 @@ else { try { var params = readParamsFile(PARAMS_PATH); ${BATCH_OBJECT_CORE_JSX}
 export function register(server: McpServer): void {
   server.registerTool('set_appearance', {
     title: 'Set Appearance',
-    description: 'Apply one shared fill, stroke, opacity, hidden, or locked value to many objects in one background JSX execution. Only supplied fields change.',
+    description: 'Use for one or more explicitly identified objects that share appearance changes. Pass every UUID in one call (an array is required even for one object); never loop modify_object. Only supplied fields change. TextFrame fill/stroke is applied through real character attributes. Locked or hidden objects are not implicitly unlocked or revealed; partial failures are returned as success_count, fail_count, and failed_objects. Flat colors are supported; gradient construction is intentionally handled by dedicated tools.',
     inputSchema: { uuids: z.array(z.string()).min(1), fill: colorSchema, stroke: strokeSchema, opacity: z.number().optional(), hidden: z.boolean().optional(), locked: z.boolean().optional() },
     annotations: DESTRUCTIVE_ANNOTATIONS,
   }, async (params) => executeToolJsx(jsxCode, params));

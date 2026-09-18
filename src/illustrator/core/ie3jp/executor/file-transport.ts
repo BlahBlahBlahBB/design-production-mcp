@@ -54,11 +54,11 @@ export async function writeAppleScript(
 
   let script: string;
   if (options?.appPath) {
-    // appPath 指定時: フルパスで tell して特定バージョンに接続
-    // 複数バージョン同時起動時でも正しいバージョンに接続できる
-    const appPathEscaped = options.appPath.replace(/"/g, '\\"');
+    // AppleScript expects an app name or bundle id here, not a POSIX bundle
+    // path. A path string makes the generated script fail to compile before
+    // Illustrator is reached. Stable and Beta have separate bundle IDs.
     script = [
-      `tell application "${appPathEscaped}"${activateLine}`,
+      `tell application id "com.adobe.illustrator"${activateLine}`,
       jsxLine,
       'end tell',
     ].join('\n');

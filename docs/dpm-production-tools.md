@@ -1,6 +1,6 @@
 # DPM Production 工具
 
-DPM Production 保留的是这个项目里专门面向生产文件的安全工作流。
+DPM Production 保留的是这个项目里**显式 opt-in** 的 MASTER / Work Copy 安全工作流。
 
 它和 Illustrator Core 是刻意分开的：
 
@@ -38,7 +38,7 @@ Export
 
 它们直接作用于当前 Illustrator 文档。
 
-但下面这种任务适合 DPM Production：
+只有用户明确说出“不要修改 MASTER”、“保护母版”、“先创建工作副本”、“在副本上操作”、“保留原稿不变”或等价意图时，才使用 DPM Production：
 
 ```text
 MASTER.ai
@@ -52,7 +52,7 @@ WORK-COPY.ai
 保存 / 导出
 ```
 
-这样可以避免自动化流程把不可替代的 MASTER 直接改坏。
+Agent 不得根据文件名、内容、大小、已保存状态或“看起来重要”自行推断这条路径。没有明确 opt-in 时，禁止调用 `create_work_copy`、`reconcile_work_copy`、`dpm_save_work_copy`，也禁止为了 Work Copy 流程而调用保存。
 
 ## 当前保留的内部生产能力
 

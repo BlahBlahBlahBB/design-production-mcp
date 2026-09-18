@@ -21,7 +21,7 @@ else { try { var params = readParamsFile(PARAMS_PATH); ${COLOR_HELPERS_JSX} ${TE
 
 export function register(server: McpServer): void {
   server.registerTool('get_visual_appearance', {
-    title: 'Get Visual Appearance', description: 'Read the actual DOM appearance of many objects in one execution. TextFrame values are read from character attributes and explicitly report mixed runs.',
+    title: 'Get Visual Appearance', description: 'Use only when visual/appearance confirmation is actually needed after a write. Read one or more UUIDs in one batch; do not repeat structural browsing or verification after this call. TextFrame values come from character attributes and explicitly report mixed runs. Returns success_count, fail_count, and failed_objects.',
     inputSchema: { uuids: z.array(z.string()).min(1) }, annotations: READ_ANNOTATIONS,
   }, async (params) => executeToolJsx(jsxCode, params));
 }

@@ -78,6 +78,7 @@ import { register as registerManageDatasets } from './modify/manage-datasets.js'
 import { register as registerPlaceSymbol } from './modify/place-symbol.js';
 import { register as registerCreatePathText } from './modify/create-path-text.js';
 import { register as registerSelectObjects } from './modify/select-objects.js';
+import { register as registerBatchTransformObjects } from './modify/batch-transform-objects.js';
 import { register as registerConvertCoordinate } from './read/convert-coordinate.js';
 
 export function registerAllTools(server: McpServer): void {
@@ -159,5 +160,6 @@ export function registerAllTools(server: McpServer): void {
   registerPlaceSymbol(server);
   registerCreatePathText(server);
   registerSelectObjects(server);
+  registerBatchTransformObjects(server);
   registerConvertCoordinate(server);
 }

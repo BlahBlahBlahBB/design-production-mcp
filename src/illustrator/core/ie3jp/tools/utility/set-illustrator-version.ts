@@ -9,7 +9,7 @@ export function register(server: McpServer): void {
     {
       title: 'Set Illustrator Version',
       description:
-        'Set which Illustrator version to target when multiple versions are installed. ' +
+        'Diagnostic routing only. Use only when the user explicitly requests an Illustrator version or multiple running instances genuinely need disambiguation. Stable is the default; do not call merely to confirm connectivity. ' +
         'Specify a version year (e.g. "2024", "2025"). ' +
         'If Illustrator is already running, connects to the running instance regardless of version. ' +
         'If not running, launches the specified version. ' +
