@@ -118,3 +118,11 @@ test('explicit UUID TextFrame safety remains fail-closed', () => {
   assert.match(source, /if \(item\.locked \|\| item\.hidden\)/);
   assert.match(source, /findItemByUUID\(ids\[i\]\)/);
 });
+
+test('typography metrics degrade per paragraph instead of failing the whole Story', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  assert.match(source, /var paraValues = \[\], leadingTypes = \[\], paragraphReadFailures = \[\]/);
+  assert.match(source, /paragraph_read_failures/);
+  assert.match(source, /paragraph_metrics_partial/);
+  assert.match(source, /paragraph_index:pi/);
+});
