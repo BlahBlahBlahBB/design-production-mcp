@@ -109,10 +109,16 @@ else try {
   ${SCRIPT_CLASSIFIER_JSX}
   function same(a, b) { return jsonStringify(a) === jsonStringify(b); }
   function uniform(values) { var result = { value: undefined, mixed: false }; if (!values.length) return result; result.value = values[0]; for (var i = 1; i < values.length; i++) if (!same(result.value, values[i])) { result.value = null; result.mixed = true; break; } return result; }
+  // Cache installed font names once for this JSX execution instead of
+  // rescanning app.textFonts for every character in every TextFrame.
+  var installedFontNames = {};
+  for (var fontIndex = 0; fontIndex < app.textFonts.length; fontIndex++) {
+    try { installedFontNames[app.textFonts[fontIndex].name] = true; } catch (_) {}
+  }
   function fontEntry(attrs) {
-    var font = safe(attrs, 'textFont'), family = '', style = '', missing = false;
-    try { family = font.family || ''; style = font.style || ''; } catch (_) { missing = true; }
-    if (!missing) { var found = false; for (var i = 0; i < app.textFonts.length; i++) { if (app.textFonts[i].name === font.name) { found = true; break; } } missing = !found; }
+    var font = safe(attrs, 'textFont'), family = '', style = '', missing = false, fontName = '';
+    try { family = font.family || ''; style = font.style || ''; fontName = font.name || ''; } catch (_) { missing = true; }
+    if (!missing) missing = !fontName || installedFontNames[fontName] !== true;
     // Classic ExtendScript has no font embedding-permission property.  Null means
     // "not exposed", never a fabricated embeddable result.
     return { font_family: family, font_style: style, is_font_missing: missing, is_font_embeddable: null, embeddable_status: 'NOT_EXPOSED_BY_CLASSIC_DOM' };
