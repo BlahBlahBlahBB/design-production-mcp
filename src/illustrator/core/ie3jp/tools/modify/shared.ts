@@ -125,7 +125,16 @@ function applyOptionalFill(item, colorObj) {
   if (typeof colorObj === "undefined") return;
 
   if (item.typename === "TextFrame") {
-    item.textRange.characterAttributes.fillColor = createColor(colorObj);
+    var textColor = createColor(colorObj);
+
+    // Apply once to the whole range for empty/new text defaults, then explicitly
+    // apply to every character. Some Illustrator documents can report the
+    // range-level CharacterAttributes color without updating existing character
+    // runs, so per-character assignment is required for reliable production use.
+    item.textRange.characterAttributes.fillColor = textColor;
+    for (var ti = 0; ti < item.characters.length; ti++) {
+      item.characters[ti].characterAttributes.fillColor = textColor;
+    }
     return;
   }
 
