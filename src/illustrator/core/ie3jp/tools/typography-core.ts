@@ -159,9 +159,23 @@ else try {
     var fields = [ ['font_caps', 'capitalization', caps], ['font_size', 'size'], ['tracking', 'tracking'], ['kerning', 'kerningMethod', kern], ['leading', 'leading'], ['auto_leading', 'autoLeading'], ['baseline_shift', 'baselineShift'], ['horizontal_scale', 'horizontalScale'], ['vertical_scale', 'verticalScale'] ];
     var mixed = [];
     for (var fi = 0; fi < fields.length; fi++) { var values = []; for (var ai = 0; ai < source.length; ai++) { var value = safe(source[ai], fields[fi][1]); if (typeof fields[fi][2] === 'function') value = fields[fi][2](value); values.push(value); } var u = uniform(values); if (typeof u.value !== 'undefined') properties[fields[fi][0]] = u.value; if (u.mixed) mixed.push(fields[fi][0]); }
-    var paraValues = [], leadingTypes = [];
-    for (var pi = 0; pi < target.paragraphs.length; pi++) { var pa = target.paragraphs[pi].paragraphAttributes; paraValues.push(justify(safe(pa, 'justification'))); leadingTypes.push(leadingType(safe(pa, 'leadingType'))); }
+    var paraValues = [], leadingTypes = [], paragraphReadFailures = [];
+    for (var pi = 0; pi < target.paragraphs.length; pi++) {
+      try {
+        var paragraph = target.paragraphs[pi];
+        if (!paragraph) throw new Error('Paragraph wrapper unavailable');
+        var pa = paragraph.paragraphAttributes;
+        if (!pa) throw new Error('Paragraph attributes unavailable');
+        var paragraphJustification = safe(pa, 'justification');
+        var paragraphLeadingType = safe(pa, 'leadingType');
+        if (typeof paragraphJustification !== 'undefined') paraValues.push(justify(paragraphJustification));
+        if (typeof paragraphLeadingType !== 'undefined') leadingTypes.push(leadingType(paragraphLeadingType));
+      } catch (paragraphReadError) {
+        paragraphReadFailures.push({ paragraph_index:pi, reason:paragraphReadError.message });
+      }
+    }
     var alignment = uniform(paraValues), lt = uniform(leadingTypes); if (typeof alignment.value !== 'undefined') properties.paragraph_alignment = alignment.value; if (typeof lt.value !== 'undefined') properties.leading_type = lt.value; if (alignment.mixed) mixed.push('paragraph_alignment'); if (lt.mixed) mixed.push('leading_type');
+    if (paragraphReadFailures.length) { properties.paragraph_metrics_partial = true; properties.paragraph_read_failures = paragraphReadFailures; }
     if (mixed.length) properties.mixed_fields = mixed;
     var result = { uuid: uuid, properties: properties };
     if (typeof storyIndex === 'number') result.story_index = storyIndex;
