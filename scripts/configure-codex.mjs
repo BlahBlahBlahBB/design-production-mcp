@@ -13,7 +13,10 @@ const ROUTING_BLOCK = `${ROUTING_START}
 
 For Adobe Illustrator tasks:
 
+- Treat ordinary natural-language requests about the current Illustrator document as Illustrator tasks even when the user does not explicitly say “MCP” or name a tool. In design-editing context, phrases such as “AI里”, “ai文件”, “Illustrator里”, “当前文件”, and “打开的文件” should route to this MCP.
+- Infer the needed \`design-production-illustrator\` tools from the user’s requested result. Do not require the user to restate backend constraints, tool names, UUIDs, or implementation details.
 - Use the \`design-production-illustrator\` MCP as the primary interface whenever the requested operation is supported by this MCP.
+- Do not visually inspect Illustrator through Computer Use just to discover document contents when MCP read tools can answer the question.
 - Prefer MCP read/write tools over Computer Use, browser automation, Adobe Illustrator Beta integrations, Adobe's official Illustrator MCP, or UI inspection.
 - Do not use \`Com.adobe.illustratorbeta\`, Adobe Illustrator Beta, Adobe Illustrator Official MCP, browser automation, or Computer Use for Illustrator document inspection or editing unless the user explicitly asks for that backend.
 - Target Adobe Illustrator Stable by default. Do not launch Illustrator Beta unless the user explicitly asks for Beta.
@@ -23,6 +26,8 @@ For Adobe Illustrator tasks:
 - Without that explicit instruction, never call \`create_work_copy\`, \`reconcile_work_copy\`, or \`dpm_save_work_copy\`; never save merely to create a work-copy flow.
 - If the MCP is unavailable, fails, or lacks a required capability, stop and explain the gap and any possible partial mutation. Do not silently fall back to another Illustrator backend; only use one after explicit user approval.
 - Never automatically invoke Undo after a failed write. State the observed state and wait for explicit user direction.
+- For explicit font tasks, resolve requested fonts before the first typography write when the exact Illustrator font identity is not already known. Prefer one \`list_fonts\` call with all requested search terms when supported, instead of repeated write-fail-search-retry cycles.
+- After \`set_typography\`, prefer one \`get_typography_metrics\` batch readback when verification is needed. Do not also call \`get_text_frame_detail\` unless the requested detail is unavailable from typography metrics.
 - Use the minimum necessary calls. Do not ritual-probe with \`illustrator_status\`, \`set_illustrator_version\`, or \`get_document_info\` before ordinary work. Stable is the default target; change version only on explicit user request or real multi-instance ambiguity. Reuse UUIDs/properties from successful current-turn tool output.
 - Prefer task-level batch tools over chains of atomic calls: use \`find_objects\` with \`set_properties\` for document-wide conditional updates, \`set_appearance\` for a shared change to known UUIDs, \`modify_objects\` for different changes, and batch transform/object tools for common movement or management. Do not loop \`modify_object\` calls when a batch tool applies. Make at most one corresponding \`get_visual_appearance\` call, and only when verification is requested or needed.
 ${ROUTING_END}`;
