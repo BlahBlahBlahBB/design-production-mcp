@@ -8,11 +8,13 @@ Design Production MCP targets Adobe Illustrator 2022–2026. Support and verific
 | Illustrator 2023 | 27.x | `SUPPORTED_UNVERIFIED` | none | none | No maintainer real-machine run recorded. |
 | Illustrator 2024 | 28.x | `SUPPORTED_UNVERIFIED` | none | none | No maintainer real-machine run recorded. |
 | Illustrator 2025 | 29.x | `SUPPORTED_UNVERIFIED` | none | none | No maintainer real-machine run recorded. |
-| Illustrator 2026 | 30.8.1 | `MAINTAINER_VERIFIED` | Maintainer real-machine QA | 2026-09-18 | Current verified Stable target. |
+| Illustrator 2026 | 30.8.1 | `MAINTAINER_VERIFIED` | Maintainer real-machine QA | 2026-09-20 | Current verified Stable target; includes document-wide Story Typography write/read QA. |
 
 Run `./compatibility-check.command` or `npm run compatibility:check` on the target computer to perform a disposable-document smoke check. The checker creates a new unsaved document, writes a sanitized `compatibility-report.json` in the project directory by default (or to `--output <path>`), closes only its marked document with `DONOTSAVECHANGES`, and removes its temporary export. It does not save or inspect existing user documents. External image placement is reported as `SKIPPED` because the checker does not use a user-provided image fixture.
 
 The report includes only MCP, operating-system platform, Node, Illustrator version, timestamp, and capability statuses (`PASS`, `FAIL`, `SKIPPED`, `VERSION_DEPENDENT`). It is not uploaded automatically. Community reports may later support a `COMMUNITY_VERIFIED` status; no such report is currently recorded.
+
+The 2026 Stable verification also covers v0.4.1 document-wide Story Typography: real write QA succeeded and the final `get_typography_metrics(all_stories=true)` read returned Story data, Han/Latin script runs, font metadata, and paragraph alignment without the prior whole-Story wrapper failure.
 
 ## Routing limits
 
