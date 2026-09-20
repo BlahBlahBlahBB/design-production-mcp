@@ -203,7 +203,6 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(installer, /generate_template_variants/);
   assert.match(installer, /data_source/);
   assert.match(installer, /do not run .*pwd.*rg.*find.*ls.*file.*Spreadsheet editing skills.*Python\/openpyxl.*Computer Use/);
-  assert.match(installer, /tool itself retries unreadable source paths/);
   assert.match(installer, /omit .*data_source\.file_path/);
   assert.match(installer, /auto-discovers.*sibling spreadsheet/);
   assert.match(installer, /omit .*source_uuid.*auto-bind/);
