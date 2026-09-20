@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { executeToolJsx } from '../tool-executor.js';
-import { WRITE_ANNOTATIONS, coerceBoolean } from './shared.js';
+import { WRITE_ANNOTATIONS } from './shared.js';
 
 const groupSchema = z.object({
   uuids: z.array(z.string()).min(1).describe('Content UUIDs to place inside the group.'),
@@ -97,7 +97,7 @@ else {
     writeResultFile(RESULT_PATH, { error:true, message:"group_object_sets failed: " + e.message, line:e.line });
   }
 }
-`
+`;
 
 export function register(server: McpServer): void {
   server.registerTool('group_object_sets', {
