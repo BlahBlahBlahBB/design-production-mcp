@@ -1,3 +1,25 @@
+# v0.4.2 发布说明
+
+## Hard routing for Illustrator MCP
+
+- 修复自然语言 Illustrator 任务偶发先走 Computer Use / UI reconnaissance 的问题。
+- 当用户指向当前/已打开的 Illustrator / AI 文档，且任务已由 DPM MCP 支持时，第一个后端动作必须优先调用 `design-production-illustrator` MCP。
+- 明确禁止把“查看当前文件 / 看画布 / 看选区 / 打开菜单 / 检查面板”作为 MCP 可完成任务的前置步骤。
+- 全文档字体、段落对齐、文字颜色等任务直接使用 `set_typography(all_stories=true)`，不先全选、不先菜单导航、不先发现 TextFrame UUID。
+- `set_typography` 工具描述同步强化同一条 Story-first 路由语义。
+- 增加 routing regression，锁定上述行为。
+- 真实自然语言 QA 已验证：首个 backend action 直接为 Design Production Illustrator / Set Typography，未再使用 Computer Use。
+
+### Validation
+
+- `npm test`: **117 / 117 PASS**
+- TypeScript build: **PASS**
+- `git diff --check`: **PASS**
+- Natural-language routing QA: **PASS**
+- Computer Use precursor: **not used**
+
+---
+
 # v0.4.1 发布说明
 
 ## Story-wide typography stabilization
