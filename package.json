@@ -1,6 +1,6 @@
 {
   "name": "design-production-mcp",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "type": "module",
   "description": "Open-source Adobe Illustrator MCP with direct Core tools and separate production work-copy protection.",
   "license": "MIT",
