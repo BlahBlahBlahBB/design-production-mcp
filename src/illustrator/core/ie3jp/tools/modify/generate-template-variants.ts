@@ -5,14 +5,19 @@ import { WRITE_ANNOTATIONS } from './shared.js';
 import { SCRIPT_CLASSIFIER_JSX } from '../typography-script-rules.js';
 
 const fontRuleSchema = z.object({
+  font: z.string().min(1).optional().describe('Friendly alias for font_name. Use a normal human-readable font name such as "Babycare type Bold".'),
   font_name: z.string().min(1).optional().describe('Illustrator font name or a unique human-readable family/style form. Exact PostScript name is preferred but not required when the requested name resolves uniquely.'),
   font_family: z.string().min(1).optional(),
   font_style: z.string().min(1).optional(),
   font_size: z.number().positive().optional(),
 }).superRefine((rule, context) => {
-  const hasFont = Boolean(rule.font_name || rule.font_family || rule.font_style);
-  if (hasFont && !rule.font_name && !(rule.font_family && rule.font_style)) {
-    context.addIssue({ code: 'custom', message: 'Specify font_name or both font_family and font_style.', path: ['font_family'] });
+  if (rule.font && rule.font_name && rule.font !== rule.font_name) {
+    context.addIssue({ code: 'custom', message: 'font and font_name conflict; provide only one name or make them identical.', path: ['font'] });
+  }
+  const directName = rule.font_name || rule.font;
+  const hasFont = Boolean(directName || rule.font_family || rule.font_style);
+  if (hasFont && !directName && !(rule.font_family && rule.font_style)) {
+    context.addIssue({ code: 'custom', message: 'Specify font/font_name or both font_family and font_style.', path: ['font_family'] });
   }
 });
 
@@ -36,6 +41,28 @@ const bindingSchema = z.object({
   paragraph_alignment: z.enum(['left', 'center', 'right']).optional(),
   center_in_artboard: z.enum(['none', 'horizontal', 'vertical', 'both']).optional().default('none').describe('Recenter this TextFrame after text/typography changes.'),
 });
+
+type FontRuleInput = z.infer<typeof fontRuleSchema>;
+type BindingInput = z.infer<typeof bindingSchema>;
+
+function normalizeFontRule(rule?: FontRuleInput) {
+  if (!rule) return rule;
+  return {
+    ...rule,
+    font_name: rule.font_name ?? rule.font,
+  };
+}
+
+function normalizeBinding(binding: BindingInput) {
+  if (!binding.script_rules) return binding;
+  return {
+    ...binding,
+    script_rules: {
+      han: normalizeFontRule(binding.script_rules.han),
+      latin: normalizeFontRule(binding.script_rules.latin),
+    },
+  };
+}
 
 const jsxCode = `
 ${SCRIPT_CLASSIFIER_JSX}
@@ -672,7 +699,7 @@ else {
 export function register(server: McpServer): void {
   server.registerTool('generate_template_variants', {
     title: 'Generate Template Variants',
-    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. For a single-binding template with exactly one editable TextFrame on the source artboard, omit source_uuid and let the tool auto-bind it; only fall back to one text-frame lookup if AUTO_BIND_REQUIRES_ONE_TEXTFRAME is returned. Human-readable font names are resolved by exact or unique normalized Illustrator font identity, so do not preflight with list_fonts unless FONT_NOT_FOUND or FONT_AMBIGUOUS is returned. Map “段落居中” to paragraph_alignment=center, “与画板垂直居中” to center_in_artboard=vertical, and “与画板水平/垂直居中” or “画板居中” to center_in_artboard=both. The tool verifies bound text, requested paragraph alignment, requested font application, and requested artboard centering before reporting success. Font verification compares Illustrator font identity by exact object or normalized name/family/style equivalence and samples only visible representative characters for each script, avoiding paragraph terminators and expensive per-character DOM verification. For N variants, created_artboard_count is normally N-1 because the source artboard becomes variant 1; generated_variant_count and total_variant_artboard_count report the full N. On a clean success, save directly instead of running typography/text-frame verification reads. It rolls back created artwork/artboards on failure.',
+    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. For a single-binding template with exactly one editable TextFrame on the source artboard, omit source_uuid and let the tool auto-bind it; only fall back to one text-frame lookup if AUTO_BIND_REQUIRES_ONE_TEXTFRAME is returned. Human-readable font names are resolved by exact or unique normalized Illustrator font identity. The schema accepts either font or font_name and normalizes both internally, so do not retry merely to rename that field and do not preflight with list_fonts unless FONT_NOT_FOUND or FONT_AMBIGUOUS is returned. Map “段落居中” to paragraph_alignment=center, “与画板垂直居中” to center_in_artboard=vertical, and “与画板水平/垂直居中” or “画板居中” to center_in_artboard=both. The tool verifies bound text, requested paragraph alignment, requested font application, and requested artboard centering before reporting success. Font verification compares Illustrator font identity by exact object or normalized name/family/style equivalence and samples only visible representative characters for each script, avoiding paragraph terminators and expensive per-character DOM verification. For N variants, created_artboard_count is normally N-1 because the source artboard becomes variant 1; generated_variant_count and total_variant_artboard_count report the full N. On a clean success, save directly instead of running typography/text-frame verification reads. It rolls back created artwork/artboards on failure.',
     inputSchema: {
       source_artboard_index: z.number().int().min(0).optional().describe('Source template artboard index. Defaults to the active artboard.'),
       source_item_uuids: z.array(z.string()).min(1).optional().describe('Optional exact top-level source artwork UUIDs. Omit to auto-collect top-level artwork centered on the source artboard.'),
@@ -687,5 +714,11 @@ export function register(server: McpServer): void {
       require_single_source_artboard: z.boolean().optional().default(true).describe('Fail closed unless the source document has exactly one artboard.'),
     },
     annotations: WRITE_ANNOTATIONS,
-  }, async (params) => executeToolJsx(jsxCode, params, { timeoutMs: 180_000, includeTiming: true }));
+  }, async (params) => {
+    const normalizedParams = {
+      ...params,
+      text_bindings: params.text_bindings.map(normalizeBinding),
+    };
+    return executeToolJsx(jsxCode, normalizedParams, { timeoutMs: 180_000, includeTiming: true });
+  });
 }
