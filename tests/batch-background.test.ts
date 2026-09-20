@@ -168,7 +168,13 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(variants, /Math\.ceil\(Math\.sqrt\(variantCount\)\)/);
   assert.match(variants, /sourceRoot\.duplicate\(\)/);
   assert.match(variants, /dup\.translate\(dx, dy\)/);
-  assert.match(variants, /writeContents/);
+  assert.match(variants, /writeAndFormat/);
+  assert.match(variants, /script_rules/);
+  assert.match(variants, /conditional_font_sizes/);
+  assert.match(variants, /paragraph_alignment/);
+  assert.match(variants, /center_in_artboard/);
+  assert.match(variants, /FONT_NOT_FOUND/);
+  assert.match(variants, /tf\.translate\(dx, dy\)/);
   assert.match(variants, /removeCreatedArtwork/);
   assert.match(variants, /removeAddedArtboards/);
   assert.match(variants, /restoreSourceText/);
@@ -181,6 +187,9 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(installer, /generate_template_variants/);
   assert.match(installer, /Do not loop/);
   assert.match(installer, /multi-row grid by default/);
+  assert.match(installer, /Put requested per-script fonts/);
+  assert.match(installer, /Do not call .*list_fonts.*set_typography.*list_text_frames.*modify_objects/);
+  assert.match(installer, /Do not call .*get_document_info.*get_document_structure.*first/);
   assert.match(installer, /spreadsheet\/CSV is only a data source/);
   assert.match(installer, /extract the required column\(s\) once/);
   assert.match(variants, /mutationStarted/);
