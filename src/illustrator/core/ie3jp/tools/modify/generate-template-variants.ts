@@ -1,6 +1,10 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import * as XLSX from 'xlsx';
+import os from 'node:os';
+import path from 'node:path';
+import { unlink } from 'node:fs/promises';
+import { executeJsx } from '../../executor/jsx-runner.js';
 import { executeToolJsx } from '../tool-executor.js';
 import { WRITE_ANNOTATIONS } from './shared.js';
 import { SCRIPT_CLASSIFIER_JSX } from '../typography-script-rules.js';
@@ -101,10 +105,61 @@ function pickColumnIndex(
   throw new Error(`Unable to auto-detect one data column. Available headers: ${headers.filter(Boolean).join(', ')}`);
 }
 
-function hydrateBindingsFromDataSource(
+const copyDataSourceJsx = `
+var preflight = preflightChecks();
+if (preflight) writeResultFile(RESULT_PATH, preflight);
+else try {
+  var params = readParamsFile(PARAMS_PATH);
+  var sourcePath = String(params.source_path || "");
+  var source = new File(sourcePath);
+  if (!source.exists && app.documents.length > 0) {
+    try {
+      var doc = app.activeDocument;
+      if (doc.saved && doc.path) {
+        source = new File(doc.path.fsName + "/" + sourcePath);
+      }
+    } catch (_) {}
+  }
+  if (!source.exists) {
+    writeResultFile(RESULT_PATH, { error:true, message:"DATA_SOURCE_NOT_FOUND: " + sourcePath });
+  } else {
+    var destination = new File(String(params.destination_path || ""));
+    try { if (destination.exists) destination.remove(); } catch (_) {}
+    var copied = source.copy(destination.fsName);
+    if (!copied || !destination.exists) {
+      writeResultFile(RESULT_PATH, { error:true, message:"DATA_SOURCE_COPY_FAILED: " + source.fsName });
+    } else {
+      writeResultFile(RESULT_PATH, { success:true, source_path:source.fsName, copied_path:destination.fsName });
+    }
+  }
+} catch (e) {
+  writeResultFile(RESULT_PATH, { error:true, message:"DATA_SOURCE_COPY_FAILED: " + e.message, line:e.line });
+}
+`;
+
+async function readWorkbookWithIllustratorFallback(filePath: string): Promise<XLSX.WorkBook> {
+  try {
+    return XLSX.readFile(filePath, { cellDates: false });
+  } catch (directError) {
+    const extension = path.extname(filePath) || '.xlsx';
+    const tempPath = path.join(os.tmpdir(), `dpm-template-data-${process.pid}-${Date.now()}${extension}`);
+    try {
+      await executeJsx(copyDataSourceJsx, { source_path: filePath, destination_path: tempPath }, { timeout: 30_000, activate: false });
+      return XLSX.readFile(tempPath, { cellDates: false });
+    } catch (copyError) {
+      const directMessage = directError instanceof Error ? directError.message : String(directError);
+      const copyMessage = copyError instanceof Error ? copyError.message : String(copyError);
+      throw new Error(`DATA_SOURCE_UNREADABLE: direct read failed (${directMessage}); Illustrator copy fallback failed (${copyMessage})`);
+    } finally {
+      await unlink(tempPath).catch(() => undefined);
+    }
+  }
+}
+
+async function hydrateBindingsFromDataSource(
   bindings: VariantBindingInput[],
   dataSource?: VariantDataSourceInput,
-): VariantBindingInput[] {
+): Promise<VariantBindingInput[]> {
   if (!dataSource) {
     for (const binding of bindings) {
       if (!binding.values?.length) throw new Error('Each text binding needs values unless data_source is supplied.');
@@ -112,7 +167,7 @@ function hydrateBindingsFromDataSource(
     return bindings;
   }
 
-  const workbook = XLSX.readFile(dataSource.file_path, { cellDates: false });
+  const workbook = await readWorkbookWithIllustratorFallback(dataSource.file_path);
   const sheetName = dataSource.sheet_name ?? workbook.SheetNames[0];
   if (!sheetName) throw new Error('Spreadsheet has no worksheets.');
   const sheet = workbook.Sheets[sheetName];
@@ -280,14 +335,46 @@ else {
     return String(value).split(String.fromCharCode(10)).join(String.fromCharCode(13));
   }
 
+  function normalizeFontKey(value) {
+    return String(value || "").toLowerCase().replace(/[\\s_\\-]+/g, "").replace(/[^a-z0-9\\u3400-\\u9fff]/g, "");
+  }
+
   function resolveFontRule(rule) {
     if (!rule || (!rule.font_name && !rule.font_family)) return null;
+    var candidates = [];
+    var requestedName = rule.font_name || "";
+    var requestedFamily = rule.font_family || "";
+    var requestedStyle = rule.font_style || "";
+
     for (var fi = 0; fi < app.textFonts.length; fi++) {
       var f = app.textFonts[fi];
-      if (rule.font_name && f.name === rule.font_name) return f;
-      if (!rule.font_name && f.family === rule.font_family && f.style === rule.font_style) return f;
+      if (requestedName && f.name === requestedName) return f;
+      if (!requestedName && f.family === requestedFamily && f.style === requestedStyle) return f;
     }
-    throw new Error("FONT_NOT_FOUND: " + (rule.font_name || (rule.font_family + " / " + rule.font_style)));
+
+    var requestedKey = normalizeFontKey(requestedName || (requestedFamily + requestedStyle));
+    for (var ni = 0; ni < app.textFonts.length; ni++) {
+      var nf = app.textFonts[ni];
+      var keys = [
+        normalizeFontKey(nf.name),
+        normalizeFontKey(nf.family + nf.style),
+        normalizeFontKey(nf.family + " " + nf.style)
+      ];
+      for (var ki = 0; ki < keys.length; ki++) {
+        if (keys[ki] === requestedKey) {
+          candidates.push(nf);
+          break;
+        }
+      }
+    }
+
+    if (candidates.length === 1) return candidates[0];
+    if (candidates.length > 1) {
+      var names = [];
+      for (var ci = 0; ci < candidates.length; ci++) names.push(candidates[ci].name);
+      throw new Error("FONT_AMBIGUOUS: " + (requestedName || (requestedFamily + " / " + requestedStyle)) + " -> " + names.join(", "));
+    }
+    throw new Error("FONT_NOT_FOUND: " + (requestedName || (requestedFamily + " / " + requestedStyle)));
   }
 
   function justificationValue(value) {
@@ -577,7 +664,7 @@ else {
         mismatch_count: mismatches.length,
         mismatches: mismatches
       },
-      timing: timingSummary()
+      timing: (function(){ var t = timingSummary(); t.data_source_ms = params._dpm_data_source_ms || 0; return t; })()
     });
   } catch (e) {
     if (mutationStarted) {
@@ -596,7 +683,7 @@ else {
       preflight: mutationStarted ? "ROLLBACK_ATTEMPTED" : "FAILED_NO_MUTATION",
       message:"generate_template_variants failed: " + e.message,
       line:e.line,
-      timing:timingSummary()
+      timing:(function(){ var t = timingSummary(); t.data_source_ms = params && params._dpm_data_source_ms ? params._dpm_data_source_ms : 0; return t; })()
     });
   }
 }
@@ -622,9 +709,12 @@ export function register(server: McpServer): void {
     },
     annotations: WRITE_ANNOTATIONS,
   }, async (params) => {
+    const dataSourceStartedAt = Date.now();
+    const hydratedBindings = await hydrateBindingsFromDataSource(params.text_bindings, params.data_source);
     const hydrated = {
       ...params,
-      text_bindings: hydrateBindingsFromDataSource(params.text_bindings, params.data_source),
+      text_bindings: hydratedBindings,
+      _dpm_data_source_ms: Date.now() - dataSourceStartedAt,
     };
     return executeToolJsx(jsxCode, hydrated, { timeoutMs: 180_000, includeTiming: true });
   });
