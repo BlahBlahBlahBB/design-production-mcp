@@ -167,7 +167,17 @@ else try {
         characterReadFailures.push({ character_index:null, reason:'TextRange character attributes unavailable: ' + rangeAttributeError.message });
       }
     }
-    try { textContent = target.contents; } catch (_) { try { textContent = target.textRange.contents; } catch (_) {} }
+    try {
+      var directContents = target.contents;
+      if (typeof directContents === 'string') textContent = directContents;
+    } catch (_) {}
+    if (typeof textContent !== 'string' || textContent === '') {
+      try {
+        var rangeContents = target.textRange.contents;
+        if (typeof rangeContents === 'string') textContent = rangeContents;
+      } catch (_) {}
+    }
+    if (typeof textContent !== 'string') textContent = '';
     var properties = {
       text_length: textContent.length,
       text_content: textContent,
