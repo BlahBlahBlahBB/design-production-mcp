@@ -309,6 +309,29 @@ else {
     }
   }
 
+  function fontIdentityKeys(font) {
+    var keys = [];
+    try { keys.push(normalizeFontKey(font.name)); } catch (_) {}
+    try { keys.push(normalizeFontKey(font.family)); } catch (_) {}
+    try { keys.push(normalizeFontKey(font.family + font.style)); } catch (_) {}
+    try { keys.push(normalizeFontKey(font.family + " " + font.style)); } catch (_) {}
+    return keys;
+  }
+
+  function fontsEquivalent(actualFont, expectedFont) {
+    if (!actualFont || !expectedFont) return false;
+    try { if (actualFont === expectedFont) return true; } catch (_) {}
+    var actualKeys = fontIdentityKeys(actualFont);
+    var expectedKeys = fontIdentityKeys(expectedFont);
+    for (var ai = 0; ai < actualKeys.length; ai++) {
+      if (!actualKeys[ai]) continue;
+      for (var ei = 0; ei < expectedKeys.length; ei++) {
+        if (actualKeys[ai] === expectedKeys[ei]) return true;
+      }
+    }
+    return false;
+  }
+
   function verifyBindingFormat(tf, binding, resolvedFonts, artboardRect, variantIndex, bindingIndex, mismatches) {
     if (binding.paragraph_alignment) {
       var expectedJustification = justificationValue(binding.paragraph_alignment);
@@ -346,8 +369,20 @@ else {
         var expectedFont = script === "han" ? resolvedFonts.han : script === "latin" ? resolvedFonts.latin : null;
         if (!expectedFont) continue;
         try {
-          if (tf.characters[ci].characterAttributes.textFont.name !== expectedFont.name) {
-            mismatches.push({ variant_index:variantIndex, binding_index:bindingIndex, kind:"font", character_index:ci, expected:expectedFont.name, actual:tf.characters[ci].characterAttributes.textFont.name });
+          var actualFont = tf.characters[ci].characterAttributes.textFont;
+          if (!fontsEquivalent(actualFont, expectedFont)) {
+            mismatches.push({
+              variant_index:variantIndex,
+              binding_index:bindingIndex,
+              kind:"font",
+              character_index:ci,
+              expected_name:expectedFont.name,
+              expected_family:expectedFont.family,
+              expected_style:expectedFont.style,
+              actual_name:actualFont.name,
+              actual_family:actualFont.family,
+              actual_style:actualFont.style
+            });
             break;
           }
         } catch (_) {
@@ -565,12 +600,20 @@ else {
     }
     verificationMs = nowMs() - verificationStart;
 
+    var failedVariantMap = {};
+    for (var mi = 0; mi < mismatches.length; mi++) failedVariantMap[String(mismatches[mi].variant_index)] = true;
+    var failedVariantCount = 0;
+    for (var mk in failedVariantMap) if (failedVariantMap.hasOwnProperty(mk)) failedVariantCount++;
+
     writeResultFile(RESULT_PATH, {
       success: mismatches.length === 0,
       requested_count: variantCount,
-      success_count: mismatches.length === 0 ? variantCount : variantCount - 1,
+      generated_variant_count: variantCount,
+      success_count: variantCount - failedVariantCount,
+      failed_variant_count: failedVariantCount,
       source_artboard_index: sourceIndex,
       created_artboard_count: variantCount - 1,
+      total_variant_artboard_count: variantCount,
       final_artboard_count: doc.artboards.length,
       source_root_count: sourceRoots.length,
       text_binding_count: params.text_bindings.length,
@@ -581,7 +624,8 @@ else {
         gap_y_mm: gapYmm
       },
       verification: {
-        verified_variants: mismatches.length === 0 ? variantCount : null,
+        verified_variants: variantCount - failedVariantCount,
+        failed_variants: failedVariantCount,
         mismatch_count: mismatches.length,
         mismatches: mismatches
       },
@@ -613,7 +657,7 @@ else {
 export function register(server: McpServer): void {
   server.registerTool('generate_template_variants', {
     title: 'Generate Template Variants',
-    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. For a single-binding template with exactly one editable TextFrame on the source artboard, omit source_uuid and let the tool auto-bind it; only fall back to one text-frame lookup if AUTO_BIND_REQUIRES_ONE_TEXTFRAME is returned. Human-readable font names are resolved by exact or unique normalized Illustrator font identity, so do not preflight with list_fonts unless FONT_NOT_FOUND or FONT_AMBIGUOUS is returned. Map “段落居中” to paragraph_alignment=center, “与画板垂直居中” to center_in_artboard=vertical, and “与画板水平/垂直居中” or “画板居中” to center_in_artboard=both. The tool verifies bound text, requested paragraph alignment, requested font application, and requested artboard centering before reporting success; on a clean success, save directly instead of running typography/text-frame verification reads. It rolls back created artwork/artboards on failure.',
+    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. For a single-binding template with exactly one editable TextFrame on the source artboard, omit source_uuid and let the tool auto-bind it; only fall back to one text-frame lookup if AUTO_BIND_REQUIRES_ONE_TEXTFRAME is returned. Human-readable font names are resolved by exact or unique normalized Illustrator font identity, so do not preflight with list_fonts unless FONT_NOT_FOUND or FONT_AMBIGUOUS is returned. Map “段落居中” to paragraph_alignment=center, “与画板垂直居中” to center_in_artboard=vertical, and “与画板水平/垂直居中” or “画板居中” to center_in_artboard=both. The tool verifies bound text, requested paragraph alignment, requested font application, and requested artboard centering before reporting success. Font verification compares Illustrator font identity by exact object or normalized name/family/style equivalence to avoid false failures from PostScript/display-name aliases. For N variants, created_artboard_count is normally N-1 because the source artboard becomes variant 1; generated_variant_count and total_variant_artboard_count report the full N. On a clean success, save directly instead of running typography/text-frame verification reads. It rolls back created artwork/artboards on failure.',
     inputSchema: {
       source_artboard_index: z.number().int().min(0).optional().describe('Source template artboard index. Defaults to the active artboard.'),
       source_item_uuids: z.array(z.string()).min(1).optional().describe('Optional exact top-level source artwork UUIDs. Omit to auto-collect top-level artwork centered on the source artboard.'),
