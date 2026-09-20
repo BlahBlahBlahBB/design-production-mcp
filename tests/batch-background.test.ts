@@ -164,6 +164,11 @@ test("data-driven templates use one rollback-safe variant generator", async () =
 
   const variants = await source("src/illustrator/core/ie3jp/tools/modify/generate-template-variants.ts");
   assert.match(variants, /text_bindings/);
+  assert.match(variants, /data_source/);
+  assert.match(variants, /XLSX\.readFile/);
+  assert.match(variants, /sheet_to_json/);
+  assert.match(variants, /autoResolveSingleTextFrame/);
+  assert.match(variants, /AUTO_BIND_REQUIRES_ONE_TEXTFRAME/);
   assert.match(variants, /source_artboard_index/);
   assert.match(variants, /Math\.ceil\(Math\.sqrt\(variantCount\)\)/);
   assert.match(variants, /sourceRoot\.duplicate\(\)/);
@@ -185,13 +190,19 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   const installer = await source("scripts/configure-codex.mjs");
   assert.match(installer, /one-template-plus-many-data jobs/);
   assert.match(installer, /generate_template_variants/);
+  assert.match(installer, /data_source/);
+  assert.match(installer, /do not invoke Spreadsheet editing skills/);
+  assert.match(installer, /omit .*source_uuid.*auto-bind/);
+  assert.match(installer, /Do not call .*get_document_structure.*get_document_info.*get_text_frame_detail.*list_text_frames.*get_artboards.*first/);
   assert.match(installer, /Do not loop/);
   assert.match(installer, /multi-row grid by default/);
   assert.match(installer, /Put requested per-script fonts/);
   assert.match(installer, /Do not call .*list_fonts.*set_typography.*list_text_frames.*modify_objects/);
   assert.match(installer, /Do not call .*get_document_info.*get_document_structure.*first/);
   assert.match(installer, /spreadsheet\/CSV is only a data source/);
-  assert.match(installer, /extract the required column\(s\) once/);
+  assert.match(installer, /prefer .*generate_template_variants\.data_source/);
+  assert.match(installer, /After a successful .*generate_template_variants.*save_document.*stop/);
+  assert.match(installer, /Do not run post-save .*list_text_frames.*get_artboards.*stat/);
   assert.match(variants, /mutationStarted/);
   assert.match(variants, /FAILED_NO_MUTATION/);
   assert.match(variants, /ROLLBACK_ATTEMPTED/);
