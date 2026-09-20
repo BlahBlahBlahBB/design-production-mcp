@@ -44,6 +44,7 @@ import { register as registerGetVisualAppearance } from './read/get-visual-appea
 import { register as registerConvertToOutlines } from './modify/convert-to-outlines.js';
 import { register as registerApplyColorProfile } from './modify/apply-color-profile.js';
 import { register as registerPlaceImage } from './modify/place-image.js';
+import { register as registerPlaceImages } from './modify/place-images.js';
 import { register as registerImportSvgAsEditable } from './modify/import-svg-as-editable.js';
 import { register as registerResizeForVariation } from './modify/resize-for-variation.js';
 import { register as registerAlignObjects } from './modify/align-objects.js';
@@ -61,6 +62,7 @@ import { register as registerCloseDocument } from './modify/close-document.js';
 import { register as registerSaveDocument } from './modify/save-document.js';
 import { register as registerOpenDocument } from './modify/open-document.js';
 import { register as registerGroupObjects } from './modify/group-objects.js';
+import { register as registerGroupObjectSets } from './modify/group-object-sets.js';
 import { register as registerUngroupObjects } from './modify/ungroup-objects.js';
 import { register as registerDuplicateObjects } from './modify/duplicate-objects.js';
 import { register as registerListFonts } from './read/list-fonts.js';
@@ -128,6 +130,7 @@ export function registerAllTools(server: McpServer): void {
   registerConvertToOutlines(server);
   registerApplyColorProfile(server);
   registerPlaceImage(server);
+  registerPlaceImages(server);
   registerImportSvgAsEditable(server);
   registerResizeForVariation(server);
   registerAlignObjects(server);
@@ -145,6 +148,7 @@ export function registerAllTools(server: McpServer): void {
   registerSaveDocument(server);
   registerOpenDocument(server);
   registerGroupObjects(server);
+  registerGroupObjectSets(server);
   registerUngroupObjects(server);
   registerDuplicateObjects(server);
   registerListFonts(server);

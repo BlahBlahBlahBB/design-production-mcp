@@ -69,7 +69,7 @@ export function register(server: McpServer): void {
     {
       title: 'Group Objects',
       description:
-        'Group multiple objects into a single group. The first UUID in the array becomes the bottommost item, the last becomes the topmost. Note: Illustrator will be activated (brought to foreground) during execution.',
+        'Group one set of objects into a single group. For many repeated independent groups or clipping masks, prefer group_object_sets instead of repeated group_objects calls. The first UUID in the array becomes the bottommost item, the last becomes the topmost.',
       inputSchema: {
         uuids: z.array(z.string()).min(1).describe('UUIDs of objects to group. Order matters: first=bottom, last=top in layer panel.'),
         name: z.string().optional().describe('Name for the new group'),

@@ -21,6 +21,10 @@ test("ordinary Core writes and heavy execution default to background", async () 
   const modify = await source("src/illustrator/core/ie3jp/tools/modify/modify-object.ts");
   assert.match(runner, /options\?\.activate \?\? false/);
   assert.match(executor, /executeJsxHeavy\(jsxCode, resolvedParams, \{ activate: options\?\.activate \?\? false \}\)/);
+  assert.match(executor, /timeoutMs/);
+  assert.match(executor, /timeout: options\.timeoutMs/);
+  assert.match(executor, /includeTiming/);
+  assert.match(executor, /transport_elapsed_ms/);
   assert.doesNotMatch(modify, /activate:\s*true/);
 });
 
@@ -70,6 +74,16 @@ test("installer routing remains batch-first without backend fallback or automati
   assert.match(installer, /Do not use Computer Use to check which Illustrator document is open/);
   assert.match(installer, /Do not select all objects or navigate menus as a precursor/);
   assert.match(installer, /all_stories=true.*directly/);
+  assert.match(installer, /folder-to-template image jobs/);
+  assert.match(installer, /place_images/);
+  assert.match(installer, /clip_path_uuid/);
+  assert.match(installer, /group_object_sets/);
+  assert.match(installer, /label_uuid/);
+  assert.match(installer, /label_text/);
+  assert.match(installer, /Do not repeatedly call/);
+  assert.match(installer, /do not enter an improvised repair loop/);
+  assert.match(installer, /Do not run shell/);
+  assert.match(installer, /Never save after an unverified timeout or failed batch/);
 });
 
 test("Core routing keeps Production explicit and excludes automatic work-copy or save rituals", async () => {
@@ -100,6 +114,48 @@ test("common transforms and rename are public batch-first Core tools", () => {
   for (const productionTool of ["create_work_copy", "reconcile_work_copy", "dpm_save_work_copy"]) {
     assert.ok(registered[productionTool], `${productionTool} must remain registered`);
   }
+});
+
+test("repeated image/template work has public batch placement and grouping tools", async () => {
+  const registered = (createDesignProductionMcpServer() as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+  assert.ok(registered.place_images, "place_images must be registered");
+  assert.ok(registered.group_object_sets, "group_object_sets must be registered");
+
+  const placement = await source("src/illustrator/core/ie3jp/tools/modify/place-images.ts");
+  assert.match(placement, /placements/);
+  assert.match(placement, /width_mm/);
+  assert.match(placement, /height_mm/);
+  assert.match(placement, /center_on_uuid/);
+  assert.match(placement, /clip_path_uuid/);
+  assert.match(placement, /label_uuid/);
+  assert.match(placement, /label_text/);
+  assert.match(placement, /FAILED_NO_MUTATION/);
+  assert.match(placement, /duplicate\(group, ElementPlacement\.PLACEATBEGINNING\)/);
+  assert.match(placement, /mask\.clipping = true/);
+  assert.match(placement, /group\.clipped = true/);
+  assert.match(placement, /p\.clipPath\.remove\(\)/);
+  assert.match(placement, /group\.remove\(\)/);
+  assert.match(placement, /timeoutMs: 180_000/);
+  assert.match(placement, /includeTiming: true/);
+  assert.match(placement, /elapsed_ms/);
+  assert.match(placement, /preflight_ms/);
+  assert.match(placement, /placement_ms/);
+  assert.match(placement, /clipping_ms/);
+  assert.match(placement, /label_ms/);
+  assert.match(placement, /verification_ms/);
+  assert.match(placement, /unaccounted_ms/);
+  assert.match(placement, /requested_count/);
+  assert.match(placement, /failed_objects/);
+  assert.doesNotMatch(placement, /activate:\s*true/);
+
+  const groups = await source("src/illustrator/core/ie3jp/tools/modify/group-object-sets.ts");
+  assert.match(groups, /groups/);
+  assert.match(groups, /clip_path_uuid/);
+  assert.match(groups, /PLACEATBEGINNING/);
+  assert.match(groups, /\.clipping = true/);
+  assert.match(groups, /FAILED_NO_MUTATION/);
+  assert.match(groups, /failed_groups/);
+  assert.doesNotMatch(groups, /activate:\s*true/);
 });
 
 test("typography stays a two-tool batch Core surface with honest Classic DOM limits", async () => {

@@ -4,7 +4,7 @@
 
 这个项目把多个成熟的 Illustrator 开源能力整合到同一个 MCP 中，并保留 DPM 自己的生产安全能力。Core 默认直接操作当前文档；只有用户明确要求保护 MASTER / 保留原稿 / 使用 Work Copy 时，才启用独立的 Production 安全机制。
 
-当前版本：**v0.4.2**
+当前版本：**v0.4.3**
 发布说明：[RELEASE_NOTES.md](RELEASE_NOTES.md)
 
 <br>
@@ -13,7 +13,7 @@
 
 当前公开能力分为两部分：
 
-- **Illustrator Core：83 个公开工具**（构建时从注册表自动计数）
+- **Illustrator Core：85 个公开工具**（构建时从注册表自动计数）
 - **DPM Production：3 个公开生产安全工具**
 
 <br>
@@ -30,14 +30,16 @@ Stable Illustrator MCP 独立运行，不依赖 Adobe Illustrator Beta。DPM 工
 
 从 v0.4.2 起，当前/已打开 Illustrator 文档且 MCP 已支持的任务采用 **hard routing**：第一个后端动作必须优先调用 `design-production-illustrator` MCP，不再先用 Computer Use 查看应用、画布、选区、菜单或面板；全文档字体/段落/文字颜色任务直接进入 `set_typography(all_stories=true)`。
 
+从 v0.4.3 起，重复图片模板任务采用真正的 **batch-first** 路径：新增 `place_images` 与 `group_object_sets`，可一次处理多张图片、毫米尺寸、居中、剪切蒙版和对应文字标签；大批次使用独立 180 秒 transport budget，并返回阶段 timing telemetry。真实 34 张二维码模板 QA 为 34/34 成功，`place_images` 核心 JSX 约 2.4 秒、含 transport 约 2.6 秒。
+
 主要能力包括：
 
 - 文档：新建、打开、关闭、保存、读取文档信息和结构、Undo、切换 Illustrator 目标版本
 - 绘图：矩形、椭圆、直线、自定义路径、普通文字、路径文字
-- 对象：查找、选择、删除、复制、群组、解组、对齐、修改属性、层级顺序、移动图层、坐标转换
+- 对象：查找、选择、删除、复制、单组 / 批量 `group_object_sets`、解组、对齐、修改属性、层级顺序、移动图层、坐标转换
 - 文字：批量 Typography metrics / direct formatting、文字框读取与创建、样式、格式化替换、转轮廓、字体列表、文字一致性检查
 - 颜色与样式：颜色、Swatches、Gradient、Graphic Style、颜色替换、Design Tokens、Style Guide
-- 图片与 SVG：Place、Relink、Embed、读取图片信息、可编辑 SVG、Image Trace
+- 图片与 SVG：单图 Place、批量 `place_images`、Relink、Embed、读取图片信息、可编辑 SVG、Image Trace
 - 图层与画板：图层管理、画板管理、Fit Artboard to Selection、Duplicate Active Artboard
 - Pathfinder：Unite、Minus Front、Minus Back、Intersect、Exclude、Divide、Trim、Merge、Crop、Outline
 - Expand：支持 Object / Fill / Stroke / Gradient 展开项
@@ -386,10 +388,11 @@ create_work_copy
 - Export：通过
 - Story 全文档 Typography 写入：通过（混合 Han / Latin 字体、颜色、段落格式）
 - `get_typography_metrics(all_stories=true)`：通过（Story 数据、script_runs、paragraph alignment 正常返回；不再因 `Story.contents` / 局部 wrapper 异常让整条读取失败）
+- `place_images` 批量二维码模板：通过（34/34；30.5 mm、居中、剪切蒙版、标签写入、保存均通过；核心 JSX 2413 ms，transport 2620 ms）
 
 项目测试状态：
 
-- `npm test`：**117 / 117 通过**
+- `npm test`：**118 / 118 通过**
 - MASTER / Work Copy safety regression：包含于 automated suite
 - TypeScript build：通过
 - `npm audit --omit=dev`：**0 个已报告漏洞**

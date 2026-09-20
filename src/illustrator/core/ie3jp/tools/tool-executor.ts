@@ -17,16 +17,24 @@ export function formatToolResult(result: unknown): { content: Array<{ type: 'tex
 export async function executeToolJsx(
   jsxCode: string,
   params: unknown,
-  options?: { activate?: boolean; heavy?: boolean; resolveCoordinate?: boolean },
+  options?: { activate?: boolean; heavy?: boolean; resolveCoordinate?: boolean; timeoutMs?: number; includeTiming?: boolean },
 ): Promise<{ content: Array<{ type: 'text'; text: string }> }> {
   const baseParams = ensureToolParams(params);
   const resolvedParams = options?.resolveCoordinate
     ? { ...baseParams, coordinate_system: await resolveCoordinateSystem(baseParams.coordinate_system as 'artboard-web' | 'document' | undefined) }
     : baseParams;
 
-  const result = options?.heavy
-    ? await executeJsxHeavy(jsxCode, resolvedParams, { activate: options?.activate ?? false })
-    : await executeJsx(jsxCode, resolvedParams, { activate: options?.activate ?? false });
+  const transportStartedAt = Date.now();
+  const result = typeof options?.timeoutMs === 'number'
+    ? await executeJsx(jsxCode, resolvedParams, { timeout: options.timeoutMs, activate: options?.activate ?? false })
+    : options?.heavy
+      ? await executeJsxHeavy(jsxCode, resolvedParams, { activate: options?.activate ?? false })
+      : await executeJsx(jsxCode, resolvedParams, { activate: options?.activate ?? false });
+  const transportElapsedMs = Date.now() - transportStartedAt;
 
-  return formatToolResult(result);
+  const output = options?.includeTiming && result && typeof result === 'object' && !Array.isArray(result)
+    ? { ...result, transport_elapsed_ms: transportElapsedMs }
+    : result;
+
+  return formatToolResult(output);
 }

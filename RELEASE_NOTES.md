@@ -1,3 +1,31 @@
+# v0.4.3 发布说明
+
+## Batch image template workflows
+
+- 新增 `place_images`：最多一次批量处理 200 个 raster/PDF placement，支持 points / mm 尺寸、`center_on_uuid`、`clip_path_uuid`、`label_uuid + label_text`、linked/embed。
+- 新增 `group_object_sets`：一次创建多组独立 group / clipping group，显式使用 `clip_path_uuid`，避免依赖数组顺序猜测剪切路径。
+- 批量图片任务先做 whole-batch preflight；目标或文件无效时返回 `FAILED_NO_MUTATION`。单槽失败时回滚新建 artwork，并尽可能恢复标签。
+- 修正 Illustrator clipping group 顺序：遮罩 PathItem 放到 `PLACEATBEGINNING`，显式设置 `mask.clipping = true` 与 `group.clipped = true`。
+- `place_images` 使用专用 180 秒 transport budget，避免 Illustrator 已完成但 MCP 在 30/60 秒时误报 timeout。
+- 新增 timing telemetry：`elapsed_ms`、`preflight_ms`、`placement_ms`、`clipping_ms`、`label_ms`、`verification_ms`、`unaccounted_ms`、`transport_elapsed_ms`。
+- Routing 强制模板批处理使用单次 batch call；失败后不再自动进入 repeated ungroup/move/group、sleep、process polling 或未验证保存的修复循环。
+- 保留 v0.4.2 的 hard routing：MCP 已支持的当前 Illustrator 任务仍优先直接走 Design Production Illustrator，不先用 Computer Use。
+
+### Validation
+
+- `npm test`: **118 / 118 PASS**
+- TypeScript build: **PASS**
+- GitHub CI: **PASS**
+- 真实 34 张二维码模板 QA: **34 / 34 PASS**
+- `place_images` core JSX: **2413 ms**
+- transport elapsed: **2620 ms**
+- 30.5 mm / centering / clipping mask / label replacement / save: **PASS**
+- Computer Use: **not used**
+- repair loop: **not used**
+- false timeout after 180s budget: **not reproduced**
+
+---
+
 # v0.4.2 发布说明
 
 ## Hard routing for Illustrator MCP
