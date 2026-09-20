@@ -1,5 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { createHash } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
 import { executeToolJsx } from '../tool-executor.js';
 import { WRITE_ANNOTATIONS } from './shared.js';
 import { SCRIPT_CLASSIFIER_JSX } from '../typography-script-rules.js';
@@ -32,7 +34,8 @@ const conditionalSizeSchema = z.object({
 
 const bindingSchema = z.object({
   source_uuid: z.string().optional().describe('UUID of a source TextFrame inside the template artboard. Omit for a single-binding template when exactly one editable TextFrame exists on the source artboard; the tool will bind it automatically.'),
-  values: z.array(z.string()).min(1).max(200).describe('One text value per generated variant, in output order.'),
+  values: z.array(z.string()).min(1).max(200).optional().describe('One text value per generated variant, in output order. For larger extracted datasets, prefer values_json_path so the model does not have to reserialize every value.'),
+  values_json_path: z.string().min(1).optional().describe('Path to a UTF-8 JSON file containing either a string array or {"values": string[]}. The MCP reads it directly before Illustrator execution, preserving exact count/order/duplicates without model reserialization. Maximum file size 1 MiB.'),
   script_rules: z.object({
     han: fontRuleSchema.optional(),
     latin: fontRuleSchema.optional(),
@@ -40,10 +43,28 @@ const bindingSchema = z.object({
   conditional_font_sizes: z.array(conditionalSizeSchema).max(20).optional().describe('Optional whole-name size overrides, e.g. han_characters=4 -> 83 pt. Later matching rules override earlier ones.'),
   paragraph_alignment: z.enum(['left', 'center', 'right']).optional(),
   center_in_artboard: z.enum(['none', 'horizontal', 'vertical', 'both']).optional().default('none').describe('Recenter this TextFrame after text/typography changes.'),
+}).superRefine((binding, context) => {
+  const hasValues = Boolean(binding.values?.length);
+  const hasPath = Boolean(binding.values_json_path);
+  if (hasValues === hasPath) {
+    context.addIssue({
+      code: 'custom',
+      message: 'Specify exactly one of values or values_json_path.',
+      path: ['values'],
+    });
+  }
 });
 
 type FontRuleInput = z.infer<typeof fontRuleSchema>;
 type BindingInput = z.infer<typeof bindingSchema>;
+
+interface ValueSourceMetadata {
+  binding_index: number;
+  source: 'inline' | 'json_file';
+  value_count: number;
+  sha256: string;
+  duplicate_values: Array<{ value: string; count: number }>;
+}
 
 function normalizeFontRule(rule?: FontRuleInput) {
   if (!rule) return rule;
@@ -53,14 +74,59 @@ function normalizeFontRule(rule?: FontRuleInput) {
   };
 }
 
-function normalizeBinding(binding: BindingInput) {
-  if (!binding.script_rules) return binding;
+function summarizeValues(values: string[], bindingIndex: number, source: 'inline' | 'json_file'): ValueSourceMetadata {
+  const counts = new Map<string, number>();
+  for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
+  const duplicateValues = [...counts.entries()]
+    .filter(([, count]) => count > 1)
+    .slice(0, 20)
+    .map(([value, count]) => ({ value, count }));
   return {
+    binding_index: bindingIndex,
+    source,
+    value_count: values.length,
+    sha256: createHash('sha256').update(JSON.stringify(values)).digest('hex'),
+    duplicate_values: duplicateValues,
+  };
+}
+
+async function valuesFromJsonPath(filePath: string): Promise<string[]> {
+  const bytes = await readFile(filePath);
+  if (bytes.byteLength > 1024 * 1024) throw new Error('VALUES_JSON_TOO_LARGE: maximum 1 MiB');
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(bytes.toString('utf8'));
+  } catch (error) {
+    throw new Error(`VALUES_JSON_INVALID: ${error instanceof Error ? error.message : String(error)}`);
+  }
+  const values = Array.isArray(parsed)
+    ? parsed
+    : parsed && typeof parsed === 'object' && 'values' in parsed
+      ? (parsed as { values?: unknown }).values
+      : undefined;
+  if (!Array.isArray(values) || values.length === 0 || values.length > 200) {
+    throw new Error('VALUES_JSON_INVALID: expected 1-200 string values');
+  }
+  if (!values.every((value) => typeof value === 'string')) {
+    throw new Error('VALUES_JSON_INVALID: every value must be a string');
+  }
+  return values;
+}
+
+async function normalizeBinding(binding: BindingInput, bindingIndex: number): Promise<{ binding: BindingInput & { values: string[] }; metadata: ValueSourceMetadata }> {
+  const values = binding.values ?? await valuesFromJsonPath(binding.values_json_path as string);
+  const normalized: BindingInput & { values: string[] } = {
     ...binding,
-    script_rules: {
+    values,
+    values_json_path: undefined,
+    script_rules: binding.script_rules ? {
       han: normalizeFontRule(binding.script_rules.han),
       latin: normalizeFontRule(binding.script_rules.latin),
-    },
+    } : undefined,
+  };
+  return {
+    binding: normalized,
+    metadata: summarizeValues(values, bindingIndex, binding.values ? 'inline' : 'json_file'),
   };
 }
 
@@ -665,6 +731,7 @@ else {
         gap_x_mm: gapXmm,
         gap_y_mm: gapYmm
       },
+      value_sources: params._dpm_value_sources || [],
       verification: {
         verified_variants: variantCount - failedVariantCount,
         failed_variants: failedVariantCount,
@@ -699,7 +766,7 @@ else {
 export function register(server: McpServer): void {
   server.registerTool('generate_template_variants', {
     title: 'Generate Template Variants',
-    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. For a single-binding template with exactly one editable TextFrame on the source artboard, omit source_uuid and let the tool auto-bind it; only fall back to one text-frame lookup if AUTO_BIND_REQUIRES_ONE_TEXTFRAME is returned. Human-readable font names are resolved by exact or unique normalized Illustrator font identity. The schema accepts either font or font_name and normalizes both internally, so do not retry merely to rename that field and do not preflight with list_fonts unless FONT_NOT_FOUND or FONT_AMBIGUOUS is returned. Map “段落居中” to paragraph_alignment=center, “与画板垂直居中” to center_in_artboard=vertical, and “与画板水平/垂直居中” or “画板居中” to center_in_artboard=both. The tool verifies bound text, requested paragraph alignment, requested font application, and requested artboard centering before reporting success. Font verification compares Illustrator font identity by exact object or normalized name/family/style equivalence and samples only visible representative characters for each script, avoiding paragraph terminators and expensive per-character DOM verification. For N variants, created_artboard_count is normally N-1 because the source artboard becomes variant 1; generated_variant_count and total_variant_artboard_count report the full N. On a clean success, save directly instead of running typography/text-frame verification reads. It rolls back created artwork/artboards on failure.',
+    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. For a single-binding template with exactly one editable TextFrame on the source artboard, omit source_uuid and let the tool auto-bind it; only fall back to one text-frame lookup if AUTO_BIND_REQUIRES_ONE_TEXTFRAME is returned. Human-readable font names are resolved by exact or unique normalized Illustrator font identity. The schema accepts either font or font_name and normalizes both internally, so do not retry merely to rename that field and do not preflight with list_fonts unless FONT_NOT_FOUND or FONT_AMBIGUOUS is returned. For larger extracted datasets, values_json_path lets the MCP consume an exact JSON value array directly so a smaller model never has to copy dozens of values into tool arguments; the result reports count, SHA-256 and true duplicate values from that exact input. Map “段落居中” to paragraph_alignment=center, “与画板垂直居中” to center_in_artboard=vertical, and “与画板水平/垂直居中” or “画板居中” to center_in_artboard=both. The tool verifies bound text, requested paragraph alignment, requested font application, and requested artboard centering before reporting success. Font verification compares Illustrator font identity by exact object or normalized name/family/style equivalence and samples only visible representative characters for each script, avoiding paragraph terminators and expensive per-character DOM verification. For N variants, created_artboard_count is normally N-1 because the source artboard becomes variant 1; generated_variant_count and total_variant_artboard_count report the full N. On a clean success, save directly instead of running typography/text-frame verification reads. It rolls back created artwork/artboards on failure.',
     inputSchema: {
       source_artboard_index: z.number().int().min(0).optional().describe('Source template artboard index. Defaults to the active artboard.'),
       source_item_uuids: z.array(z.string()).min(1).optional().describe('Optional exact top-level source artwork UUIDs. Omit to auto-collect top-level artwork centered on the source artboard.'),
@@ -715,9 +782,11 @@ export function register(server: McpServer): void {
     },
     annotations: WRITE_ANNOTATIONS,
   }, async (params) => {
+    const hydrated = await Promise.all(params.text_bindings.map((binding, index) => normalizeBinding(binding, index)));
     const normalizedParams = {
       ...params,
-      text_bindings: params.text_bindings.map(normalizeBinding),
+      text_bindings: hydrated.map((entry) => entry.binding),
+      _dpm_value_sources: hydrated.map((entry) => entry.metadata),
     };
     return executeToolJsx(jsxCode, normalizedParams, { timeoutMs: 180_000, includeTiming: true });
   });
