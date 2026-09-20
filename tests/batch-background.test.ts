@@ -179,6 +179,9 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(variants, /FONT_AMBIGUOUS/);
   assert.match(variants, /normalizeFontKey/);
   assert.match(variants, /fontsEquivalent/);
+  assert.match(variants, /representative = \{ han:-1, latin:-1 \}/);
+  assert.match(variants, /visibleText = readContents\(tf\)/);
+  assert.match(variants, /scriptsToCheck = \["han", "latin"\]/);
   assert.match(variants, /expected_family/);
   assert.match(variants, /actual_family/);
   assert.match(variants, /centerTextFrame/);
