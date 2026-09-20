@@ -21,6 +21,8 @@ else {
   var sourceBindingPaths = [];
   var sourceRoots = [];
   var sourceRootUuids = [];
+  var mutationStarted = false;
+  var sourceArtboardOriginalName = null;
   var timingStart = (new Date()).getTime();
   var preflightMs = 0, artboardMs = 0, duplicateMs = 0, textMs = 0, verificationMs = 0;
 
@@ -177,6 +179,7 @@ else {
     }
 
     var sourceRect = doc.artboards[sourceIndex].artboardRect;
+    sourceArtboardOriginalName = doc.artboards[sourceIndex].name;
     var sourceWidth = sourceRect[2] - sourceRect[0];
     var sourceHeight = sourceRect[1] - sourceRect[3];
     if (!(sourceWidth > 0) || !(sourceHeight > 0)) throw new Error("Source artboard has invalid dimensions");
@@ -211,6 +214,7 @@ else {
 
     var variantArtboardIndices = [sourceIndex];
     var artboardStart = nowMs();
+    mutationStarted = true;
     for (var vi = 1; vi < variantCount; vi++) {
       var row = Math.floor(vi / columns);
       var col = vi % columns;
@@ -320,12 +324,20 @@ else {
       timing: timingSummary()
     });
   } catch (e) {
-    restoreSourceText();
-    removeCreatedArtwork();
-    removeAddedArtboards();
+    if (mutationStarted) {
+      restoreSourceText();
+      try {
+        if (sourceArtboardOriginalName !== null && doc && params && params.name_artboards === true) {
+          var rollbackSourceIndex = (typeof params.source_artboard_index === "number") ? params.source_artboard_index : doc.artboards.getActiveArtboardIndex();
+          if (rollbackSourceIndex >= 0 && rollbackSourceIndex < doc.artboards.length) doc.artboards[rollbackSourceIndex].name = sourceArtboardOriginalName;
+        }
+      } catch (_) {}
+      removeCreatedArtwork();
+      removeAddedArtboards();
+    }
     writeResultFile(RESULT_PATH, {
       success:false,
-      preflight: sourceRoots.length ? "ROLLBACK_ATTEMPTED" : "FAILED_NO_MUTATION",
+      preflight: mutationStarted ? "ROLLBACK_ATTEMPTED" : "FAILED_NO_MUTATION",
       message:"generate_template_variants failed: " + e.message,
       line:e.line,
       timing:timingSummary()
