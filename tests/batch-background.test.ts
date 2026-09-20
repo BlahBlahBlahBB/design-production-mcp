@@ -64,6 +64,12 @@ test("installer routing remains batch-first without backend fallback or automati
   assert.match(installer, /Without that explicit instruction, never call/);
   assert.match(installer, /Do not ritual-probe with/);
   assert.match(installer, /Stable is the default target/);
+  assert.match(installer, /HARD ROUTING RULE/);
+  assert.match(installer, /FIRST backend action must be/);
+  assert.match(installer, /Do not inspect the application UI first/);
+  assert.match(installer, /Do not use Computer Use to check which Illustrator document is open/);
+  assert.match(installer, /Do not select all objects or navigate menus as a precursor/);
+  assert.match(installer, /all_stories=true.*directly/);
 });
 
 test("Core routing keeps Production explicit and excludes automatic work-copy or save rituals", async () => {
@@ -108,6 +114,7 @@ test("typography stays a two-tool batch Core surface with honest Classic DOM lim
   assert.match(typography, /NOT_EXPOSED_BY_CLASSIC_DOM/);
   assert.match(typography, /auto_leading_amount/);
   assert.match(typography, /paragraph_alignment/);
+  assert.match(typography, /without first inspecting the Illustrator UI, selecting objects, navigating menus, or discovering TextFrame UUIDs/);
   assert.doesNotMatch(typography, /results\.every/);
   assert.match(typography, /executeToolJsx\(readJsx, params\)/);
   assert.doesNotMatch(typography, /activate:\s*true/);
