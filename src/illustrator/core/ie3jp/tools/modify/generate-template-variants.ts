@@ -364,18 +364,35 @@ else {
 
     var rules = binding.script_rules || {};
     if ((rules.han && resolvedFonts.han) || (rules.latin && resolvedFonts.latin)) {
-      for (var ci = 0; ci < tf.characters.length; ci++) {
-        var script = dpmClassifyTextCharacter(tf.characters, ci);
-        var expectedFont = script === "han" ? resolvedFonts.han : script === "latin" ? resolvedFonts.latin : null;
-        if (!expectedFont) continue;
+      // Verify one representative visible character per script run instead of
+      // walking every Illustrator Character and repeatedly reading font metadata.
+      // This avoids expensive DOM churn and ignores paragraph terminators/control
+      // characters that are not part of the user's visible name.
+      var visibleText = readContents(tf);
+      var representative = { han:-1, latin:-1 };
+      for (var ti = 0; ti < visibleText.length; ti++) {
+        var cp = dpmCodePointAt(visibleText, ti);
+        var scriptName = dpmClassifyCodePoint(cp);
+        if (scriptName === "han" && representative.han < 0) representative.han = ti;
+        else if (scriptName === "latin" && representative.latin < 0) representative.latin = ti;
+      }
+
+      var scriptsToCheck = ["han", "latin"];
+      for (var sci = 0; sci < scriptsToCheck.length; sci++) {
+        var scriptKey = scriptsToCheck[sci];
+        var charIndex = representative[scriptKey];
+        var expectedFont = scriptKey === "han" ? resolvedFonts.han : resolvedFonts.latin;
+        var scriptRule = scriptKey === "han" ? rules.han : rules.latin;
+        if (charIndex < 0 || !scriptRule || !expectedFont) continue;
         try {
-          var actualFont = tf.characters[ci].characterAttributes.textFont;
+          var actualFont = tf.characters[charIndex].characterAttributes.textFont;
           if (!fontsEquivalent(actualFont, expectedFont)) {
             mismatches.push({
               variant_index:variantIndex,
               binding_index:bindingIndex,
               kind:"font",
-              character_index:ci,
+              script:scriptKey,
+              character_index:charIndex,
               expected_name:expectedFont.name,
               expected_family:expectedFont.family,
               expected_style:expectedFont.style,
@@ -383,11 +400,9 @@ else {
               actual_family:actualFont.family,
               actual_style:actualFont.style
             });
-            break;
           }
         } catch (_) {
-          mismatches.push({ variant_index:variantIndex, binding_index:bindingIndex, kind:"font_unreadable", character_index:ci });
-          break;
+          mismatches.push({ variant_index:variantIndex, binding_index:bindingIndex, kind:"font_unreadable", script:scriptKey, character_index:charIndex });
         }
       }
     }
@@ -657,7 +672,7 @@ else {
 export function register(server: McpServer): void {
   server.registerTool('generate_template_variants', {
     title: 'Generate Template Variants',
-    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. For a single-binding template with exactly one editable TextFrame on the source artboard, omit source_uuid and let the tool auto-bind it; only fall back to one text-frame lookup if AUTO_BIND_REQUIRES_ONE_TEXTFRAME is returned. Human-readable font names are resolved by exact or unique normalized Illustrator font identity, so do not preflight with list_fonts unless FONT_NOT_FOUND or FONT_AMBIGUOUS is returned. Map “段落居中” to paragraph_alignment=center, “与画板垂直居中” to center_in_artboard=vertical, and “与画板水平/垂直居中” or “画板居中” to center_in_artboard=both. The tool verifies bound text, requested paragraph alignment, requested font application, and requested artboard centering before reporting success. Font verification compares Illustrator font identity by exact object or normalized name/family/style equivalence to avoid false failures from PostScript/display-name aliases. For N variants, created_artboard_count is normally N-1 because the source artboard becomes variant 1; generated_variant_count and total_variant_artboard_count report the full N. On a clean success, save directly instead of running typography/text-frame verification reads. It rolls back created artwork/artboards on failure.',
+    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. For a single-binding template with exactly one editable TextFrame on the source artboard, omit source_uuid and let the tool auto-bind it; only fall back to one text-frame lookup if AUTO_BIND_REQUIRES_ONE_TEXTFRAME is returned. Human-readable font names are resolved by exact or unique normalized Illustrator font identity, so do not preflight with list_fonts unless FONT_NOT_FOUND or FONT_AMBIGUOUS is returned. Map “段落居中” to paragraph_alignment=center, “与画板垂直居中” to center_in_artboard=vertical, and “与画板水平/垂直居中” or “画板居中” to center_in_artboard=both. The tool verifies bound text, requested paragraph alignment, requested font application, and requested artboard centering before reporting success. Font verification compares Illustrator font identity by exact object or normalized name/family/style equivalence and samples only visible representative characters for each script, avoiding paragraph terminators and expensive per-character DOM verification. For N variants, created_artboard_count is normally N-1 because the source artboard becomes variant 1; generated_variant_count and total_variant_artboard_count report the full N. On a clean success, save directly instead of running typography/text-frame verification reads. It rolls back created artwork/artboards on failure.',
     inputSchema: {
       source_artboard_index: z.number().int().min(0).optional().describe('Source template artboard index. Defaults to the active artboard.'),
       source_item_uuids: z.array(z.string()).min(1).optional().describe('Optional exact top-level source artwork UUIDs. Omit to auto-collect top-level artwork centered on the source artboard.'),
