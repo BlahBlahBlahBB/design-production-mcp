@@ -123,21 +123,32 @@ else try {
   function justify(value) { try { if (value === Justification.LEFT) return 'left'; if (value === Justification.CENTER) return 'center'; if (value === Justification.RIGHT) return 'right'; if (value === Justification.FULLJUSTIFYLASTLINELEFT) return 'justify_last_left'; if (value === Justification.FULLJUSTIFYLASTLINECENTER) return 'justify_last_center'; if (value === Justification.FULLJUSTIFYLASTLINERIGHT) return 'justify_last_right'; if (value === Justification.FULLJUSTIFY) return 'justify_all'; } catch (_) {} return String(value); }
   function leadingType(value) { try { if (value === AutoLeadingType.BOTTOMTOBOTTOM) return 'bottom_to_bottom'; if (value === AutoLeadingType.TOPTOTOP) return 'top_to_top'; } catch (_) {} return String(value); }
   function metric(target, uuid, storyIndex) {
-    var chars = target.characters, attrs = [], runs = [], seenFonts = {}, charFontNames = [], charFonts = [];
+    var chars = target.characters, attrs = [], runs = [], seenFonts = {}, charFontNames = [], charFonts = [], characterReadFailures = [];
     for (var ci = 0; ci < chars.length; ci++) {
-      var ca = chars[ci].characterAttributes, f = fontEntry(ca), key = jsonStringify(f);
-      charFonts.push(f);
-      var charFontName = '';
-      try { charFontName = ca.textFont.name || ''; } catch (_) {}
-      charFontNames.push(charFontName);
-      attrs.push(ca);
-      if (!seenFonts[key]) { runs.push(f); seenFonts[key] = true; }
+      try {
+        var character = chars[ci];
+        if (!character) throw new Error('Character wrapper unavailable');
+        var ca = character.characterAttributes;
+        if (!ca) throw new Error('Character attributes unavailable');
+        var f = fontEntry(ca), key = jsonStringify(f);
+        charFonts[ci] = f;
+        var charFontName = '';
+        try { charFontName = ca.textFont.name || ''; } catch (_) {}
+        charFontNames[ci] = charFontName;
+        attrs.push(ca);
+        if (!seenFonts[key]) { runs.push(f); seenFonts[key] = true; }
+      } catch (characterReadError) {
+        charFonts[ci] = null;
+        charFontNames[ci] = '';
+        characterReadFailures.push({ character_index:ci, reason:characterReadError.message });
+      }
     }
     var scriptRuns = [], activeRun = null;
     for (var sri = 0; sri < chars.length; sri++) {
       var script = dpmClassifyTextCharacter(chars, sri);
       if (script !== 'han' && script !== 'latin') { activeRun = null; continue; }
       var runFont = charFonts[sri], runFontName = charFontNames[sri] || '';
+      if (!runFont) { activeRun = null; continue; }
       var runKey = script + '|' + runFontName + '|' + runFont.font_family + '|' + runFont.font_style + '|' + runFont.is_font_missing;
       if (activeRun && activeRun._key === runKey && activeRun.end === sri) activeRun.end = sri + 1;
       else {
@@ -146,7 +157,16 @@ else try {
       }
     }
     for (var sri2 = 0; sri2 < scriptRuns.length; sri2++) delete scriptRuns[sri2]._key;
-    var source = attrs.length ? attrs : [target.textRange.characterAttributes], textContent = '';
+    var source = [], textContent = '';
+    if (attrs.length) source = attrs;
+    else {
+      try {
+        var rangeAttrs = target.textRange.characterAttributes;
+        if (rangeAttrs) source = [rangeAttrs];
+      } catch (rangeAttributeError) {
+        characterReadFailures.push({ character_index:null, reason:'TextRange character attributes unavailable: ' + rangeAttributeError.message });
+      }
+    }
     try { textContent = target.contents; } catch (_) { try { textContent = target.textRange.contents; } catch (_) {} }
     var properties = {
       text_length: textContent.length,
@@ -154,6 +174,10 @@ else try {
       font_runs: runs,
       script_runs: scriptRuns
     };
+    if (characterReadFailures.length) {
+      properties.character_metrics_partial = true;
+      properties.character_read_failures = characterReadFailures;
+    }
     try { properties.has_text_overflow = target.overflows; } catch (_) {}
     if (runs.length) { properties.font_family = runs[0].font_family; properties.font_style = runs[0].font_style; properties.is_font_missing = runs[0].is_font_missing; properties.is_font_embeddable = runs[0].is_font_embeddable; }
     var fields = [ ['font_caps', 'capitalization', caps], ['font_size', 'size'], ['tracking', 'tracking'], ['kerning', 'kerningMethod', kern], ['leading', 'leading'], ['auto_leading', 'autoLeading'], ['baseline_shift', 'baselineShift'], ['horizontal_scale', 'horizontalScale'], ['vertical_scale', 'verticalScale'] ];
