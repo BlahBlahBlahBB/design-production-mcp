@@ -126,3 +126,12 @@ test('typography metrics degrade per paragraph instead of failing the whole Stor
   assert.match(source, /paragraph_metrics_partial/);
   assert.match(source, /paragraph_index:pi/);
 });
+
+test('typography metrics degrade per character instead of failing the whole Story', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  assert.match(source, /characterReadFailures = \[\]/);
+  assert.match(source, /character_metrics_partial/);
+  assert.match(source, /character_read_failures/);
+  assert.match(source, /character_index:ci/);
+  assert.match(source, /if \(!runFont\) \{ activeRun = null; continue; \}/);
+});
