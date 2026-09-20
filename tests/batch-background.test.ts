@@ -23,6 +23,8 @@ test("ordinary Core writes and heavy execution default to background", async () 
   assert.match(executor, /executeJsxHeavy\(jsxCode, resolvedParams, \{ activate: options\?\.activate \?\? false \}\)/);
   assert.match(executor, /timeoutMs/);
   assert.match(executor, /timeout: options\.timeoutMs/);
+  assert.match(executor, /includeTiming/);
+  assert.match(executor, /transport_elapsed_ms/);
   assert.doesNotMatch(modify, /activate:\s*true/);
 });
 
@@ -134,6 +136,14 @@ test("repeated image/template work has public batch placement and grouping tools
   assert.match(placement, /p\.clipPath\.remove\(\)/);
   assert.match(placement, /group\.remove\(\)/);
   assert.match(placement, /timeoutMs: 180_000/);
+  assert.match(placement, /includeTiming: true/);
+  assert.match(placement, /elapsed_ms/);
+  assert.match(placement, /preflight_ms/);
+  assert.match(placement, /placement_ms/);
+  assert.match(placement, /clipping_ms/);
+  assert.match(placement, /label_ms/);
+  assert.match(placement, /verification_ms/);
+  assert.match(placement, /unaccounted_ms/);
   assert.match(placement, /requested_count/);
   assert.match(placement, /failed_objects/);
   assert.doesNotMatch(placement, /activate:\s*true/);
