@@ -214,11 +214,11 @@ else {
 export function register(server: McpServer): void {
   server.registerTool('place_images', {
     title: 'Place Images',
-    description: 'Batch-place many raster/PDF files in one background JSX execution. Prefer this over repeated place_image calls for folders, grids, templates, QR codes, or other multi-image work. The entire batch is preflighted before mutation. Each placement can size in points or millimeters, center on an existing UUID, create a clipping group from an existing simple PathItem using Illustrator-safe mask ordering, and optionally update a matching TextFrame label in the same operation. Failed placements roll back newly created artwork instead of leaving orphaned images. Results preserve input order.',
+    description: 'Batch-place many raster/PDF files in one background JSX execution. Large batches may legitimately take longer than the normal 30/60 second transport budget; this tool waits up to 180 seconds so a completed Illustrator mutation is not misreported as a timeout. Prefer this over repeated place_image calls for folders, grids, templates, QR codes, or other multi-image work. The entire batch is preflighted before mutation. Each placement can size in points or millimeters, center on an existing UUID, create a clipping group from an existing simple PathItem using Illustrator-safe mask ordering, and optionally update a matching TextFrame label in the same operation. Failed placements roll back newly created artwork instead of leaving orphaned images. Results preserve input order.',
     inputSchema: {
       placements: z.array(placementSchema).min(1).max(200),
       coordinate_system: coordinateSystemSchema,
     },
     annotations: WRITE_ANNOTATIONS,
-  }, async (params) => executeToolJsx(jsxCode, params, { resolveCoordinate: true }));
+  }, async (params) => executeToolJsx(jsxCode, params, { resolveCoordinate: true, timeoutMs: 180_000 }));
 }
