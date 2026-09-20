@@ -44,7 +44,8 @@ const bindingSchema = z.object({
 });
 
 const dataSourceSchema = z.object({
-  file_path: z.string().min(1),
+  file_path: z.string().min(1).optional().describe('Optional XLSX/XLS/CSV path. Omit to auto-discover exactly one sibling spreadsheet next to the active Illustrator document.'),
+  auto_discover_sibling: z.boolean().optional().default(true).describe('When file_path is omitted, discover exactly one XLSX/XLS/CSV in the active Illustrator document folder.'),
   sheet_name: z.string().min(1).optional(),
   header_row: z.number().int().min(1).optional().default(1),
   column_name: z.string().min(1).optional().describe('Default column header for bindings that omit data_column.'),
@@ -111,17 +112,42 @@ if (preflight) writeResultFile(RESULT_PATH, preflight);
 else try {
   var params = readParamsFile(PARAMS_PATH);
   var sourcePath = String(params.source_path || "");
-  var source = new File(sourcePath);
-  if (!source.exists && app.documents.length > 0) {
+  var source = sourcePath ? new File(sourcePath) : null;
+
+  function isSpreadsheetFile(file) {
+    try {
+      if (!(file instanceof File)) return false;
+      var name = String(file.name || "").toLowerCase();
+      return /\\.(xlsx|xls|csv)$/.test(name) && name.charAt(0) !== "." && name.indexOf("~$") !== 0;
+    } catch (_) { return false; }
+  }
+
+  if ((!source || !source.exists) && app.documents.length > 0) {
     try {
       var doc = app.activeDocument;
       if (doc.saved && doc.path) {
-        source = new File(doc.path.fsName + "/" + sourcePath);
+        if (sourcePath) {
+          var relative = new File(doc.path.fsName + "/" + sourcePath);
+          if (relative.exists) source = relative;
+        } else if (params.auto_discover_sibling !== false) {
+          var candidates = doc.path.getFiles(isSpreadsheetFile);
+          if (candidates.length === 1) source = candidates[0];
+          else if (candidates.length === 0) {
+            writeResultFile(RESULT_PATH, { error:true, message:"DATA_SOURCE_NOT_FOUND: no XLSX/XLS/CSV next to active Illustrator document" });
+            source = null;
+          } else {
+            var names = [];
+            for (var ci = 0; ci < candidates.length; ci++) names.push(candidates[ci].name);
+            writeResultFile(RESULT_PATH, { error:true, message:"DATA_SOURCE_AMBIGUOUS: " + names.join(", ") });
+            source = null;
+          }
+        }
       }
     } catch (_) {}
   }
-  if (!source.exists) {
-    writeResultFile(RESULT_PATH, { error:true, message:"DATA_SOURCE_NOT_FOUND: " + sourcePath });
+
+  if (!source || !source.exists) {
+    if (sourcePath) writeResultFile(RESULT_PATH, { error:true, message:"DATA_SOURCE_NOT_FOUND: " + sourcePath });
   } else {
     var destination = new File(String(params.destination_path || ""));
     try { if (destination.exists) destination.remove(); } catch (_) {}
@@ -137,22 +163,31 @@ else try {
 }
 `;
 
-async function readWorkbookWithIllustratorFallback(filePath: string): Promise<XLSX.WorkBook> {
-  try {
-    return XLSX.readFile(filePath, { cellDates: false });
-  } catch (directError) {
-    const extension = path.extname(filePath) || '.xlsx';
-    const tempPath = path.join(os.tmpdir(), `dpm-template-data-${process.pid}-${Date.now()}${extension}`);
+async function readWorkbookWithIllustratorFallback(dataSource: VariantDataSourceInput): Promise<XLSX.WorkBook> {
+  const filePath = dataSource.file_path;
+  if (filePath) {
     try {
-      await executeJsx(copyDataSourceJsx, { source_path: filePath, destination_path: tempPath }, { timeout: 30_000, activate: false });
-      return XLSX.readFile(tempPath, { cellDates: false });
-    } catch (copyError) {
-      const directMessage = directError instanceof Error ? directError.message : String(directError);
-      const copyMessage = copyError instanceof Error ? copyError.message : String(copyError);
-      throw new Error(`DATA_SOURCE_UNREADABLE: direct read failed (${directMessage}); Illustrator copy fallback failed (${copyMessage})`);
-    } finally {
-      await unlink(tempPath).catch(() => undefined);
+      return XLSX.readFile(filePath, { cellDates: false });
+    } catch (_) {
+      // Continue into the Illustrator-mediated copy path below. This also handles
+      // macOS privacy/sandbox cases where the MCP process cannot read Desktop/Documents.
     }
+  }
+
+  const extension = filePath ? (path.extname(filePath) || '.xlsx') : '.xlsx';
+  const tempPath = path.join(os.tmpdir(), `dpm-template-data-${process.pid}-${Date.now()}${extension}`);
+  try {
+    await executeJsx(copyDataSourceJsx, {
+      source_path: filePath || '',
+      auto_discover_sibling: dataSource.auto_discover_sibling !== false,
+      destination_path: tempPath,
+    }, { timeout: 30_000, activate: false });
+    return XLSX.readFile(tempPath, { cellDates: false });
+  } catch (copyError) {
+    const copyMessage = copyError instanceof Error ? copyError.message : String(copyError);
+    throw new Error(`DATA_SOURCE_UNREADABLE: ${copyMessage}`);
+  } finally {
+    await unlink(tempPath).catch(() => undefined);
   }
 }
 
@@ -161,13 +196,12 @@ async function hydrateBindingsFromDataSource(
   dataSource?: VariantDataSourceInput,
 ): Promise<VariantBindingInput[]> {
   if (!dataSource) {
-    for (const binding of bindings) {
-      if (!binding.values?.length) throw new Error('Each text binding needs values unless data_source is supplied.');
-    }
-    return bindings;
+    const needsValues = bindings.some((binding) => !binding.values?.length);
+    if (!needsValues) return bindings;
+    dataSource = { auto_discover_sibling: true, header_row: 1, drop_blank_rows: true };
   }
 
-  const workbook = await readWorkbookWithIllustratorFallback(dataSource.file_path);
+  const workbook = await readWorkbookWithIllustratorFallback(dataSource);
   const sheetName = dataSource.sheet_name ?? workbook.SheetNames[0];
   if (!sheetName) throw new Error('Spreadsheet has no worksheets.');
   const sheet = workbook.Sheets[sheetName];
@@ -692,7 +726,7 @@ else {
 export function register(server: McpServer): void {
   server.registerTool('generate_template_variants', {
     title: 'Generate Template Variants',
-    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. It can parse XLSX/XLS/CSV data directly once via data_source and can auto-bind the only editable TextFrame on a one-binding template, eliminating separate spreadsheet parsing, document-structure reads, text-frame inspection, and artboard probes. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. In the same call it can apply per-script fonts, conditional font-size rules, paragraph alignment, and TextFrame-to-artboard centering, so do not follow it with list_fonts, set_typography, list_text_frames, or modify_objects when these binding options can express the requested result. Fonts are preflighted before mutation. The tool preserves unbound template artwork, verifies every bound value, and rolls back created artwork/artboards on failure.',
+    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. For ordinary “folder contains one AI template + one spreadsheet” requests, call this tool FIRST against the already-open Illustrator template: omit source_uuid and omit data_source.file_path, and the tool auto-binds the only editable TextFrame and auto-discovers exactly one sibling XLSX/XLS/CSV next to the active Illustrator document. Do not use shell, file search, Spreadsheet skill, Python, Computer Use, document-structure reads, text-frame inspection, or artboard probes before this call. It can also parse an explicit XLSX/XLS/CSV data_source path when supplied. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. In the same call it can apply per-script fonts, conditional font-size rules, paragraph alignment, and TextFrame-to-artboard centering, so do not follow it with list_fonts, set_typography, list_text_frames, or modify_objects when these binding options can express the requested result. Fonts are preflighted before mutation. The tool preserves unbound template artwork, verifies every bound value, and rolls back created artwork/artboards on failure.',
     inputSchema: {
       source_artboard_index: z.number().int().min(0).optional().describe('Source template artboard index. Defaults to the active artboard.'),
       source_item_uuids: z.array(z.string()).min(1).optional().describe('Optional exact top-level source artwork UUIDs. Omit to auto-collect top-level artwork centered on the source artboard.'),
