@@ -157,10 +157,10 @@ else {
 
           if (p.labelTarget) {
             p.labelTarget.contents = op.label_text.split(String.fromCharCode(10)).join(String.fromCharCode(13));
+            labelChanged = true;
             if (readableContents(p.labelTarget) !== op.label_text.split(String.fromCharCode(10)).join(String.fromCharCode(13))) {
               throw new Error("Label readback mismatch");
             }
-            labelChanged = true;
           }
 
           // Commit the mask replacement only after image, clipping, and optional label all succeeded.
@@ -209,12 +209,12 @@ else {
     writeResultFile(RESULT_PATH, { error:true, message:"place_images failed: " + e.message, line:e.line });
   }
 }
-`
+`;
 
 export function register(server: McpServer): void {
   server.registerTool('place_images', {
     title: 'Place Images',
-    description: 'Batch-place many raster/PDF files in one background JSX execution. Prefer this over repeated place_image calls for folders, grids, templates, QR codes, or other multi-image work. The entire batch is preflighted before mutation. Each placement can size in points or millimeters, center on an existing UUID, create a clipping group from an existing simple PathItem using Illustrator-safe mask ordering, and optionally update a matching TextFrame label in the same operation. Failed placements roll back newly created artwork instead of leaving orphaned images. Results preserve input order.'
+    description: 'Batch-place many raster/PDF files in one background JSX execution. Prefer this over repeated place_image calls for folders, grids, templates, QR codes, or other multi-image work. The entire batch is preflighted before mutation. Each placement can size in points or millimeters, center on an existing UUID, create a clipping group from an existing simple PathItem using Illustrator-safe mask ordering, and optionally update a matching TextFrame label in the same operation. Failed placements roll back newly created artwork instead of leaving orphaned images. Results preserve input order.',
     inputSchema: {
       placements: z.array(placementSchema).min(1).max(200),
       coordinate_system: coordinateSystemSchema,
