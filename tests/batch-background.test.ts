@@ -178,10 +178,17 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(variants, /FONT_NOT_FOUND/);
   assert.match(variants, /FONT_AMBIGUOUS/);
   assert.match(variants, /normalizeFontKey/);
+  assert.match(variants, /fontsEquivalent/);
+  assert.match(variants, /expected_family/);
+  assert.match(variants, /actual_family/);
   assert.match(variants, /centerTextFrame/);
   assert.match(variants, /artboard_centering/);
   assert.match(variants, /paragraph_alignment_unreadable/);
   assert.match(variants, /tf\.translate/);
+  assert.match(variants, /generated_variant_count/);
+  assert.match(variants, /total_variant_artboard_count/);
+  assert.match(variants, /failed_variant_count/);
+  assert.match(variants, /created_artboard_count: variantCount - 1/);
   assert.match(variants, /removeCreatedArtwork/);
   assert.match(variants, /removeAddedArtboards/);
   assert.match(variants, /restoreSourceText/);
