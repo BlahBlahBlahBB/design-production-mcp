@@ -164,6 +164,9 @@ test("data-driven templates use one rollback-safe variant generator", async () =
 
   const variants = await source("src/illustrator/core/ie3jp/tools/modify/generate-template-variants.ts");
   assert.match(variants, /text_bindings/);
+  assert.match(variants, /source_uuid: z\.string\(\)\.optional/);
+  assert.match(variants, /AUTO_BIND_REQUIRES_ONE_TEXTFRAME/);
+  assert.match(variants, /autoResolveSingleTextFrame/);
   assert.match(variants, /source_artboard_index/);
   assert.match(variants, /Math\.ceil\(Math\.sqrt\(variantCount\)\)/);
   assert.match(variants, /sourceRoot\.duplicate\(\)/);
@@ -174,7 +177,12 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(variants, /paragraph_alignment/);
   assert.match(variants, /center_in_artboard/);
   assert.match(variants, /FONT_NOT_FOUND/);
-  assert.match(variants, /tf\.translate\(dx, dy\)/);
+  assert.match(variants, /FONT_AMBIGUOUS/);
+  assert.match(variants, /normalizeFontKey/);
+  assert.match(variants, /centerTextFrame/);
+  assert.match(variants, /artboard_centering/);
+  assert.match(variants, /paragraph_alignment_unreadable/);
+  assert.match(variants, /tf\.translate/);
   assert.match(variants, /removeCreatedArtwork/);
   assert.match(variants, /removeAddedArtboards/);
   assert.match(variants, /restoreSourceText/);
@@ -185,13 +193,17 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   const installer = await source("scripts/configure-codex.mjs");
   assert.match(installer, /one-template-plus-many-data jobs/);
   assert.match(installer, /generate_template_variants/);
-  assert.match(installer, /Do not loop/);
-  assert.match(installer, /multi-row grid by default/);
-  assert.match(installer, /Put requested per-script fonts/);
-  assert.match(installer, /Do not call .*list_fonts.*set_typography.*list_text_frames.*modify_objects/);
-  assert.match(installer, /Do not call .*get_document_info.*get_document_structure.*first/);
-  assert.match(installer, /spreadsheet\/CSV is only a data source/);
-  assert.match(installer, /extract the required column\(s\) once/);
+  assert.match(installer, /OMIT .*source_uuid.*auto-bind/);
+  assert.match(installer, /AUTO_BIND_REQUIRES_ONE_TEXTFRAME/);
+  assert.match(installer, /Do NOT call .*get_document_structure.*get_artboards.*list_text_frames.*get_text_frame_detail.*before/);
+  assert.match(installer, /Do NOT call .*list_fonts.*proactively/);
+  assert.match(installer, /FONT_NOT_FOUND.*FONT_AMBIGUOUS/);
+  assert.match(installer, /段落居中.*paragraph_alignment/);
+  assert.match(installer, /画板垂直居中.*center_in_artboard/);
+  assert.match(installer, /exactly one extraction pass/);
+  assert.match(installer, /do not parse the same workbook twice/);
+  assert.match(installer, /save directly/);
+  assert.match(installer, /Do NOT follow a clean success with .*get_typography_metrics.*list_text_frames.*get_artboards.*get_document_structure/);
   assert.match(variants, /mutationStarted/);
   assert.match(variants, /FAILED_NO_MUTATION/);
   assert.match(variants, /ROLLBACK_ATTEMPTED/);
