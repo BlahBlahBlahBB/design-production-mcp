@@ -135,3 +135,12 @@ test('typography metrics degrade per character instead of failing the whole Stor
   assert.match(source, /character_index:ci/);
   assert.match(source, /if \(!runFont\) \{ activeRun = null; continue; \}/);
 });
+
+test('Story metrics fall back to textRange.contents when Story.contents is undefined', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  assert.match(source, /var directContents = target\.contents/);
+  assert.match(source, /typeof directContents === 'string'/);
+  assert.match(source, /var rangeContents = target\.textRange\.contents/);
+  assert.match(source, /typeof rangeContents === 'string'/);
+  assert.match(source, /if \(typeof textContent !== 'string'\) textContent = ''/);
+});
