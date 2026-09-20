@@ -20,6 +20,10 @@ test("ordinary Core writes and heavy execution default to background", async () 
   const executor = await source("src/illustrator/core/ie3jp/tools/tool-executor.ts");
   const modify = await source("src/illustrator/core/ie3jp/tools/modify/modify-object.ts");
   assert.match(runner, /options\?\.activate \?\? false/);
+  assert.match(runner, /executeRunnerAndAwaitResult/);
+  assert.match(runner, /probeResultFile/);
+  assert.match(runner, /transport_result_file_completion/);
+  assert.match(runner, /child\.kill\('SIGTERM'\)/);
   assert.match(executor, /executeJsxHeavy\(jsxCode, resolvedParams, \{ activate: options\?\.activate \?\? false \}\)/);
   assert.match(executor, /timeoutMs/);
   assert.match(executor, /timeout: options\.timeoutMs/);
