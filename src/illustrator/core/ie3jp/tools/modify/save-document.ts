@@ -1,7 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { executeJsx } from '../../executor/jsx-runner.js';
-import { formatToolResult } from '../tool-executor.js';
+import { executeToolJsx } from '../tool-executor.js';
 import { WRITE_IDEMPOTENT_ANNOTATIONS } from './shared.js';
 
 /**
@@ -68,7 +67,7 @@ export function register(server: McpServer): void {
     {
       title: 'Save Document',
       description:
-        'Save the active Illustrator document. Note: Illustrator will be activated (brought to foreground) during execution.',
+        'Save the active Illustrator document with a long-save budget suitable for large multi-artboard files. Runs in the background and reports transport timing. For save_as, prefer a single explicit destination path rather than save-then-save_as chains.',
       inputSchema: {
         mode: z
           .enum(['save', 'save_as'])
@@ -82,9 +81,10 @@ export function register(server: McpServer): void {
       },
       annotations: WRITE_IDEMPOTENT_ANNOTATIONS,
     },
-    async (params) => {
-      const result = await executeJsx(jsxCode, params);
-      return formatToolResult(result);
-    },
+    async (params) => executeToolJsx(jsxCode, params, {
+      timeoutMs: 180_000,
+      includeTiming: true,
+      activate: false,
+    }),
   );
 }
