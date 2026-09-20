@@ -74,7 +74,12 @@ test("installer routing remains batch-first without backend fallback or automati
   assert.match(installer, /place_images/);
   assert.match(installer, /clip_path_uuid/);
   assert.match(installer, /group_object_sets/);
+  assert.match(installer, /label_uuid/);
+  assert.match(installer, /label_text/);
   assert.match(installer, /Do not repeatedly call/);
+  assert.match(installer, /do not enter an improvised repair loop/);
+  assert.match(installer, /Do not run shell/);
+  assert.match(installer, /Never save after an unverified timeout or failed batch/);
 });
 
 test("Core routing keeps Production explicit and excludes automatic work-copy or save rituals", async () => {
@@ -118,12 +123,24 @@ test("repeated image/template work has public batch placement and grouping tools
   assert.match(placement, /height_mm/);
   assert.match(placement, /center_on_uuid/);
   assert.match(placement, /clip_path_uuid/);
+  assert.match(placement, /label_uuid/);
+  assert.match(placement, /label_text/);
+  assert.match(placement, /FAILED_NO_MUTATION/);
+  assert.match(placement, /duplicate\(group, ElementPlacement\.PLACEATBEGINNING\)/);
+  assert.match(placement, /mask\.clipping = true/);
+  assert.match(placement, /group\.clipped = true/);
+  assert.match(placement, /p\.clipPath\.remove\(\)/);
+  assert.match(placement, /group\.remove\(\)/);
   assert.match(placement, /requested_count/);
   assert.match(placement, /failed_objects/);
   assert.doesNotMatch(placement, /activate:\s*true/);
 
   const groups = await source("src/illustrator/core/ie3jp/tools/modify/group-object-sets.ts");
   assert.match(groups, /groups/);
+  assert.match(groups, /clip_path_uuid/);
+  assert.match(groups, /PLACEATBEGINNING/);
+  assert.match(groups, /\.clipping = true/);
+  assert.match(groups, /FAILED_NO_MUTATION/);
   assert.match(groups, /failed_groups/);
   assert.doesNotMatch(groups, /activate:\s*true/);
 });
