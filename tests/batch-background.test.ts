@@ -187,7 +187,7 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(variants, /center_in_artboard/);
   assert.match(variants, /font: z\.string\(\)\.min\(1\)\.optional/);
   assert.match(variants, /font_name: rule\.font_name \?\? rule\.font/);
-  assert.match(variants, /params\.text_bindings\.map\(normalizeBinding\)/);
+  assert.match(variants, /Promise\.all\(params\.text_bindings\.map\(\(binding, index\) => normalizeBinding\(binding, index\)\)\)/);
   assert.match(variants, /FONT_NOT_FOUND/);
   assert.match(variants, /FONT_AMBIGUOUS/);
   assert.match(variants, /normalizeFontKey/);
