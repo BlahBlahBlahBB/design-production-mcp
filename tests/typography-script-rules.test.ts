@@ -81,3 +81,66 @@ test('set_typography preserves frame-wide then script override then frame-wide p
   assert.ok(frameCharacter >= 0 && scripts > frameCharacter && paragraph > scripts);
   assert.match(source, /apply\(item\.textRange\.characterAttributes, characterMap, c/);
 });
+
+test('document-wide typography uses Story path without TextFrame UUID discovery', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  assert.match(source, /all_stories/);
+  assert.match(source, /doc\.stories\[si\]/);
+  assert.match(source, /target_mode:'all_stories'/);
+  assert.match(source, /Provide uuids or set all_stories=true/);
+});
+
+test('Story mode keeps explicit UUID targeting available', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  assert.match(source, /findItemByUUID\(ids\[i\]\)/);
+  assert.match(source, /target_mode:'uuids'/);
+  assert.match(source, /Specify either all_stories=true or uuids, not both/);
+});
+
+test('Story document-wide preflight stays on Story/TextRange surfaces and avoids textFrames', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  const preflight = source.indexOf('function preflightStoryReadable');
+  const mutationLoop = source.indexOf('for (var si=0; si<doc.stories.length; si++)', preflight);
+  assert.ok(preflight >= 0 && mutationLoop > preflight);
+  const preflightSource = source.slice(preflight, mutationLoop);
+  const executablePreflight = preflightSource
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/\/\/.*$/gm, '');
+  assert.match(executablePreflight, /var range = story\.textRange/);
+  assert.match(executablePreflight, /story\.characters\.length/);
+  assert.match(executablePreflight, /story\.paragraphs\.length/);
+  assert.doesNotMatch(executablePreflight, /story\.textFrames/);
+  assert.match(source, /preflight:'FAILED_NO_MUTATION'/);
+});
+
+test('explicit UUID TextFrame safety remains fail-closed', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  assert.match(source, /if \(item\.locked \|\| item\.hidden\)/);
+  assert.match(source, /findItemByUUID\(ids\[i\]\)/);
+});
+
+test('typography metrics degrade per paragraph instead of failing the whole Story', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  assert.match(source, /var paraValues = \[\], leadingTypes = \[\], paragraphReadFailures = \[\]/);
+  assert.match(source, /paragraph_read_failures/);
+  assert.match(source, /paragraph_metrics_partial/);
+  assert.match(source, /paragraph_index:pi/);
+});
+
+test('typography metrics degrade per character instead of failing the whole Story', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  assert.match(source, /characterReadFailures = \[\]/);
+  assert.match(source, /character_metrics_partial/);
+  assert.match(source, /character_read_failures/);
+  assert.match(source, /character_index:ci/);
+  assert.match(source, /if \(!runFont\) \{ activeRun = null; continue; \}/);
+});
+
+test('Story metrics fall back to textRange.contents when Story.contents is undefined', () => {
+  const source = readFileSync(new URL('../../src/illustrator/core/ie3jp/tools/typography-core.ts', import.meta.url), 'utf8');
+  assert.match(source, /var directContents = target\.contents/);
+  assert.match(source, /typeof directContents === 'string'/);
+  assert.match(source, /var rangeContents = target\.textRange\.contents/);
+  assert.match(source, /typeof rangeContents === 'string'/);
+  assert.match(source, /if \(typeof textContent !== 'string'\) textContent = ''/);
+});

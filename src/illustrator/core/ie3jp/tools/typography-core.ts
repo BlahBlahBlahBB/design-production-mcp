@@ -11,6 +11,7 @@ import { SCRIPT_CLASSIFIER_JSX } from './typography-script-rules.js';
  */
 
 const uuids = z.array(z.string()).min(1).describe('Text-frame UUIDs. Pass every target in one array, including one target.');
+const allStories = coerceBoolean.optional().describe('When true, target every Story in the active document. Use this for document-wide typography so the operation does not depend on TextFrame collection wrappers or PageItem UUIDs. Do not combine with uuids.');
 const numberValue = z.number().finite();
 
 const characterSchema = z.object({
@@ -121,22 +122,33 @@ else try {
   function kern(value) { try { if (value === AutoKernType.AUTO) return 'auto'; if (value === AutoKernType.OPTICAL) return 'optical'; if (value === AutoKernType.METRICSROMANONLY) return 'metrics'; if (value === AutoKernType.NOAUTOKERN) return 'none'; } catch (_) {} return String(value); }
   function justify(value) { try { if (value === Justification.LEFT) return 'left'; if (value === Justification.CENTER) return 'center'; if (value === Justification.RIGHT) return 'right'; if (value === Justification.FULLJUSTIFYLASTLINELEFT) return 'justify_last_left'; if (value === Justification.FULLJUSTIFYLASTLINECENTER) return 'justify_last_center'; if (value === Justification.FULLJUSTIFYLASTLINERIGHT) return 'justify_last_right'; if (value === Justification.FULLJUSTIFY) return 'justify_all'; } catch (_) {} return String(value); }
   function leadingType(value) { try { if (value === AutoLeadingType.BOTTOMTOBOTTOM) return 'bottom_to_bottom'; if (value === AutoLeadingType.TOPTOTOP) return 'top_to_top'; } catch (_) {} return String(value); }
-  function metric(tf, uuid) {
-    var chars = tf.characters, attrs = [], runs = [], seenFonts = {}, charFontNames = [], charFonts = [];
+  function metric(target, uuid, storyIndex) {
+    var chars = target.characters, attrs = [], runs = [], seenFonts = {}, charFontNames = [], charFonts = [], characterReadFailures = [];
     for (var ci = 0; ci < chars.length; ci++) {
-      var ca = chars[ci].characterAttributes, f = fontEntry(ca), key = jsonStringify(f);
-      charFonts.push(f);
-      var charFontName = '';
-      try { charFontName = ca.textFont.name || ''; } catch (_) {}
-      charFontNames.push(charFontName);
-      attrs.push(ca);
-      if (!seenFonts[key]) { runs.push(f); seenFonts[key] = true; }
+      try {
+        var character = chars[ci];
+        if (!character) throw new Error('Character wrapper unavailable');
+        var ca = character.characterAttributes;
+        if (!ca) throw new Error('Character attributes unavailable');
+        var f = fontEntry(ca), key = jsonStringify(f);
+        charFonts[ci] = f;
+        var charFontName = '';
+        try { charFontName = ca.textFont.name || ''; } catch (_) {}
+        charFontNames[ci] = charFontName;
+        attrs.push(ca);
+        if (!seenFonts[key]) { runs.push(f); seenFonts[key] = true; }
+      } catch (characterReadError) {
+        charFonts[ci] = null;
+        charFontNames[ci] = '';
+        characterReadFailures.push({ character_index:ci, reason:characterReadError.message });
+      }
     }
     var scriptRuns = [], activeRun = null;
     for (var sri = 0; sri < chars.length; sri++) {
       var script = dpmClassifyTextCharacter(chars, sri);
       if (script !== 'han' && script !== 'latin') { activeRun = null; continue; }
       var runFont = charFonts[sri], runFontName = charFontNames[sri] || '';
+      if (!runFont) { activeRun = null; continue; }
       var runKey = script + '|' + runFontName + '|' + runFont.font_family + '|' + runFont.font_style + '|' + runFont.is_font_missing;
       if (activeRun && activeRun._key === runKey && activeRun.end === sri) activeRun.end = sri + 1;
       else {
@@ -145,26 +157,79 @@ else try {
       }
     }
     for (var sri2 = 0; sri2 < scriptRuns.length; sri2++) delete scriptRuns[sri2]._key;
-    var source = attrs.length ? attrs : [tf.textRange.characterAttributes], properties = {
-      text_length: tf.contents.length,
-      text_content: tf.contents,
+    var source = [], textContent = '';
+    if (attrs.length) source = attrs;
+    else {
+      try {
+        var rangeAttrs = target.textRange.characterAttributes;
+        if (rangeAttrs) source = [rangeAttrs];
+      } catch (rangeAttributeError) {
+        characterReadFailures.push({ character_index:null, reason:'TextRange character attributes unavailable: ' + rangeAttributeError.message });
+      }
+    }
+    try {
+      var directContents = target.contents;
+      if (typeof directContents === 'string') textContent = directContents;
+    } catch (_) {}
+    if (typeof textContent !== 'string' || textContent === '') {
+      try {
+        var rangeContents = target.textRange.contents;
+        if (typeof rangeContents === 'string') textContent = rangeContents;
+      } catch (_) {}
+    }
+    if (typeof textContent !== 'string') textContent = '';
+    var properties = {
+      text_length: textContent.length,
+      text_content: textContent,
       font_runs: runs,
       script_runs: scriptRuns
     };
-    try { properties.has_text_overflow = tf.overflows; } catch (_) {}
+    if (characterReadFailures.length) {
+      properties.character_metrics_partial = true;
+      properties.character_read_failures = characterReadFailures;
+    }
+    try { properties.has_text_overflow = target.overflows; } catch (_) {}
     if (runs.length) { properties.font_family = runs[0].font_family; properties.font_style = runs[0].font_style; properties.is_font_missing = runs[0].is_font_missing; properties.is_font_embeddable = runs[0].is_font_embeddable; }
     var fields = [ ['font_caps', 'capitalization', caps], ['font_size', 'size'], ['tracking', 'tracking'], ['kerning', 'kerningMethod', kern], ['leading', 'leading'], ['auto_leading', 'autoLeading'], ['baseline_shift', 'baselineShift'], ['horizontal_scale', 'horizontalScale'], ['vertical_scale', 'verticalScale'] ];
     var mixed = [];
     for (var fi = 0; fi < fields.length; fi++) { var values = []; for (var ai = 0; ai < source.length; ai++) { var value = safe(source[ai], fields[fi][1]); if (typeof fields[fi][2] === 'function') value = fields[fi][2](value); values.push(value); } var u = uniform(values); if (typeof u.value !== 'undefined') properties[fields[fi][0]] = u.value; if (u.mixed) mixed.push(fields[fi][0]); }
-    var paraValues = [], leadingTypes = [];
-    for (var pi = 0; pi < tf.paragraphs.length; pi++) { var pa = tf.paragraphs[pi].paragraphAttributes; paraValues.push(justify(safe(pa, 'justification'))); leadingTypes.push(leadingType(safe(pa, 'leadingType'))); }
+    var paraValues = [], leadingTypes = [], paragraphReadFailures = [];
+    for (var pi = 0; pi < target.paragraphs.length; pi++) {
+      try {
+        var paragraph = target.paragraphs[pi];
+        if (!paragraph) throw new Error('Paragraph wrapper unavailable');
+        var pa = paragraph.paragraphAttributes;
+        if (!pa) throw new Error('Paragraph attributes unavailable');
+        var paragraphJustification = safe(pa, 'justification');
+        var paragraphLeadingType = safe(pa, 'leadingType');
+        if (typeof paragraphJustification !== 'undefined') paraValues.push(justify(paragraphJustification));
+        if (typeof paragraphLeadingType !== 'undefined') leadingTypes.push(leadingType(paragraphLeadingType));
+      } catch (paragraphReadError) {
+        paragraphReadFailures.push({ paragraph_index:pi, reason:paragraphReadError.message });
+      }
+    }
     var alignment = uniform(paraValues), lt = uniform(leadingTypes); if (typeof alignment.value !== 'undefined') properties.paragraph_alignment = alignment.value; if (typeof lt.value !== 'undefined') properties.leading_type = lt.value; if (alignment.mixed) mixed.push('paragraph_alignment'); if (lt.mixed) mixed.push('leading_type');
+    if (paragraphReadFailures.length) { properties.paragraph_metrics_partial = true; properties.paragraph_read_failures = paragraphReadFailures; }
     if (mixed.length) properties.mixed_fields = mixed;
-    return { uuid: uuid, properties: properties };
+    var result = { uuid: uuid, properties: properties };
+    if (typeof storyIndex === 'number') result.story_index = storyIndex;
+    return result;
   }
-  var out = [], failed = [];
-  for (var i = 0; i < params.uuids.length; i++) { var item = findItemByUUID(params.uuids[i]); if (!item) failed.push({uuid:params.uuids[i],reason:'No object found matching UUID'}); else if (item.typename !== 'TextFrame') failed.push({uuid:params.uuids[i],reason:'Object is not a TextFrame'}); else out.push(metric(item, params.uuids[i])); }
-  writeResultFile(RESULT_PATH, { success: failed.length === 0, details: { requested_count: params.uuids.length, returned_count: out.length, failed_count: failed.length }, typography_metrics: out, failed_objects: failed });
+  var out = [], failed = [], ids = params.uuids || [], useAllStories = params.all_stories === true;
+  if (useAllStories && ids.length) {
+    writeResultFile(RESULT_PATH, { error:true, message:'Specify either all_stories=true or uuids, not both.' });
+  } else if (useAllStories) {
+    for (var si = 0; si < doc.stories.length; si++) {
+      try { out.push(metric(doc.stories[si], null, si)); }
+      catch (storyError) { failed.push({story_index:si,reason:storyError.message}); }
+    }
+    writeResultFile(RESULT_PATH, { success: failed.length === 0, details: { requested_count: doc.stories.length, returned_count: out.length, failed_count: failed.length, target_mode:'all_stories' }, typography_metrics: out, failed_objects: failed });
+  } else if (ids.length) {
+    for (var i = 0; i < ids.length; i++) { var item = findItemByUUID(ids[i]); if (!item) failed.push({uuid:ids[i],reason:'No object found matching UUID'}); else if (item.typename !== 'TextFrame') failed.push({uuid:ids[i],reason:'Object is not a TextFrame'}); else out.push(metric(item, ids[i], null)); }
+    writeResultFile(RESULT_PATH, { success: failed.length === 0, details: { requested_count: ids.length, returned_count: out.length, failed_count: failed.length, target_mode:'uuids' }, typography_metrics: out, failed_objects: failed });
+  } else {
+    writeResultFile(RESULT_PATH, { error:true, message:'Provide uuids or set all_stories=true.' });
+  }
 } catch (e) { writeResultFile(RESULT_PATH, { error:true, message:'get_typography_metrics failed: '+e.message, line:e.line }); }
 `;
 
@@ -238,8 +303,39 @@ else try {
     return dpmFinalizeScriptProperties(states, result);
   }
   var results=[], failed=[];
-  for (var i=0; i<params.uuids.length; i++) { var uuid=params.uuids[i], item=findItemByUUID(uuid); if (!item) { failed.push({uuid:uuid,reason:'No object found matching UUID'}); continue; } if (item.typename !== 'TextFrame') { failed.push({uuid:uuid,reason:'Object is not a TextFrame'}); continue; } if (item.locked || item.hidden) { failed.push({uuid:uuid,reason:item.locked?'locked':'hidden'}); continue; }
-    var log={uuid:uuid, verified_properties:[], failed_properties:[], unsupported_properties:[]}, c=params.character, p=params.paragraph;
+  function preflightStoryReadable(story, storyIndex) {
+    try {
+      // Story is the authoritative text container for document-wide typography.
+      // Do not touch story.textFrames here: some valid Illustrator documents expose
+      // readable Story text while TextFrame collection wrappers throw Error 45
+      // ("Object is invalid"). Probe only the Story/TextRange surfaces we will use.
+      var range = story.textRange;
+      var charCount = story.characters.length;
+      var paragraphCount = story.paragraphs.length;
+      var rangeContents = range.contents;
+      // Touch representative read-only formatting surfaces before any mutation.
+      var charAttrs = range.characterAttributes;
+      if (paragraphCount > 0) {
+        var paragraphAttrs = story.paragraphs[0].paragraphAttributes;
+      }
+      return {
+        ok:true,
+        story_index:storyIndex,
+        character_count:charCount,
+        paragraph_count:paragraphCount,
+        text_length:String(rangeContents || '').length
+      };
+    } catch (storyReadError) {
+      return { ok:false, story_index:storyIndex, reason:'Story text surface is not readable: ' + storyReadError.message };
+    }
+  }
+  function applyTarget(item, uuid, storyIndex, isStory) {
+    if (!item) { failed.push({uuid:uuid,story_index:storyIndex,reason:'No object found matching target'}); return; }
+    if (!isStory) {
+      if (item.typename !== 'TextFrame') { failed.push({uuid:uuid,story_index:storyIndex,reason:'Object is not a TextFrame'}); return; }
+      if (item.locked || item.hidden) { failed.push({uuid:uuid,story_index:storyIndex,reason:item.locked?'locked':'hidden'}); return; }
+    }
+    var log={uuid:uuid, story_index:storyIndex, verified_properties:[], failed_properties:[], unsupported_properties:[]}, c=params.character, p=params.paragraph;
     if (c) { if (c.font_name || c.font_family) { var font=resolveFont(c, item.textRange.characterAttributes.textFont); if (!font) log.unsupported_properties.push({property:'font_family',code:'FONT_DEPENDENT',message:'Requested font family/style is unavailable in this Illustrator installation.'}); else { try { item.textRange.characterAttributes.textFont=font; for (var fc=0; fc<item.characters.length; fc++) item.characters[fc].characterAttributes.textFont=font; var actualFont=item.textRange.characterAttributes.textFont; log.verified_properties.push({property:'font_family',readback:{font_family:actualFont.family,font_style:actualFont.style,font_name:actualFont.name},matches:true}); } catch(e) { log.unsupported_properties.push({property:'font_family',code:'FONT_DEPENDENT',message:e.message}); } } }
       if (typeof c.leading !== 'undefined' && typeof c.auto_leading === 'undefined') { item.textRange.characterAttributes.autoLeading = false; for (var li=0; li<item.characters.length; li++) item.characters[li].characterAttributes.autoLeading = false; log.verified_properties.push({property:'auto_leading',readback:false,matches:true,implicit_for:'leading'}); }
       apply(item.textRange.characterAttributes, characterMap, c, true, log); for (var ci=0; ci<item.characters.length; ci++) apply(item.characters[ci].characterAttributes, characterMap, c, true, {verified_properties:[],failed_properties:[],unsupported_properties:[]});
@@ -254,20 +350,45 @@ else try {
     if (p) for (var pi=0; pi<item.paragraphs.length; pi++) apply(item.paragraphs[pi].paragraphAttributes, paragraphMap, p, false, log);
     log.success=log.failed_properties.length===0 && log.unsupported_properties.length===0; results.push(log);
   }
-  var allSucceeded = failed.length === 0; for (var ri = 0; ri < results.length; ri++) if (!results[ri].success) allSucceeded = false;
-  writeResultFile(RESULT_PATH,{success:allSucceeded,details:{requested_count:params.uuids.length,updated_count:results.length,failed_count:failed.length},results:results,failed_objects:failed});
+  var ids = params.uuids || [], useAllStories = params.all_stories === true;
+  if (useAllStories && ids.length) {
+    writeResultFile(RESULT_PATH,{error:true,message:'Specify either all_stories=true or uuids, not both.'});
+  } else if (useAllStories) {
+    var storyPreflight = [], storyPreflightFailed = false;
+    for (var spi=0; spi<doc.stories.length; spi++) {
+      var probe = preflightStoryReadable(doc.stories[spi], spi);
+      storyPreflight.push(probe);
+      if (!probe.ok) { storyPreflightFailed = true; failed.push(probe); }
+    }
+    if (storyPreflightFailed) {
+      writeResultFile(RESULT_PATH,{success:false,details:{requested_count:doc.stories.length,updated_count:0,failed_count:failed.length,target_mode:'all_stories',preflight:'FAILED_NO_MUTATION'},results:[],failed_objects:failed,story_preflight:storyPreflight});
+    } else {
+      for (var si=0; si<doc.stories.length; si++) {
+        try { applyTarget(doc.stories[si], null, si, true); }
+        catch (storyError) { failed.push({story_index:si,reason:storyError.message}); }
+      }
+      var allSucceeded = failed.length === 0; for (var ri = 0; ri < results.length; ri++) if (!results[ri].success) allSucceeded = false;
+      writeResultFile(RESULT_PATH,{success:allSucceeded,details:{requested_count:doc.stories.length,updated_count:results.length,failed_count:failed.length,target_mode:'all_stories',preflight:'PASS'},results:results,failed_objects:failed,story_preflight:storyPreflight});
+    }
+  } else if (ids.length) {
+    for (var i=0; i<ids.length; i++) applyTarget(findItemByUUID(ids[i]), ids[i], null, false);
+    var allSucceeded2 = failed.length === 0; for (var ri2 = 0; ri2 < results.length; ri2++) if (!results[ri2].success) allSucceeded2 = false;
+    writeResultFile(RESULT_PATH,{success:allSucceeded2,details:{requested_count:ids.length,updated_count:results.length,failed_count:failed.length,target_mode:'uuids'},results:results,failed_objects:failed});
+  } else {
+    writeResultFile(RESULT_PATH,{error:true,message:'Provide uuids or set all_stories=true.'});
+  }
 } catch(e) { writeResultFile(RESULT_PATH,{error:true,message:'set_typography failed: '+e.message,line:e.line}); }
 `;
 
 export function register(server: McpServer): void {
   server.registerTool('get_typography_metrics', {
     title: 'Get Typography Metrics',
-    description: 'Read typography for one or more TextFrames in one background JSX execution. Compatible with the official GetTypographyMetrics response shape: text length/content, overflow, all font runs, and uniform or explicitly mixed character/paragraph metrics. Classic DOM cannot read font embedding permissions, so is_font_embeddable is null with NOT_EXPOSED_BY_CLASSIC_DOM rather than guessed.',
-    inputSchema: { uuids }, annotations: READ_ANNOTATIONS,
+    description: 'Read typography in one background JSX execution. Pass uuids for explicit TextFrame targets. For document-wide typography verification, use all_stories=true to read Story text directly without depending on doc.textFrames wrappers or PageItem UUIDs. Do not combine target modes. Compatible with the official GetTypographyMetrics response shape for typography fields. Classic DOM cannot read font embedding permissions, so is_font_embeddable is null with NOT_EXPOSED_BY_CLASSIC_DOM rather than guessed.',
+    inputSchema: { uuids: uuids.optional(), all_stories: allStories }, annotations: READ_ANNOTATIONS,
   }, async (params) => executeToolJsx(readJsx, params));
   server.registerTool('set_typography', {
     title: 'Set Typography',
-    description: 'Set explicitly supplied character and paragraph formatting on one or more TextFrames in one background JSX execution. `character` applies frame-wide first; optional `script_rules.han` and `.latin` then override only matching Han/Latin characters. CJK/full-width punctuation defaults to Han; ASCII digits and punctuation default to Latin; spaces, tabs, CR/LF, and unclassified characters are left unchanged by script rules. Paragraph formatting remains frame-wide. Specify a script font by exact `font_name` or exact `font_family` plus `font_style`; missing fonts do not fall back and are reported per rule/property. Returns compact per-rule/per-property status and DOM readback. FONT_DEPENDENT means an OpenType feature could not be applied; NOT_EXPOSED_BY_CLASSIC_DOM is never reported as success.',
-    inputSchema: { uuids, character: characterSchema.optional(), script_rules: scriptRulesSchema.optional(), paragraph: paragraphSchema.optional() }, annotations: WRITE_ANNOTATIONS,
+    description: 'Set explicitly supplied character and paragraph formatting in one background JSX execution. Pass uuids for explicit TextFrame targets. For document-wide typography, use all_stories=true so the write operates through Story text directly and does not depend on doc.textFrames wrappers or PageItem UUIDs. Before any Story mutation, the Story/TextRange surfaces used by this tool are read-checked in a no-mutation preflight. Story mode intentionally does not dereference story.textFrames because valid documents can expose readable Story text while TextFrame wrappers throw Error 45. Lock/hidden/editable state is not exposed on Story/TextRange; Illustrator write rejection is reported if a Story is not writable. Do not combine target modes. `character` applies target-wide first; optional `script_rules.han` and `.latin` then override only matching Han/Latin characters. CJK/full-width punctuation defaults to Han; ASCII digits and punctuation default to Latin; spaces, tabs, CR/LF, and unclassified characters are left unchanged by script rules. Paragraph formatting remains target-wide. Specify a script font by exact `font_name` or exact `font_family` plus `font_style`; missing fonts do not fall back and are reported per rule/property.',
+    inputSchema: { uuids: uuids.optional(), all_stories: allStories, character: characterSchema.optional(), script_rules: scriptRulesSchema.optional(), paragraph: paragraphSchema.optional() }, annotations: WRITE_ANNOTATIONS,
   }, async (params) => executeToolJsx(writeJsx, params));
 }
