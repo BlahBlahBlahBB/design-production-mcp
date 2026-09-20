@@ -5,7 +5,7 @@ import { WRITE_ANNOTATIONS } from './shared.js';
 import { SCRIPT_CLASSIFIER_JSX } from '../typography-script-rules.js';
 
 const fontRuleSchema = z.object({
-  font_name: z.string().min(1).optional().describe('Exact Illustrator textFont name.'),
+  font_name: z.string().min(1).optional().describe('Illustrator font name or a unique human-readable family/style form. Exact PostScript name is preferred but not required when the requested name resolves uniquely.'),
   font_family: z.string().min(1).optional(),
   font_style: z.string().min(1).optional(),
   font_size: z.number().positive().optional(),
@@ -26,7 +26,7 @@ const conditionalSizeSchema = z.object({
 });
 
 const bindingSchema = z.object({
-  source_uuid: z.string().describe('UUID of a source TextFrame inside the template artboard. Only this bound text object may be changed.'),
+  source_uuid: z.string().optional().describe('UUID of a source TextFrame inside the template artboard. Omit for a single-binding template when exactly one editable TextFrame exists on the source artboard; the tool will bind it automatically.'),
   values: z.array(z.string()).min(1).max(200).describe('One text value per generated variant, in output order.'),
   script_rules: z.object({
     han: fontRuleSchema.optional(),
@@ -89,6 +89,23 @@ else {
 
   function isTopLevelPageItem(item) {
     try { return item.parent && item.parent.typename === "Layer"; } catch (_) { return false; }
+  }
+
+  function autoResolveSingleTextFrame(rect) {
+    var candidates = [];
+    for (var pi = 0; pi < doc.pageItems.length; pi++) {
+      try {
+        var item = doc.pageItems[pi];
+        if (!item || item.typename !== "TextFrame") continue;
+        if (!centerInsideArtboard(item, rect)) continue;
+        if (item.locked || item.hidden) continue;
+        candidates.push(item);
+      } catch (_) {}
+    }
+    if (candidates.length !== 1) {
+      throw new Error("AUTO_BIND_REQUIRES_ONE_TEXTFRAME: found " + candidates.length + " editable TextFrames on the source artboard");
+    }
+    return candidates[0];
   }
 
   function collectSourceRoots(rect, explicitUuids) {
@@ -163,14 +180,46 @@ else {
     return String(value).split(String.fromCharCode(10)).join(String.fromCharCode(13));
   }
 
+  function normalizeFontKey(value) {
+    return String(value || "").toLowerCase().replace(/[\\s_\\-]+/g, "").replace(/[^a-z0-9\\u3400-\\u9fff]/g, "");
+  }
+
   function resolveFontRule(rule) {
     if (!rule || (!rule.font_name && !rule.font_family)) return null;
+    var requested = rule.font_name || (rule.font_family + " " + rule.font_style);
+
     for (var fi = 0; fi < app.textFonts.length; fi++) {
       var f = app.textFonts[fi];
       if (rule.font_name && f.name === rule.font_name) return f;
+      if (rule.font_name && f.family === rule.font_name) return f;
       if (!rule.font_name && f.family === rule.font_family && f.style === rule.font_style) return f;
     }
-    throw new Error("FONT_NOT_FOUND: " + (rule.font_name || (rule.font_family + " / " + rule.font_style)));
+
+    var wanted = normalizeFontKey(requested);
+    var candidates = [];
+    for (var ni = 0; ni < app.textFonts.length; ni++) {
+      var nf = app.textFonts[ni];
+      var keys = [
+        normalizeFontKey(nf.name),
+        normalizeFontKey(nf.family),
+        normalizeFontKey(nf.family + nf.style),
+        normalizeFontKey(nf.family + " " + nf.style)
+      ];
+      for (var ki = 0; ki < keys.length; ki++) {
+        if (keys[ki] === wanted) {
+          candidates.push(nf);
+          break;
+        }
+      }
+    }
+
+    if (candidates.length === 1) return candidates[0];
+    if (candidates.length > 1) {
+      var names = [];
+      for (var ci = 0; ci < candidates.length; ci++) names.push(candidates[ci].name);
+      throw new Error("FONT_AMBIGUOUS: " + requested + " -> " + names.join(", "));
+    }
+    throw new Error("FONT_NOT_FOUND: " + requested);
   }
 
   function justificationValue(value) {
@@ -231,15 +280,81 @@ else {
 
     var centerMode = binding.center_in_artboard || "none";
     if (centerMode !== "none") {
-      var b = itemBounds(tf);
-      if (!b) throw new Error("Unable to read TextFrame bounds for artboard centering");
-      var itemCx = (b[0] + b[2]) / 2;
-      var itemCy = (b[1] + b[3]) / 2;
-      var artCx = (artboardRect[0] + artboardRect[2]) / 2;
-      var artCy = (artboardRect[1] + artboardRect[3]) / 2;
-      var dx = (centerMode === "horizontal" || centerMode === "both") ? artCx - itemCx : 0;
-      var dy = (centerMode === "vertical" || centerMode === "both") ? artCy - itemCy : 0;
-      tf.translate(dx, dy);
+      centerTextFrame(tf, artboardRect, centerMode);
+    }
+  }
+
+  function centerOffset(tf, artboardRect, centerMode) {
+    var b = itemBounds(tf);
+    if (!b) throw new Error("Unable to read TextFrame bounds for artboard centering");
+    var itemCx = (b[0] + b[2]) / 2;
+    var itemCy = (b[1] + b[3]) / 2;
+    var artCx = (artboardRect[0] + artboardRect[2]) / 2;
+    var artCy = (artboardRect[1] + artboardRect[3]) / 2;
+    return {
+      dx: (centerMode === "horizontal" || centerMode === "both") ? artCx - itemCx : 0,
+      dy: (centerMode === "vertical" || centerMode === "both") ? artCy - itemCy : 0
+    };
+  }
+
+  function centerTextFrame(tf, artboardRect, centerMode) {
+    var first = centerOffset(tf, artboardRect, centerMode);
+    if (first.dx !== 0 || first.dy !== 0) tf.translate(first.dx, first.dy);
+
+    // Illustrator can update point-text bounds lazily after content/font/size changes.
+    // Re-read once and apply one bounded correction instead of trusting the first geometry.
+    var residual = centerOffset(tf, artboardRect, centerMode);
+    if (Math.abs(residual.dx) > 0.1 || Math.abs(residual.dy) > 0.1) {
+      tf.translate(residual.dx, residual.dy);
+    }
+  }
+
+  function verifyBindingFormat(tf, binding, resolvedFonts, artboardRect, variantIndex, bindingIndex, mismatches) {
+    if (binding.paragraph_alignment) {
+      var expectedJustification = justificationValue(binding.paragraph_alignment);
+      for (var pi = 0; pi < tf.paragraphs.length; pi++) {
+        try {
+          if (tf.paragraphs[pi].paragraphAttributes.justification !== expectedJustification) {
+            mismatches.push({ variant_index:variantIndex, binding_index:bindingIndex, kind:"paragraph_alignment", paragraph_index:pi });
+          }
+        } catch (_) {
+          mismatches.push({ variant_index:variantIndex, binding_index:bindingIndex, kind:"paragraph_alignment_unreadable", paragraph_index:pi });
+        }
+      }
+    }
+
+    var centerMode = binding.center_in_artboard || "none";
+    if (centerMode !== "none") {
+      var offset = centerOffset(tf, artboardRect, centerMode);
+      var tolerance = 0.5;
+      if (Math.abs(offset.dx) > tolerance || Math.abs(offset.dy) > tolerance) {
+        mismatches.push({
+          variant_index:variantIndex,
+          binding_index:bindingIndex,
+          kind:"artboard_centering",
+          center_mode:centerMode,
+          residual_dx_pt:offset.dx,
+          residual_dy_pt:offset.dy
+        });
+      }
+    }
+
+    var rules = binding.script_rules || {};
+    if ((rules.han && resolvedFonts.han) || (rules.latin && resolvedFonts.latin)) {
+      for (var ci = 0; ci < tf.characters.length; ci++) {
+        var script = dpmClassifyTextCharacter(tf.characters, ci);
+        var expectedFont = script === "han" ? resolvedFonts.han : script === "latin" ? resolvedFonts.latin : null;
+        if (!expectedFont) continue;
+        try {
+          if (tf.characters[ci].characterAttributes.textFont.name !== expectedFont.name) {
+            mismatches.push({ variant_index:variantIndex, binding_index:bindingIndex, kind:"font", character_index:ci, expected:expectedFont.name, actual:tf.characters[ci].characterAttributes.textFont.name });
+            break;
+          }
+        } catch (_) {
+          mismatches.push({ variant_index:variantIndex, binding_index:bindingIndex, kind:"font_unreadable", character_index:ci });
+          break;
+        }
+      }
     }
   }
 
@@ -307,14 +422,21 @@ else {
     }
 
     for (var b = 0; b < params.text_bindings.length; b++) {
-      var tf = findItemByUUID(params.text_bindings[b].source_uuid);
-      if (!tf) throw new Error("Text binding source UUID not found: " + params.text_bindings[b].source_uuid);
+      var binding = params.text_bindings[b];
+      var tf = null;
+      if (binding.source_uuid) {
+        tf = findItemByUUID(binding.source_uuid);
+      } else {
+        if (params.text_bindings.length !== 1) throw new Error("source_uuid is required when more than one text binding is supplied");
+        tf = autoResolveSingleTextFrame(sourceRect);
+      }
+      if (!tf) throw new Error("Text binding source UUID not found: " + (binding.source_uuid || "<auto>"));
       if (tf.typename !== "TextFrame") throw new Error("Text binding source UUID must resolve to a TextFrame");
       if (!centerInsideArtboard(tf, sourceRect)) throw new Error("Text binding source is outside the source artboard");
       sourceBindingItems.push(tf);
       sourceOriginalTexts.push(readContents(tf));
       sourceBindingPaths.push(bindingPathToRoot(tf));
-      var scriptRules = params.text_bindings[b].script_rules || {};
+      var scriptRules = binding.script_rules || {};
       resolvedBindingFonts.push({
         han: resolveFontRule(scriptRules.han),
         latin: resolveFontRule(scriptRules.latin)
@@ -429,7 +551,16 @@ else {
         }
         var expected = String(params.text_bindings[vb].values[vv]).split(String.fromCharCode(10)).join(String.fromCharCode(13));
         var actual = readContents(actualTextItem);
-        if (actual !== expected) mismatches.push({ variant_index:vv, binding_index:vb, expected:expected, actual:actual });
+        if (actual !== expected) mismatches.push({ variant_index:vv, binding_index:vb, kind:"text", expected:expected, actual:actual });
+        verifyBindingFormat(
+          actualTextItem,
+          params.text_bindings[vb],
+          resolvedBindingFonts[vb],
+          doc.artboards[variantArtboardIndices[vv]].artboardRect,
+          vv,
+          vb,
+          mismatches
+        );
       }
     }
     verificationMs = nowMs() - verificationStart;
@@ -482,7 +613,7 @@ else {
 export function register(server: McpServer): void {
   server.registerTool('generate_template_variants', {
     title: 'Generate Template Variants',
-    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. In the same call it can apply per-script fonts, conditional font-size rules, paragraph alignment, and TextFrame-to-artboard centering, so do not follow it with list_fonts, set_typography, list_text_frames, or modify_objects when these binding options can express the requested result. Fonts are preflighted before mutation. The tool preserves unbound template artwork, verifies every bound value, and rolls back created artwork/artboards on failure.',
+    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. For a single-binding template with exactly one editable TextFrame on the source artboard, omit source_uuid and let the tool auto-bind it; only fall back to one text-frame lookup if AUTO_BIND_REQUIRES_ONE_TEXTFRAME is returned. Human-readable font names are resolved by exact or unique normalized Illustrator font identity, so do not preflight with list_fonts unless FONT_NOT_FOUND or FONT_AMBIGUOUS is returned. Map “段落居中” to paragraph_alignment=center, “与画板垂直居中” to center_in_artboard=vertical, and “与画板水平/垂直居中” or “画板居中” to center_in_artboard=both. The tool verifies bound text, requested paragraph alignment, requested font application, and requested artboard centering before reporting success; on a clean success, save directly instead of running typography/text-frame verification reads. It rolls back created artwork/artboards on failure.',
     inputSchema: {
       source_artboard_index: z.number().int().min(0).optional().describe('Source template artboard index. Defaults to the active artboard.'),
       source_item_uuids: z.array(z.string()).min(1).optional().describe('Optional exact top-level source artwork UUIDs. Omit to auto-collect top-level artwork centered on the source artboard.'),
