@@ -57,6 +57,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `get_symbols` | 读取 Symbols。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_text_frame_detail` | 获取指定文字框的详细信息。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_typography_metrics` | 批量读取官方语义兼容的文字度量；支持 `all_stories=true` 的全文档 Story 读取与局部 wrapper 容错。 | IE3JP + DPM | IE3JP JSX / Classic DOM | 是 | 否 | 通过（Story 全文档） |
+| `generate_template_variants` | 从一个模板画板批量生成多数据版本；支持单文本框自动绑定、Han / Latin 字体、条件字号、段落对齐、画板居中、精确 JSON 数据交接与结果校验。 | IE3JP + DPM | IE3JP JSX | 是 | 否 | 通过（63 人姓名贴模板） |
 | `group_objects` | 将一组对象成组。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `group_object_sets` | 一次创建多组独立 group / clipping group；显式 `clip_path_uuid`。 | IE3JP + DPM | IE3JP JSX | 是 | 否 | 通过（批量模板） |
 | `illustrator_status` | 读取本地 Illustrator Bridge 状态。 | DPM | DPM bridge | 是 | 否 | 待验证 |
@@ -95,7 +96,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `undo` | 撤销上一次 Illustrator 操作。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `ungroup_objects` | 解组选中的群组。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 
-Illustrator Core 公开工具总数：**85**。
+Illustrator Core 公开工具总数：**86**。
 
 来源统计以当前注册表为准：IE3JP JSX 是主要直接 Core 路径；
 Alexander Ladygin 提供固定 Action 路径；Creold / Sergey Osokin 提供少量
