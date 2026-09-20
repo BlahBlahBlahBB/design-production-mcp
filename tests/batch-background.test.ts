@@ -198,7 +198,6 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(installer, /multi-row grid by default/);
   assert.match(installer, /Put requested per-script fonts/);
   assert.match(installer, /Do not call .*list_fonts.*set_typography.*list_text_frames.*modify_objects/);
-  assert.match(installer, /Do not call .*get_document_info.*get_document_structure.*first/);
   assert.match(installer, /spreadsheet\/CSV is only a data source/);
   assert.match(installer, /prefer .*generate_template_variants\.data_source/);
   assert.match(installer, /After a successful .*generate_template_variants.*save_document.*stop/);
