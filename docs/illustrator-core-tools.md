@@ -56,7 +56,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `get_separation_info` | 检查分色信息。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_symbols` | 读取 Symbols。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_text_frame_detail` | 获取指定文字框的详细信息。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
-| `get_typography_metrics` | 批量读取官方语义兼容的文字度量。 | IE3JP + DPM | IE3JP JSX / Classic DOM | 是 | 否 | 待验证 |
+| `get_typography_metrics` | 批量读取官方语义兼容的文字度量；支持 `all_stories=true` 的全文档 Story 读取与局部 wrapper 容错。 | IE3JP + DPM | IE3JP JSX / Classic DOM | 是 | 否 | 通过（Story 全文档） |
 | `group_objects` | 将选中对象成组。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `illustrator_status` | 读取本地 Illustrator Bridge 状态。 | DPM | DPM bridge | 是 | 否 | 待验证 |
 | `image_trace_selection` | 对当前选区执行图像描摹并展开。 | Creold | Creold DOM | 是 | 否 | 待验证 |
@@ -87,7 +87,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `select_objects` | 按条件选择对象。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `set_illustrator_version` | 指定要连接的已安装 Illustrator 版本。 | IE3JP | IE3JP transport configuration | 是 | 否 | 待验证 |
 | `set_appearance` | 一次为多个对象设置相同 fill/stroke/opacity/hidden/locked。 | IE3JP | IE3JP JSX | 是 | 否 | 通过 |
-| `set_typography` | 批量设置直接文字与段落格式，并逐属性读回。 | IE3JP + DPM | IE3JP JSX / Classic DOM | 是 | 否 | 待验证 |
+| `set_typography` | 批量设置直接文字与段落格式；支持 `all_stories=true` 的全文档 Story 写入，并逐属性读回。 | IE3JP + DPM | IE3JP JSX / Classic DOM | 是 | 否 | 通过（Story 全文档） |
 | `set_workflow` | 设置坐标 / Workflow 偏好。 | IE3JP | IE3JP session state | 是 | 否 | 待验证 |
 | `set_z_order` | 调整对象堆叠顺序。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `undo` | 撤销上一次 Illustrator 操作。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
@@ -132,3 +132,8 @@ expand_objects
 ```
 
 并传入需要的 Object / Fill / Stroke / Gradient 展开参数。
+
+
+## v0.4.1 Story Typography 验证说明
+
+全文档 Typography 默认可使用 Story target mode，不需要先调用 `list_text_frames` / `find_objects` 获取 UUID。Illustrator 2026 Stable 30.8.1 真机已验证 Story 写入与 `get_typography_metrics(all_stories=true)` 读取；显式 UUID/TextFrame target mode 继续保留，用于明确的单对象操作。
