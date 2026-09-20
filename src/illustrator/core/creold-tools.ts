@@ -21,5 +21,5 @@ export function registerCreoldTools(server: McpServer): void {
   );
   registerFixedOperation(server, "image_trace_selection", "Image Trace", "Trace the first selected placed/raster image and expand the result.", {}, "image_trace_selection", () => ({ operation: "image_trace_selection" }));
   registerFixedOperation(server, "replace_formatted_text", "Replace Formatted Text", "Replace the contents of selected text frames while retaining their frame-level formatting.", { content: z.string() }, "replace_formatted_text", ({ content }) => ({ operation: "replace_formatted_text", content: String(content) }));
-  registerFixedOperation(server, "duplicate_active_artboard", "Duplicate Active Artboard", "Create an offset copy of the active artboard with legacy-compatible Illustrator DOM behavior.", {}, "duplicate_artboard", () => ({ operation: "duplicate_artboard" }));
+  registerFixedOperation(server, "duplicate_active_artboard", "Duplicate Active Artboard", "Create one offset copy of the active artboard with legacy-compatible Illustrator DOM behavior. For many data-driven copies from one template, prefer generate_template_variants instead of repeating this tool.", {}, "duplicate_artboard", () => ({ operation: "duplicate_artboard" }));
 }

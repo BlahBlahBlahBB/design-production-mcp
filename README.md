@@ -4,7 +4,7 @@
 
 这个项目把多个成熟的 Illustrator 开源能力整合到同一个 MCP 中，并保留 DPM 自己的生产安全能力。Core 默认直接操作当前文档；只有用户明确要求保护 MASTER / 保留原稿 / 使用 Work Copy 时，才启用独立的 Production 安全机制。
 
-当前版本：**v0.4.3**
+当前版本：**v0.4.4**
 
 - 最新 Release / 下载页：<https://github.com/BlahBlahBlahBB/design-production-mcp/releases/latest>
 - 发布说明：[RELEASE_NOTES.md](RELEASE_NOTES.md)
@@ -15,7 +15,7 @@
 
 当前公开能力分为两部分：
 
-- **Illustrator Core：85 个公开工具**（构建时从注册表自动计数）
+- **Illustrator Core：86 个公开工具**（构建时从注册表自动计数）
 - **DPM Production：3 个公开生产安全工具**
 
 <br>
@@ -33,6 +33,8 @@ Stable Illustrator MCP 独立运行，不依赖 Adobe Illustrator Beta。DPM 工
 从 v0.4.2 起，当前/已打开 Illustrator 文档且 MCP 已支持的任务采用 **hard routing**：第一个后端动作必须优先调用 `design-production-illustrator` MCP，不再先用 Computer Use 查看应用、画布、选区、菜单或面板；全文档字体/段落/文字颜色任务直接进入 `set_typography(all_stories=true)`。
 
 从 v0.4.3 起，重复图片模板任务采用真正的 **batch-first** 路径：新增 `place_images` 与 `group_object_sets`，可一次处理多张图片、毫米尺寸、居中、剪切蒙版和对应文字标签；大批次使用独立 180 秒 transport budget，并返回阶段 timing telemetry。真实 34 张二维码模板 QA 为 34/34 成功，`place_images` 核心 JSX 约 2.4 秒、含 transport 约 2.6 秒。
+
+从 v0.4.4 起，新增通用 **template variants** 批处理：`generate_template_variants` 可把一个 Illustrator 模板与多行数据一次生成多个画板版本，并在同次调用中处理 Han / Latin 字体、条件字号、段落对齐和画板居中。大列表可通过 `values_json_path` 精确交接，避免模型重新抄写几十个值导致漏项/重复；工具会回报输入数量、SHA-256 与真实重复值。`save_document` 同步使用长保存预算与 timing telemetry，长文档不再因 30 秒保存误判进入重复 save/stat 修复链。
 
 主要能力包括：
 
@@ -391,10 +393,11 @@ create_work_copy
 - Story 全文档 Typography 写入：通过（混合 Han / Latin 字体、颜色、段落格式）
 - `get_typography_metrics(all_stories=true)`：通过（Story 数据、script_runs、paragraph alignment 正常返回；不再因 `Story.contents` / 局部 wrapper 异常让整条读取失败）
 - `place_images` 批量二维码模板：通过（34/34；30.5 mm、居中、剪切蒙版、标签写入、保存均通过；核心 JSX 2413 ms，transport 2620 ms）
+- `generate_template_variants` 姓名贴模板：通过（63/63；中英文字体、段落居中、画板水平居中、四字中文 83 pt、单次保存均通过；Luna 实测总流程约 1 分 59 秒）
 
 项目测试状态：
 
-- `npm test`：**118 / 118 通过**
+- `npm test`：**120 / 120 通过**
 - MASTER / Work Copy safety regression：包含于 automated suite
 - TypeScript build：通过
 - `npm audit --omit=dev`：**0 个已报告漏洞**

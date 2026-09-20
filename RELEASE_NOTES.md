@@ -1,3 +1,30 @@
+# v0.4.4 发布说明
+
+## Data-driven template variants + reliable long saves
+
+- 新增 `generate_template_variants`：一个 Illustrator 模板 + 多行数据可一次生成多个画板版本；支持单文本框自动绑定、Han / Latin 分字体、条件字号、段落对齐、水平 / 垂直 / 双向画板居中与逐版本结果校验。
+- 大列表新增 `values_json_path` 精确交接：Spreadsheet / Python 只需解析一次并写出 UTF-8 JSON 数组，MCP 直接读取，不再要求小模型把几十个值重新抄进工具参数；结果返回精确 `value_count`、SHA-256 与真实重复值。
+- 字体输入兼容 `font` / `font_name`，并在工具内部规范化；字体验证按可见代表字符 + name / family / style 等价身份检查，避免 display name / PostScript name 假失败与逐字符 DOM 性能回退。
+- 模板版本结果明确区分 `generated_variant_count` / `created_artboard_count`，原模板画板复用为第一个版本时不会再被误判“少生成一张”。
+- JSX transport 可在结构化 result file 已完成时提前结束 shell runner 等待，避免 Illustrator 已完成但 AppleEvent / osascript 继续挂到 transport timeout。
+- `save_document` 改为 180 秒长保存预算、后台执行并返回 timing telemetry；routing 禁止生成成功后进入 save → stat → save / save_as 的重复保存链。
+- Luna 生产 QA 已验证 63 人姓名贴：63/63、无虚构重复，中英文字体、段落居中、画板水平居中、四字中文 83 pt 与单次保存均通过；总流程约 1 分 59 秒。
+- 保留 v0.4.3 的 `place_images` / `group_object_sets` 批量图片模板路径与 v0.4.2 hard routing。
+
+### Validation
+
+- `npm test`: **120 / 120 PASS**
+- TypeScript build: **PASS**
+- GitHub CI #165: **PASS**
+- 真实 63 人姓名贴模板 QA: **63 / 63 PASS**
+- exact dataset handoff: **63 → 63 PASS**
+- Computer Use: **not used**
+- `generate_template_variants`: **single batch call**
+- `save_document`: **single save call**
+- Luna end-to-end: **约 1 分 59 秒**
+
+---
+
 # v0.4.3 发布说明
 
 ## Batch image template workflows

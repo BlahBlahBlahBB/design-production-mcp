@@ -123,7 +123,7 @@ export function register(server: McpServer): void {
     {
       title: 'Manage Artboards',
       description:
-        'Add, remove, resize, rename, fit, or rearrange artboards. Note: Illustrator will be activated (brought to foreground) during execution.',
+        'Add, remove, resize, rename, fit, or rearrange one artboard operation. For generating many data-driven artboards from one template, prefer generate_template_variants instead of looping manage_artboards.',
       inputSchema: {
         action: z
           .enum(['add', 'remove', 'resize', 'rename', 'fit_to_art', 'rearrange'])

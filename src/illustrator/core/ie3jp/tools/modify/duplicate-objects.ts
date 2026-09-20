@@ -85,7 +85,7 @@ export function register(server: McpServer): void {
     {
       title: 'Duplicate Objects',
       description:
-        'Duplicate one or more objects in one batch, optionally offsetting the copies. Pass all UUIDs together; do not loop single-object calls. Runs without intentionally bringing Illustrator to the foreground.',
+        'Duplicate one or more objects in one batch, optionally offsetting the copies. Pass all UUIDs together; do not loop single-object calls. For repeated data-driven template copies across many artboards, prefer generate_template_variants. Runs without intentionally bringing Illustrator to the foreground.',
       inputSchema: {
         uuids: z.array(z.string()).min(1).describe('UUIDs of objects to duplicate'),
         offset: z

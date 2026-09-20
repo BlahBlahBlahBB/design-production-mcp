@@ -20,6 +20,10 @@ test("ordinary Core writes and heavy execution default to background", async () 
   const executor = await source("src/illustrator/core/ie3jp/tools/tool-executor.ts");
   const modify = await source("src/illustrator/core/ie3jp/tools/modify/modify-object.ts");
   assert.match(runner, /options\?\.activate \?\? false/);
+  assert.match(runner, /executeRunnerAndAwaitResult/);
+  assert.match(runner, /probeResultFile/);
+  assert.match(runner, /transport_result_file_completion/);
+  assert.match(runner, /child\.kill\('SIGTERM'\)/);
   assert.match(executor, /executeJsxHeavy\(jsxCode, resolvedParams, \{ activate: options\?\.activate \?\? false \}\)/);
   assert.match(executor, /timeoutMs/);
   assert.match(executor, /timeout: options\.timeoutMs/);
@@ -80,7 +84,6 @@ test("installer routing remains batch-first without backend fallback or automati
   assert.match(installer, /group_object_sets/);
   assert.match(installer, /label_uuid/);
   assert.match(installer, /label_text/);
-  assert.match(installer, /Do not repeatedly call/);
   assert.match(installer, /do not enter an improvised repair loop/);
   assert.match(installer, /Do not run shell/);
   assert.match(installer, /Never save after an unverified timeout or failed batch/);
@@ -156,6 +159,101 @@ test("repeated image/template work has public batch placement and grouping tools
   assert.match(groups, /FAILED_NO_MUTATION/);
   assert.match(groups, /failed_groups/);
   assert.doesNotMatch(groups, /activate:\s*true/);
+});
+
+test("data-driven templates use one rollback-safe variant generator", async () => {
+  const registered = (createDesignProductionMcpServer() as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+  assert.ok(registered.generate_template_variants, "generate_template_variants must be registered");
+
+  const variants = await source("src/illustrator/core/ie3jp/tools/modify/generate-template-variants.ts");
+  assert.match(variants, /text_bindings/);
+  assert.match(variants, /values_json_path/);
+  assert.match(variants, /VALUES_JSON_INVALID/);
+  assert.match(variants, /VALUES_JSON_TOO_LARGE/);
+  assert.match(variants, /_dpm_value_sources/);
+  assert.match(variants, /duplicate_values/);
+  assert.match(variants, /sha256/);
+  assert.match(variants, /source_uuid: z\.string\(\)\.optional/);
+  assert.match(variants, /AUTO_BIND_REQUIRES_ONE_TEXTFRAME/);
+  assert.match(variants, /autoResolveSingleTextFrame/);
+  assert.match(variants, /source_artboard_index/);
+  assert.match(variants, /Math\.ceil\(Math\.sqrt\(variantCount\)\)/);
+  assert.match(variants, /sourceRoot\.duplicate\(\)/);
+  assert.match(variants, /dup\.translate\(dx, dy\)/);
+  assert.match(variants, /writeAndFormat/);
+  assert.match(variants, /script_rules/);
+  assert.match(variants, /conditional_font_sizes/);
+  assert.match(variants, /paragraph_alignment/);
+  assert.match(variants, /center_in_artboard/);
+  assert.match(variants, /font: z\.string\(\)\.min\(1\)\.optional/);
+  assert.match(variants, /font_name: rule\.font_name \?\? rule\.font/);
+  assert.match(variants, /Promise\.all\(params\.text_bindings\.map\(\(binding, index\) => normalizeBinding\(binding, index\)\)\)/);
+  assert.match(variants, /FONT_NOT_FOUND/);
+  assert.match(variants, /FONT_AMBIGUOUS/);
+  assert.match(variants, /normalizeFontKey/);
+  assert.match(variants, /fontsEquivalent/);
+  assert.match(variants, /representative = \{ han:-1, latin:-1 \}/);
+  assert.match(variants, /visibleText = readContents\(tf\)/);
+  assert.match(variants, /scriptsToCheck = \["han", "latin"\]/);
+  assert.match(variants, /expected_family/);
+  assert.match(variants, /actual_family/);
+  assert.match(variants, /centerTextFrame/);
+  assert.match(variants, /artboard_centering/);
+  assert.match(variants, /paragraph_alignment_unreadable/);
+  assert.match(variants, /tf\.translate/);
+  assert.match(variants, /generated_variant_count/);
+  assert.match(variants, /total_variant_artboard_count/);
+  assert.match(variants, /failed_variant_count/);
+  assert.match(variants, /created_artboard_count: variantCount - 1/);
+  assert.match(variants, /removeCreatedArtwork/);
+  assert.match(variants, /removeAddedArtboards/);
+  assert.match(variants, /restoreSourceText/);
+  assert.match(variants, /timeoutMs: 180_000/);
+  assert.match(variants, /includeTiming: true/);
+  assert.doesNotMatch(variants, /activate:\s*true/);
+
+  const installer = await source("scripts/configure-codex.mjs");
+  assert.match(installer, /one-template-plus-many-data jobs/);
+  assert.match(installer, /generate_template_variants/);
+  assert.match(installer, /OMIT .*source_uuid.*auto-bind/);
+  assert.match(installer, /AUTO_BIND_REQUIRES_ONE_TEXTFRAME/);
+  assert.match(installer, /Do NOT call .*get_document_structure.*get_artboards.*list_text_frames.*get_text_frame_detail.*before/);
+  assert.match(installer, /accepts either .*font.*font_name.*normalizes them internally/);
+  assert.match(installer, /Do NOT retry a batch merely to rename .*font.*font_name/);
+  assert.match(installer, /do NOT call .*list_fonts.*proactively/i);
+  assert.match(installer, /FONT_NOT_FOUND.*FONT_AMBIGUOUS/);
+  assert.match(installer, /段落居中.*paragraph_alignment/);
+  assert.match(installer, /画板垂直居中.*center_in_artboard/);
+  assert.match(installer, /one extraction attempt with one parser/);
+  assert.match(installer, /20\+ values/);
+  assert.match(installer, /temporary JSON file/);
+  assert.match(installer, /values_json_path/);
+  assert.match(installer, /Never deduplicate unless the user explicitly asks/);
+  assert.match(installer, /cache the result for the rest of the turn/);
+  assert.match(installer, /at most once/);
+  assert.match(installer, /do not invoke pandas after openpyxl, openpyxl after pandas/);
+  assert.match(installer, /second parser only when the first attempt returns a concrete parse error/);
+  assert.match(installer, /pass that path as .*values_json_path/);
+  assert.match(installer, /save directly/);
+  assert.match(installer, /Do NOT follow a clean success with .*get_typography_metrics.*list_text_frames.*get_artboards.*get_document_structure/);
+  assert.match(variants, /mutationStarted/);
+  assert.match(variants, /FAILED_NO_MUTATION/);
+  assert.match(variants, /ROLLBACK_ATTEMPTED/);
+});
+
+
+test("save_document uses a long background budget and routing avoids duplicate save probes", async () => {
+  const save = await source("src/illustrator/core/ie3jp/tools/modify/save-document.ts");
+  const installer = await source("scripts/configure-codex.mjs");
+  assert.match(save, /executeToolJsx/);
+  assert.match(save, /timeoutMs: 180_000/);
+  assert.match(save, /includeTiming: true/);
+  assert.match(save, /activate: false/);
+  assert.doesNotMatch(save, /executeJsx\(jsxCode, params\)/);
+  assert.match(installer, /perform at most one intended save operation/);
+  assert.match(installer, /save_document\(mode="save_as"/);
+  assert.match(installer, /Do not do save -> stat -> save_as/);
+  assert.match(installer, /do not immediately retry/);
 });
 
 test("typography stays a two-tool batch Core surface with honest Classic DOM limits", async () => {

@@ -63,6 +63,7 @@ import { register as registerSaveDocument } from './modify/save-document.js';
 import { register as registerOpenDocument } from './modify/open-document.js';
 import { register as registerGroupObjects } from './modify/group-objects.js';
 import { register as registerGroupObjectSets } from './modify/group-object-sets.js';
+import { register as registerGenerateTemplateVariants } from './modify/generate-template-variants.js';
 import { register as registerUngroupObjects } from './modify/ungroup-objects.js';
 import { register as registerDuplicateObjects } from './modify/duplicate-objects.js';
 import { register as registerListFonts } from './read/list-fonts.js';
@@ -149,6 +150,7 @@ export function registerAllTools(server: McpServer): void {
   registerOpenDocument(server);
   registerGroupObjects(server);
   registerGroupObjectSets(server);
+  registerGenerateTemplateVariants(server);
   registerUngroupObjects(server);
   registerDuplicateObjects(server);
   registerListFonts(server);
