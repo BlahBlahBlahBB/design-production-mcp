@@ -1,3 +1,17 @@
+# v0.4.1 发布说明
+
+## Story-wide typography stabilization
+
+- 新增并稳定全文档 Story 模式：`set_typography(all_stories=true)` 与 `get_typography_metrics(all_stories=true)` 直接通过 `doc.stories` / `Story.textRange` 工作，不再为了全文档 Typography 依赖 `doc.textFrames` wrapper 或 PageItem UUID 发现。
+- 保留原有显式 `uuids[]` / TextFrame 路径；两种 target mode 互斥，单对象能力没有被替换。
+- 修复 Illustrator 2026 Stable 30.8.1 中可复现的 TextFrame wrapper `Object is invalid` 问题：Story 文本本身可读写时，不再绕回失效的 TextFrame collection。
+- `get_typography_metrics` 对局部 Character / Paragraph wrapper 读取异常支持 partial degradation，并返回对应 failure metadata，而不是拖垮整个 Story。
+- 修复 Story 没有直接字符串 `contents` 时的读取：显式 fallback 到 `Story.textRange.contents`，避免 `undefined 不是对象`。
+- Codex routing 现在把“当前 AI 文件 / 打开的 Illustrator 文件”等普通自然语言全文档文字请求优先路由到 Story Typography；CSS `#RRGGBB` 颜色会先规范化为 MCP RGB color object。
+- 最终验证：`npm test` 117 / 117 PASS、TypeScript build PASS、`git diff --check` PASS；真实 Illustrator 写入 QA PASS；最终 `get_typography_metrics(all_stories=true)` 只读 QA PASS，正常返回 Story、Han / Latin script runs 与 paragraph alignment。
+
+---
+
 # v0.4.0 发布说明
 
 ## Mixed-script typography + Illustrator 2022–2026 compatibility
