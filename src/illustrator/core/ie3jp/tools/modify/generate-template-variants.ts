@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import * as XLSX from 'xlsx';
 import { executeToolJsx } from '../tool-executor.js';
 import { WRITE_ANNOTATIONS } from './shared.js';
 import { SCRIPT_CLASSIFIER_JSX } from '../typography-script-rules.js';
@@ -26,8 +27,9 @@ const conditionalSizeSchema = z.object({
 });
 
 const bindingSchema = z.object({
-  source_uuid: z.string().describe('UUID of a source TextFrame inside the template artboard. Only this bound text object may be changed.'),
-  values: z.array(z.string()).min(1).max(200).describe('One text value per generated variant, in output order.'),
+  source_uuid: z.string().optional().describe('UUID of a source TextFrame inside the template artboard. If omitted and there is exactly one binding, the tool auto-binds the only editable TextFrame centered on the source artboard.'),
+  values: z.array(z.string()).min(1).max(200).optional().describe('One text value per generated variant, in output order. Omit when data_source is supplied.'),
+  data_column: z.string().optional().describe('Spreadsheet/CSV header to use for this binding when data_source is supplied. Omit for single-binding name lists when a unique name-like column can be auto-detected.'),
   script_rules: z.object({
     han: fontRuleSchema.optional(),
     latin: fontRuleSchema.optional(),
@@ -36,6 +38,104 @@ const bindingSchema = z.object({
   paragraph_alignment: z.enum(['left', 'center', 'right']).optional(),
   center_in_artboard: z.enum(['none', 'horizontal', 'vertical', 'both']).optional().default('none').describe('Recenter this TextFrame after text/typography changes.'),
 });
+
+const dataSourceSchema = z.object({
+  file_path: z.string().min(1),
+  sheet_name: z.string().min(1).optional(),
+  header_row: z.number().int().min(1).optional().default(1),
+  column_name: z.string().min(1).optional().describe('Default column header for bindings that omit data_column.'),
+  column_index: z.number().int().min(0).optional().describe('Zero-based default column index; use only when headers are absent or ambiguous.'),
+  drop_blank_rows: z.boolean().optional().default(true),
+}).refine((value) => !(value.column_name && value.column_index !== undefined), {
+  message: 'Specify column_name or column_index, not both.',
+});
+
+type VariantBindingInput = z.infer<typeof bindingSchema>;
+type VariantDataSourceInput = z.infer<typeof dataSourceSchema>;
+
+function normalizedHeader(value: unknown): string {
+  return String(value ?? '').trim();
+}
+
+function pickColumnIndex(
+  rows: unknown[][],
+  headerRowIndex: number,
+  binding: VariantBindingInput,
+  dataSource: VariantDataSourceInput,
+  bindingCount: number,
+): number {
+  const headers = (rows[headerRowIndex] ?? []).map(normalizedHeader);
+  const requested = binding.data_column ?? dataSource.column_name;
+  if (requested) {
+    const exact = headers.findIndex((header) => header === requested);
+    if (exact >= 0) return exact;
+    const folded = requested.trim().toLowerCase();
+    const insensitive = headers.findIndex((header) => header.toLowerCase() === folded);
+    if (insensitive >= 0) return insensitive;
+    throw new Error(`Spreadsheet column not found: ${requested}. Available headers: ${headers.filter(Boolean).join(', ')}`);
+  }
+  if (dataSource.column_index !== undefined) return dataSource.column_index;
+  if (bindingCount !== 1) {
+    throw new Error('Each binding needs data_column when data_source is used with multiple bindings.');
+  }
+
+  const nameLike = headers
+    .map((header, index) => ({ header, index }))
+    .filter(({ header }) => /^(姓名|名字|名称|name|full\s*name)$/i.test(header));
+  if (nameLike.length === 1) return nameLike[0].index;
+
+  const nonEmptyColumns: number[] = [];
+  const maxColumns = rows.reduce((max, row) => Math.max(max, row.length), 0);
+  for (let ci = 0; ci < maxColumns; ci += 1) {
+    let hasValue = false;
+    for (let ri = headerRowIndex + 1; ri < rows.length; ri += 1) {
+      if (normalizedHeader(rows[ri]?.[ci])) {
+        hasValue = true;
+        break;
+      }
+    }
+    if (hasValue) nonEmptyColumns.push(ci);
+  }
+  if (nonEmptyColumns.length === 1) return nonEmptyColumns[0];
+
+  throw new Error(`Unable to auto-detect one data column. Available headers: ${headers.filter(Boolean).join(', ')}`);
+}
+
+function hydrateBindingsFromDataSource(
+  bindings: VariantBindingInput[],
+  dataSource?: VariantDataSourceInput,
+): VariantBindingInput[] {
+  if (!dataSource) {
+    for (const binding of bindings) {
+      if (!binding.values?.length) throw new Error('Each text binding needs values unless data_source is supplied.');
+    }
+    return bindings;
+  }
+
+  const workbook = XLSX.readFile(dataSource.file_path, { cellDates: false });
+  const sheetName = dataSource.sheet_name ?? workbook.SheetNames[0];
+  if (!sheetName) throw new Error('Spreadsheet has no worksheets.');
+  const sheet = workbook.Sheets[sheetName];
+  if (!sheet) throw new Error(`Spreadsheet sheet not found: ${sheetName}`);
+
+  const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, raw: false, defval: '' });
+  const headerRowIndex = (dataSource.header_row ?? 1) - 1;
+  if (headerRowIndex < 0 || headerRowIndex >= rows.length) throw new Error('header_row is outside the spreadsheet data.');
+
+  return bindings.map((binding) => {
+    if (binding.values?.length) return binding;
+    const columnIndex = pickColumnIndex(rows, headerRowIndex, binding, dataSource, bindings.length);
+    const values: string[] = [];
+    for (let ri = headerRowIndex + 1; ri < rows.length; ri += 1) {
+      const value = normalizedHeader(rows[ri]?.[columnIndex]);
+      if (!value && dataSource.drop_blank_rows !== false) continue;
+      values.push(value);
+    }
+    if (!values.length) throw new Error(`Spreadsheet column ${columnIndex} produced no values.`);
+    if (values.length > 200) throw new Error(`Spreadsheet column produced ${values.length} values; maximum is 200.`);
+    return { ...binding, values };
+  });
+}
 
 const jsxCode = `
 ${SCRIPT_CLASSIFIER_JSX}
@@ -89,6 +189,23 @@ else {
 
   function isTopLevelPageItem(item) {
     try { return item.parent && item.parent.typename === "Layer"; } catch (_) { return false; }
+  }
+
+  function autoResolveSingleTextFrame(rect) {
+    var candidates = [];
+    for (var pi = 0; pi < doc.pageItems.length; pi++) {
+      try {
+        var item = doc.pageItems[pi];
+        if (!item || item.typename !== "TextFrame") continue;
+        if (!centerInsideArtboard(item, rect)) continue;
+        if (item.locked || item.hidden) continue;
+        candidates.push(item);
+      } catch (_) {}
+    }
+    if (candidates.length !== 1) {
+      throw new Error("AUTO_BIND_REQUIRES_ONE_TEXTFRAME: found " + candidates.length + " editable TextFrames on the source artboard");
+    }
+    return candidates[0];
   }
 
   function collectSourceRoots(rect, explicitUuids) {
@@ -307,14 +424,20 @@ else {
     }
 
     for (var b = 0; b < params.text_bindings.length; b++) {
-      var tf = findItemByUUID(params.text_bindings[b].source_uuid);
-      if (!tf) throw new Error("Text binding source UUID not found: " + params.text_bindings[b].source_uuid);
+      var binding = params.text_bindings[b];
+      var tf = null;
+      if (binding.source_uuid) tf = findItemByUUID(binding.source_uuid);
+      else {
+        if (params.text_bindings.length !== 1) throw new Error("source_uuid is required when more than one text binding is supplied");
+        tf = autoResolveSingleTextFrame(sourceRect);
+      }
+      if (!tf) throw new Error("Text binding source UUID not found: " + (binding.source_uuid || "<auto>"));
       if (tf.typename !== "TextFrame") throw new Error("Text binding source UUID must resolve to a TextFrame");
       if (!centerInsideArtboard(tf, sourceRect)) throw new Error("Text binding source is outside the source artboard");
       sourceBindingItems.push(tf);
       sourceOriginalTexts.push(readContents(tf));
       sourceBindingPaths.push(bindingPathToRoot(tf));
-      var scriptRules = params.text_bindings[b].script_rules || {};
+      var scriptRules = binding.script_rules || {};
       resolvedBindingFonts.push({
         han: resolveFontRule(scriptRules.han),
         latin: resolveFontRule(scriptRules.latin)
@@ -482,11 +605,12 @@ else {
 export function register(server: McpServer): void {
   server.registerTool('generate_template_variants', {
     title: 'Generate Template Variants',
-    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. In the same call it can apply per-script fonts, conditional font-size rules, paragraph alignment, and TextFrame-to-artboard centering, so do not follow it with list_fonts, set_typography, list_text_frames, or modify_objects when these binding options can express the requested result. Fonts are preflighted before mutation. The tool preserves unbound template artwork, verifies every bound value, and rolls back created artwork/artboards on failure.',
+    description: 'Generate many artboard variants from one Illustrator template in one background JSX execution. It can parse XLSX/XLS/CSV data directly once via data_source and can auto-bind the only editable TextFrame on a one-binding template, eliminating separate spreadsheet parsing, document-structure reads, text-frame inspection, and artboard probes. Use this for name tags, badges, table cards, certificates, labels, SKU cards, numbered designs, or other one-template-plus-many-data jobs. In the same call it can apply per-script fonts, conditional font-size rules, paragraph alignment, and TextFrame-to-artboard centering, so do not follow it with list_fonts, set_typography, list_text_frames, or modify_objects when these binding options can express the requested result. Fonts are preflighted before mutation. The tool preserves unbound template artwork, verifies every bound value, and rolls back created artwork/artboards on failure.',
     inputSchema: {
       source_artboard_index: z.number().int().min(0).optional().describe('Source template artboard index. Defaults to the active artboard.'),
       source_item_uuids: z.array(z.string()).min(1).optional().describe('Optional exact top-level source artwork UUIDs. Omit to auto-collect top-level artwork centered on the source artboard.'),
       text_bindings: z.array(bindingSchema).min(1).max(20),
+      data_source: dataSourceSchema.optional().describe('Optional XLSX/XLS/CSV data source parsed once inside the MCP process. Use this instead of external spreadsheet skill/Python parsing for template variants.'),
       layout: z.object({
         columns: z.number().int().min(1).max(50).optional().describe('Variants per row. Defaults to ceil(sqrt(count)) to avoid single-row canvas overflow.'),
         gap_mm: z.number().min(0).optional().describe('Default horizontal/vertical artboard gap in millimeters. Defaults to 5 mm.'),
@@ -497,5 +621,11 @@ export function register(server: McpServer): void {
       require_single_source_artboard: z.boolean().optional().default(true).describe('Fail closed unless the source document has exactly one artboard.'),
     },
     annotations: WRITE_ANNOTATIONS,
-  }, async (params) => executeToolJsx(jsxCode, params, { timeoutMs: 180_000, includeTiming: true }));
+  }, async (params) => {
+    const hydrated = {
+      ...params,
+      text_bindings: hydrateBindingsFromDataSource(params.text_bindings, params.data_source),
+    };
+    return executeToolJsx(jsxCode, hydrated, { timeoutMs: 180_000, includeTiming: true });
+  });
 }
