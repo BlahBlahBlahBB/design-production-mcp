@@ -231,6 +231,21 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(variants, /ROLLBACK_ATTEMPTED/);
 });
 
+
+test("save_document uses a long background budget and routing avoids duplicate save probes", async () => {
+  const save = await source("src/illustrator/core/ie3jp/tools/modify/save-document.ts");
+  const installer = await source("scripts/configure-codex.mjs");
+  assert.match(save, /executeToolJsx/);
+  assert.match(save, /timeoutMs: 180_000/);
+  assert.match(save, /includeTiming: true/);
+  assert.match(save, /activate: false/);
+  assert.doesNotMatch(save, /executeJsx\(jsxCode, params\)/);
+  assert.match(installer, /perform at most one intended save operation/);
+  assert.match(installer, /save_document\(mode="save_as"/);
+  assert.match(installer, /Do not do save -> stat -> save_as/);
+  assert.match(installer, /do not immediately retry/);
+});
+
 test("typography stays a two-tool batch Core surface with honest Classic DOM limits", async () => {
   const typography = await source("src/illustrator/core/ie3jp/tools/typography-core.ts");
   const detail = await source("src/illustrator/core/ie3jp/tools/read/get-text-frame-detail.ts");
