@@ -4,7 +4,7 @@
 
 这个项目把多个成熟的 Illustrator 开源能力整合到同一个 MCP 中，并保留 DPM 自己的生产安全能力。Core 默认直接操作当前文档；只有用户明确要求保护 MASTER / 保留原稿 / 使用 Work Copy 时，才启用独立的 Production 安全机制。
 
-当前版本：**v0.4.1**
+当前版本：**v0.4.2**
 发布说明：[RELEASE_NOTES.md](RELEASE_NOTES.md)
 
 <br>
@@ -27,6 +27,8 @@ Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创�
 Stable Illustrator MCP 独立运行，不依赖 Adobe Illustrator Beta。DPM 工具失败时，Agent 必须报告失败与可能的部分修改，不会静默回退到 Adobe 官方 MCP、Beta、Computer Use、浏览器或 UI 自动化，也不会自动 Undo。
 
 从 v0.4.1 起，**全文档 Typography** 可直接走 Story 路径：`set_typography(all_stories=true)` / `get_typography_metrics(all_stories=true)` 不再依赖脆弱的 `doc.textFrames` wrapper 或逐对象 UUID 发现。读取侧会对局部 Character / Paragraph wrapper 异常做 partial degradation，而不是让整个 Story metrics 失败；显式单对象 / UUID TextFrame 路径仍保留。
+
+从 v0.4.2 起，当前/已打开 Illustrator 文档且 MCP 已支持的任务采用 **hard routing**：第一个后端动作必须优先调用 `design-production-illustrator` MCP，不再先用 Computer Use 查看应用、画布、选区、菜单或面板；全文档字体/段落/文字颜色任务直接进入 `set_typography(all_stories=true)`。
 
 主要能力包括：
 
