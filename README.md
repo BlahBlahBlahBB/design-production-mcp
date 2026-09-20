@@ -4,7 +4,7 @@
 
 这个项目把多个成熟的 Illustrator 开源能力整合到同一个 MCP 中，并保留 DPM 自己的生产安全能力。Core 默认直接操作当前文档；只有用户明确要求保护 MASTER / 保留原稿 / 使用 Work Copy 时，才启用独立的 Production 安全机制。
 
-当前版本：**v0.4.0**
+当前版本：**v0.4.1**
 发布说明：[RELEASE_NOTES.md](RELEASE_NOTES.md)
 
 <br>
@@ -25,6 +25,8 @@ Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创�
 多对象工作采用 batch-first：全文档条件式更新优先使用 `find_objects` 的 `set_properties`；已知 UUID 的统一外观使用 `set_appearance`；不同对象属性使用 `modify_objects`；移动、旋转、缩放、重命名也有 batch 工具。只有用户要求实际外观确认时，才用一次 `get_visual_appearance` 读取真实 DOM 外观（TextFrame 读取真实 character attributes，混合文字会明确标记）。`modify_object` 保留为单对象兼容接口。
 
 Stable Illustrator MCP 独立运行，不依赖 Adobe Illustrator Beta。DPM 工具失败时，Agent 必须报告失败与可能的部分修改，不会静默回退到 Adobe 官方 MCP、Beta、Computer Use、浏览器或 UI 自动化，也不会自动 Undo。
+
+从 v0.4.1 起，**全文档 Typography** 可直接走 Story 路径：`set_typography(all_stories=true)` / `get_typography_metrics(all_stories=true)` 不再依赖脆弱的 `doc.textFrames` wrapper 或逐对象 UUID 发现。读取侧会对局部 Character / Paragraph wrapper 异常做 partial degradation，而不是让整个 Story metrics 失败；显式单对象 / UUID TextFrame 路径仍保留。
 
 主要能力包括：
 
@@ -164,7 +166,7 @@ https://github.com/BlahBlahBlahBB/design-production-mcp
    - Codex MCP 配置是否成功
    - 是否需要我采取额外操作
 10. 如果全部成功，明确告诉我：
-   “请完全退出并重新打开 Codex，然后打开本机安装的 Adobe Illustrator Stable，新建会话并让 Codex 执行一次最小的只读文档操作。”
+   “请完全退出并重新打开承载 Codex 的 ChatGPT / Codex 桌面应用，然后打开本机安装的 Adobe Illustrator Stable，新建会话并让 Codex 执行一次最小的只读文档操作。”
 ```
 
 <br>
@@ -229,8 +231,8 @@ chmod +x install.command uninstall.command
 
 安装完成后：
 
-1. 完全退出 Codex
-2. 重新打开 Codex
+1. 完全退出承载 Codex 的 ChatGPT / Codex 桌面应用
+2. 重新打开该应用
 3. 打开一个受支持范围内的 **Adobe Illustrator Stable**（2026 Stable 30.8.1 是当前 maintainer 实测版本）
 4. 新建一个 Codex 会话
 5. 发送下面这段：
@@ -380,10 +382,12 @@ create_work_copy
 - Fit Artboard：通过
 - Gradient：通过
 - Export：通过
+- Story 全文档 Typography 写入：通过（混合 Han / Latin 字体、颜色、段落格式）
+- `get_typography_metrics(all_stories=true)`：通过（Story 数据、script_runs、paragraph alignment 正常返回；不再因 `Story.contents` / 局部 wrapper 异常让整条读取失败）
 
 项目测试状态：
 
-- `npm test`：**109 / 109 通过**
+- `npm test`：**117 / 117 通过**
 - MASTER / Work Copy safety regression：包含于 automated suite
 - TypeScript build：通过
 - `npm audit --omit=dev`：**0 个已报告漏洞**
