@@ -181,6 +181,11 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(installer, /generate_template_variants/);
   assert.match(installer, /Do not loop/);
   assert.match(installer, /multi-row grid by default/);
+  assert.match(installer, /spreadsheet\/CSV is only a data source/);
+  assert.match(installer, /extract the required column\(s\) once/);
+  assert.match(variants, /mutationStarted/);
+  assert.match(variants, /FAILED_NO_MUTATION/);
+  assert.match(variants, /ROLLBACK_ATTEMPTED/);
 });
 
 test("typography stays a two-tool batch Core surface with honest Classic DOM limits", async () => {
