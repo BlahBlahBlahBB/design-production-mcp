@@ -32,6 +32,23 @@ else {
     var coordSystem = params.coordinate_system || "artboard-web";
     var abRect = coordSystem === "artboard-web" ? getActiveArtboardRect() : null;
     var results = [], failed = [], prepared = [], preflightFailures = [];
+    var timingStart = (new Date()).getTime();
+    var preflightStart = timingStart;
+    var preflightMs = 0, placementMs = 0, clippingMs = 0, labelMs = 0, verificationMs = 0;
+
+    function timingSummary() {
+      var elapsed = (new Date()).getTime() - timingStart;
+      var accounted = preflightMs + placementMs + clippingMs + labelMs + verificationMs;
+      return {
+        elapsed_ms: elapsed,
+        preflight_ms: preflightMs,
+        placement_ms: placementMs,
+        clipping_ms: clippingMs,
+        label_ms: labelMs,
+        verification_ms: verificationMs,
+        unaccounted_ms: Math.max(0, elapsed - accounted)
+      };
+    }
 
     function locateEmbeddedByName(tag) {
       for (var ri = 0; ri < doc.rasterItems.length; ri++) {
@@ -80,6 +97,8 @@ else {
       }
     }
 
+    preflightMs = (new Date()).getTime() - preflightStart;
+
     if (preflightFailures.length) {
       writeResultFile(RESULT_PATH, {
         success:false,
@@ -88,12 +107,14 @@ else {
         success_count:0,
         fail_count:preflightFailures.length,
         failed_objects:preflightFailures,
-        results:[]
+        results:[],
+        timing:timingSummary()
       });
     } else {
       for (var i = 0; i < prepared.length; i++) {
         var p = prepared[i], op = p.op, placed = null, resultItem = null, group = null, labelChanged = false;
         try {
+          var placementStart = (new Date()).getTime();
           var targetLayer = resolveTargetLayer(doc, op.layer_name);
           placed = targetLayer.placedItems.add();
           try { placed.file = p.imgFile; }
@@ -138,9 +159,11 @@ else {
           var bounds = resultItem.geometricBounds;
           var widthPt = Math.abs(bounds[2] - bounds[0]);
           var heightPt = Math.abs(bounds[3] - bounds[1]);
+          placementMs += (new Date()).getTime() - placementStart;
           var outputItem = resultItem, groupUuid = null;
 
           if (p.clipPath) {
+            var clippingStart = (new Date()).getTime();
             // Illustrator clipping groups require the mask at PLACEATBEGINNING
             // and the mask PathItem itself marked as clipping. Duplicate first so
             // a failed operation can remove only new artwork and leave the template intact.
@@ -153,18 +176,25 @@ else {
             if (op.group_name) group.name = op.group_name;
             outputItem = group;
             groupUuid = ensureUUID(group);
+            clippingMs += (new Date()).getTime() - clippingStart;
           }
 
           if (p.labelTarget) {
+            var labelStart = (new Date()).getTime();
             p.labelTarget.contents = op.label_text.split(String.fromCharCode(10)).join(String.fromCharCode(13));
             labelChanged = true;
             if (readableContents(p.labelTarget) !== op.label_text.split(String.fromCharCode(10)).join(String.fromCharCode(13))) {
               throw new Error("Label readback mismatch");
             }
+            labelMs += (new Date()).getTime() - labelStart;
           }
 
           // Commit the mask replacement only after image, clipping, and optional label all succeeded.
           if (p.clipPath) p.clipPath.remove();
+
+          var verificationStart = (new Date()).getTime();
+          var verifiedOutput = verifyItem(outputItem, coordSystem, abRect);
+          verificationMs += (new Date()).getTime() - verificationStart;
 
           results.push({
             index:i,
@@ -176,7 +206,7 @@ else {
             type:op.embed ? "embedded" : "linked",
             widthPt:widthPt,
             heightPt:heightPt,
-            verified:verifyItem(outputItem, coordSystem, abRect)
+            verified:verifiedOutput
           });
         } catch(e) {
           // Per-slot rollback: preserve original template mask and label whenever possible.
@@ -202,7 +232,8 @@ else {
         fail_count: failed.length,
         failed_objects: failed,
         results: results,
-        coordinateSystem: coordSystem
+        coordinateSystem: coordSystem,
+        timing: timingSummary()
       });
     }
   } catch(e) {
@@ -214,11 +245,11 @@ else {
 export function register(server: McpServer): void {
   server.registerTool('place_images', {
     title: 'Place Images',
-    description: 'Batch-place many raster/PDF files in one background JSX execution. Large batches may legitimately take longer than the normal 30/60 second transport budget; this tool waits up to 180 seconds so a completed Illustrator mutation is not misreported as a timeout. Prefer this over repeated place_image calls for folders, grids, templates, QR codes, or other multi-image work. The entire batch is preflighted before mutation. Each placement can size in points or millimeters, center on an existing UUID, create a clipping group from an existing simple PathItem using Illustrator-safe mask ordering, and optionally update a matching TextFrame label in the same operation. Failed placements roll back newly created artwork instead of leaving orphaned images. Results preserve input order.',
+    description: 'Batch-place many raster/PDF files in one background JSX execution. Large batches may legitimately take longer than the normal 30/60 second transport budget; this tool waits up to 180 seconds so a completed Illustrator mutation is not misreported as a timeout. The result includes timing telemetry for total JSX time plus preflight, placement, clipping, label, verification, and transport elapsed milliseconds. Prefer this over repeated place_image calls for folders, grids, templates, QR codes, or other multi-image work. The entire batch is preflighted before mutation. Each placement can size in points or millimeters, center on an existing UUID, create a clipping group from an existing simple PathItem using Illustrator-safe mask ordering, and optionally update a matching TextFrame label in the same operation. Failed placements roll back newly created artwork instead of leaving orphaned images. Results preserve input order.',
     inputSchema: {
       placements: z.array(placementSchema).min(1).max(200),
       coordinate_system: coordinateSystemSchema,
     },
     annotations: WRITE_ANNOTATIONS,
-  }, async (params) => executeToolJsx(jsxCode, params, { resolveCoordinate: true, timeoutMs: 180_000 }));
+  }, async (params) => executeToolJsx(jsxCode, params, { resolveCoordinate: true, timeoutMs: 180_000, includeTiming: true }));
 }
