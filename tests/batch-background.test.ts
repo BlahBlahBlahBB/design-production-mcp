@@ -70,6 +70,8 @@ test("installer routing remains batch-first without backend fallback or automati
   assert.match(installer, /Stable is the default target/);
   assert.match(installer, /HARD ROUTING RULE/);
   assert.match(installer, /FIRST backend action must be/);
+  assert.match(installer, /ILLUSTRATOR OUTPUT DOMINATES COMPANION-FILE DISCOVERY/);
+  assert.match(installer, /Do not run shell commands.*Spreadsheet skills.*Python.*Computer Use before the first MCP call/);
   assert.match(installer, /Do not inspect the application UI first/);
   assert.match(installer, /Do not use Computer Use to check which Illustrator document is open/);
   assert.match(installer, /Do not select all objects or navigate menus as a precursor/);
@@ -165,6 +167,9 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   const variants = await source("src/illustrator/core/ie3jp/tools/modify/generate-template-variants.ts");
   assert.match(variants, /text_bindings/);
   assert.match(variants, /data_source/);
+  assert.match(variants, /auto_discover_sibling/);
+  assert.match(variants, /getFiles\(isSpreadsheetFile\)/);
+  assert.match(variants, /DATA_SOURCE_AMBIGUOUS/);
   assert.match(variants, /XLSX\.readFile/);
   assert.match(variants, /sheet_to_json/);
   assert.match(variants, /copyDataSourceJsx/);
@@ -197,8 +202,10 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(installer, /one-template-plus-many-data jobs/);
   assert.match(installer, /generate_template_variants/);
   assert.match(installer, /data_source/);
-  assert.match(installer, /do not run shell .*Spreadsheet editing skills.*Python\/openpyxl/);
+  assert.match(installer, /do not run .*pwd.*rg.*find.*ls.*file.*Spreadsheet editing skills.*Python\/openpyxl.*Computer Use/);
   assert.match(installer, /tool itself retries unreadable source paths/);
+  assert.match(installer, /omit .*data_source\.file_path/);
+  assert.match(installer, /auto-discovers.*sibling spreadsheet/);
   assert.match(installer, /omit .*source_uuid.*auto-bind/);
   assert.match(installer, /do not call .*get_document_structure.*get_document_info.*get_text_frame_detail.*list_text_frames.*get_artboards.*first/i);
   assert.match(installer, /Do not loop/);
