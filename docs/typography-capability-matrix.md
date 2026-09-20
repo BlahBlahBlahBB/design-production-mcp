@@ -1,6 +1,6 @@
 # Typography capability matrix
 
-Scope: `get_typography_metrics` and `set_typography` in Illustrator Core. The
+Scope: `get_typography_metrics` and `set_typography` in Illustrator Core. Both tools support explicit `uuids[]` TextFrame targets; v0.4.1 also supports mutually exclusive `all_stories=true` for document-wide Story typography. The
 official MCP capture used for comparison is local-only:
 `research/adobe-official-mcp-live/output/official-tools.json` (`GetTypographyMetrics`).
 It exposes **READ**, not a typography write operation. “Stable 30.8.1 QA” is
@@ -8,8 +8,8 @@ deliberately a factual test status, not a promise inferred from an API name.
 
 | UI / property name | Official READ | Official WRITE | IE3JP | Alexander | Creold | Illustrator DOM | Our READ | Our WRITE | Stable 30.8.1 QA | Impl source | Limits |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Text content / length / overflow | Yes | No | text frame read | — | — | `contents`, `overflows` | Yes | No | Pending | Official-compatible glue | `overflows` is unavailable for some text kinds |
-| Font family / style / missing | Yes | No | character run read | — | — | `textFont` | Yes | Yes | Pending | IE3JP detail + DOM glue | Missing font returns `FONT_DEPENDENT` on write |
+| Text content / length / overflow | Yes | No | text frame read | — | — | `contents`, `overflows` | Yes | No | Pass (Story read) | Official-compatible glue | `overflows` is unavailable for some text kinds |
+| Font family / style / missing | Yes | No | character run read | — | — | `textFont` | Yes | Yes | Pass (Story read/write) | IE3JP detail + DOM glue | Missing font returns `FONT_DEPENDENT` on write |
 | Font embeddable | Yes | No | — | — | — | Not exposed | `null` + label | No | N/A | Official-compatible glue | `NOT_EXPOSED_BY_CLASSIC_DOM`; never guessed |
 | Font caps | Yes | No | — | — | — | `capitalization` | Yes | Yes | Pending | DOM glue | Enum availability is font/version dependent |
 | Font size | Yes | No | batch font fields | — | — | `size` | Yes | Yes | Pending | IE3JP reuse + DOM glue | Positive points only |
@@ -26,13 +26,13 @@ deliberately a factual test status, not a promise inferred from an API name.
 | Language | No | No | — | — | — | `language` | Extra | Yes | Pending | DOM glue | Installed language support can vary |
 | Tsume / aki left / aki right | No | No | character run read | — | — | `Tsume`, `akiLeft`, `akiRight` | Extra | Yes | Pending | IE3JP reuse + DOM glue | CJK typography; `VERSION_DEPENDENT` in UI coverage |
 | Proportional metrics | No | No | character run read | — | — | `proportionalMetrics` | Extra | Yes | Pending | IE3JP reuse + DOM glue | Font-dependent behavior |
-| Fill / stroke / stroke weight | No | No | text appearance helpers | — | — | character color/weight attributes | Extra | Yes | Pending | IE3JP shared helpers + DOM glue | Use `set_appearance` for non-text artwork |
+| Fill / stroke / stroke weight | No | No | text appearance helpers | — | — | character color/weight attributes | Extra | Yes | Pass (Story write) | IE3JP shared helpers + DOM glue | Use `set_appearance` for non-text artwork |
 | Overprint fill / stroke | No | No | — | — | — | `overprintFill`, `overprintStroke` | Extra | Yes | Pending | DOM glue | Output/overprint support is version dependent |
 | Ligature / discretionary ligature | No | No | — | — | — | `ligature`, `discretionaryLigature` | Extra | Conditional | Pending | DOM glue | `FONT_DEPENDENT` when unavailable |
 | Contextual ligature / fractions / ordinals | No | No | — | — | — | classic OpenType attrs | Extra | Conditional | Pending | DOM glue | `FONT_DEPENDENT` when unavailable |
 | Swash / titling / connection forms | No | No | — | — | — | classic OpenType attrs | Extra | Conditional | Pending | DOM glue | `FONT_DEPENDENT` when unavailable |
 | Stylistic alternates / alternate glyphs / figure style | No | No | — | — | — | classic OpenType attrs | Extra | Conditional | Pending | DOM glue | `FONT_DEPENDENT` when unavailable |
-| Paragraph alignment | Yes | No | paragraph read | — | — | `justification` | Yes | Yes | Pending | IE3JP detail + DOM glue | left/center/right and all four justify modes |
+| Paragraph alignment | Yes | No | paragraph read | — | — | `justification` | Yes | Yes | Pass (Story read/write) | IE3JP detail + DOM glue | left/center/right and all four justify modes |
 | First line / left / right indent | No | No | paragraph read | — | — | paragraph indent attrs | Extra | Yes | Pending | IE3JP reuse + DOM glue | points |
 | Space before / after | No | No | paragraph read | — | — | `spaceBefore`, `spaceAfter` | Extra | Yes | Pending | IE3JP reuse + DOM glue | points |
 | Hyphenation / capitalized words / limit | No | No | hyphenation read | — | — | paragraph hyphenation attrs | Extra | Yes | Pending | DOM glue | Settings may be locale dependent |
@@ -45,6 +45,12 @@ deliberately a factual test status, not a promise inferred from an API name.
 | Paragraph auto leading amount | No | No | — | — | — | `autoLeadingAmount` | Extra | Yes | Pending | DOM glue | Paragraph-level percentage; not character `autoLeading` |
 | Paragraph leading type | Yes | No | — | — | — | `leadingType` | Yes | Yes | Pending | DOM glue | bottom-to-bottom / top-to-top enum |
 | Bunri kinshi / kinsoku / kurikaeshi / mojikumi | No | No | — | — | — | CJK paragraph attrs | Extra | Conditional | Pending | DOM glue | `VERSION_DEPENDENT` or `NOT_EXPOSED_BY_CLASSIC_DOM` if absent |
+
+## v0.4.1 document-wide Story QA
+
+Adobe Illustrator 2026 Stable 30.8.1 real-machine QA confirms the document-wide Story path can apply mixed Han / Latin typography and return Story-level metrics without relying on `doc.textFrames`. The final read-only QA returned Story data, 44 Han script runs, 32 Latin script runs, installed font metadata, and paragraph alignment successfully.
+
+The reader treats local Character / Paragraph wrapper failures as partial metrics when possible. Story text content falls back to `Story.textRange.contents` when a direct `Story.contents` value is unavailable, preventing the previous whole-Story `undefined 不是对象` failure.
 
 ## Result labels and panel coverage
 
