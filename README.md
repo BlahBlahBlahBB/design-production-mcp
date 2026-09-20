@@ -11,111 +11,6 @@
 
 <br>
 
-## ⭕️ 目前能做什么
-
-当前公开能力分为两部分：
-
-- **Illustrator Core：86 个公开工具**（构建时从注册表自动计数）
-- **DPM Production：3 个公开生产安全工具**
-
-<br>
-
-### 🔻 Illustrator Core
-
-Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创建 Work Copy。普通 DOM 读写默认后台执行，不会主动把 Illustrator 拉到前台；只有 Expand、Pathfinder 等 Action / 菜单路径才会激活 Illustrator。Core 不会自行创建 Work Copy，也不会自行保存当前文档。
-
-多对象工作采用 batch-first：全文档条件式更新优先使用 `find_objects` 的 `set_properties`；已知 UUID 的统一外观使用 `set_appearance`；不同对象属性使用 `modify_objects`；移动、旋转、缩放、重命名也有 batch 工具。只有用户要求实际外观确认时，才用一次 `get_visual_appearance` 读取真实 DOM 外观（TextFrame 读取真实 character attributes，混合文字会明确标记）。`modify_object` 保留为单对象兼容接口。
-
-Stable Illustrator MCP 独立运行，不依赖 Adobe Illustrator Beta。DPM 工具失败时，Agent 必须报告失败与可能的部分修改，不会静默回退到 Adobe 官方 MCP、Beta、Computer Use、浏览器或 UI 自动化，也不会自动 Undo。
-
-从 v0.4.1 起，**全文档 Typography** 可直接走 Story 路径：`set_typography(all_stories=true)` / `get_typography_metrics(all_stories=true)` 不再依赖脆弱的 `doc.textFrames` wrapper 或逐对象 UUID 发现。读取侧会对局部 Character / Paragraph wrapper 异常做 partial degradation，而不是让整个 Story metrics 失败；显式单对象 / UUID TextFrame 路径仍保留。
-
-从 v0.4.2 起，当前/已打开 Illustrator 文档且 MCP 已支持的任务采用 **hard routing**：第一个后端动作必须优先调用 `design-production-illustrator` MCP，不再先用 Computer Use 查看应用、画布、选区、菜单或面板；全文档字体/段落/文字颜色任务直接进入 `set_typography(all_stories=true)`。
-
-从 v0.4.3 起，重复图片模板任务采用真正的 **batch-first** 路径：新增 `place_images` 与 `group_object_sets`，可一次处理多张图片、毫米尺寸、居中、剪切蒙版和对应文字标签；大批次使用独立 180 秒 transport budget，并返回阶段 timing telemetry。真实 34 张二维码模板 QA 为 34/34 成功，`place_images` 核心 JSX 约 2.4 秒、含 transport 约 2.6 秒。
-
-从 v0.4.4 起，新增通用 **template variants** 批处理：`generate_template_variants` 可把一个 Illustrator 模板与多行数据一次生成多个画板版本，并在同次调用中处理 Han / Latin 字体、条件字号、段落对齐和画板居中。大列表可通过 `values_json_path` 精确交接，避免模型重新抄写几十个值导致漏项/重复；工具会回报输入数量、SHA-256 与真实重复值。`save_document` 同步使用长保存预算与 timing telemetry，长文档不再因 30 秒保存误判进入重复 save/stat 修复链。
-
-主要能力包括：
-
-- 文档：新建、打开、关闭、保存、读取文档信息和结构、Undo、切换 Illustrator 目标版本
-- 绘图：矩形、椭圆、直线、自定义路径、普通文字、路径文字
-- 对象：查找、选择、删除、复制、单组 / 批量 `group_object_sets`、解组、对齐、修改属性、层级顺序、移动图层、坐标转换
-- 文字：批量 Typography metrics / direct formatting、文字框读取与创建、样式、格式化替换、转轮廓、字体列表、文字一致性检查
-- 颜色与样式：颜色、Swatches、Gradient、Graphic Style、颜色替换、Design Tokens、Style Guide
-- 图片与 SVG：单图 Place、批量 `place_images`、Relink、Embed、读取图片信息、可编辑 SVG、Image Trace
-- 图层与画板：图层管理、画板管理、Fit Artboard to Selection、Duplicate Active Artboard
-- Pathfinder：Unite、Minus Front、Minus Back、Intersect、Exclude、Divide、Trim、Merge、Crop、Outline
-- Expand：支持 Object / Fill / Stroke / Gradient 展开项
-- Symbols / Datasets
-- 输出与印前：PNG / JPEG / SVG、PDF、Preflight、Overprint、Separation、Crop Marks
-
-完整的 Core 工具清单见：
-
-[docs/illustrator-core-tools.md](docs/illustrator-core-tools.md)
-
-<br>
-
-### 🔻 DPM Production
-
-DPM Production 仅用于用户**明确要求**的 **MASTER → Work Copy → 修改 / 保存** 流程。Agent 绝不根据文件名、内容、大小、已保存状态或“看起来重要”自行启用它。
-
-目前公开 3 个工具：
-
-- `create_work_copy`：从已保存的 MASTER 创建工作副本并建立受控会话
-- `reconcile_work_copy`：当大型 AI 文件打开较慢时，重新确认工作副本身份
-- `dpm_save_work_copy`：只允许保存已授权的工作副本，拒绝把 MASTER 当作目标保存
-
-内部还保留了 `SafeMutationContext`、`ObjectLocator`、Managed Session、Timeout Quarantine、模板基础设施、QR、CSV 和 Excel 解析等能力，为后续批量生产工作流预留。
-
-详细说明见：
-
-[docs/dpm-production-tools.md](docs/dpm-production-tools.md)
-
-<br>
-
-## ⭕️ 适合怎么用
-
-这个 MCP 的目标不是让你手动记住 85 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
-
-例如可以直接说：
-
-> 读取当前 Illustrator 文档，找出所有文字框，把姓名改成张三，把部门改成设计部，然后导出 PDF。
-
-或者：
-
-> 找到当前链接图片并替换成指定的新图片，保持位置和尺寸不变。
-
-需要保护母版时，请明确要求：
-
-> 不允许修改 MASTER，先创建 Work Copy，再完成替换和导出。
-
-<br>
-
-## ⭕️ Illustrator 兼容范围
-
-- **Supported target：Adobe Illustrator 2022–2026**（单一 Stable 实例）
-- **Maintainer verified：Adobe Illustrator 2026 Stable 30.8.1**
-- Illustrator 2022–2025 属于 **SUPPORTED_UNVERIFIED**，尚未完成 maintainer 实机测试；这不是“已验证通过”的声明。
-
-可在目标机器运行 `./compatibility-check.command` 或 `npm run compatibility:check` 生成本地安全自检报告。详细状态、测试范围与多版本路由限制见[兼容性说明](docs/illustrator-version-compatibility.md)。
-
-当前 maintainer 实机环境：
-
-- **macOS**
-- **Node.js 20 或更高版本**
-- npm
-- **Adobe Illustrator 2026 Stable 30.8.1**
-- 支持本地 stdio MCP 的 Codex
-
-说明：
-
-- **不需要 Adobe Illustrator Beta**，也不会静默回退到 Beta
-- 2022–2025 仍为未实测目标；请提交本机 compatibility report 供后续社区验证
-- 多个 Stable 版本同时运行时，macOS AppleEvent 与 Windows COM 均不能保证精确地区分实例
-
-<br>
-
 # ⚙️ 安装
 
 推荐优先使用 **方式 A：直接把安装指令发给 Agent**。如果你习惯自己用终端，也可以使用方式 B。
@@ -337,6 +232,112 @@ node -p 'process.execPath'
 ```
 
 不会删除 Illustrator 文件、项目源码、其他 MCP 或其他 Codex 配置。卸载前同样会备份 Codex 配置。
+
+<br>
+
+
+## ⭕️ 目前能做什么
+
+当前公开能力分为两部分：
+
+- **Illustrator Core：86 个公开工具**（构建时从注册表自动计数）
+- **DPM Production：3 个公开生产安全工具**
+
+<br>
+
+### 🔻 Illustrator Core
+
+Core 工具直接操作 **Illustrator 当前打开的文档**，不要求先创建 Work Copy。普通 DOM 读写默认后台执行，不会主动把 Illustrator 拉到前台；只有 Expand、Pathfinder 等 Action / 菜单路径才会激活 Illustrator。Core 不会自行创建 Work Copy，也不会自行保存当前文档。
+
+多对象工作采用 batch-first：全文档条件式更新优先使用 `find_objects` 的 `set_properties`；已知 UUID 的统一外观使用 `set_appearance`；不同对象属性使用 `modify_objects`；移动、旋转、缩放、重命名也有 batch 工具。只有用户要求实际外观确认时，才用一次 `get_visual_appearance` 读取真实 DOM 外观（TextFrame 读取真实 character attributes，混合文字会明确标记）。`modify_object` 保留为单对象兼容接口。
+
+Stable Illustrator MCP 独立运行，不依赖 Adobe Illustrator Beta。DPM 工具失败时，Agent 必须报告失败与可能的部分修改，不会静默回退到 Adobe 官方 MCP、Beta、Computer Use、浏览器或 UI 自动化，也不会自动 Undo。
+
+从 v0.4.1 起，**全文档 Typography** 可直接走 Story 路径：`set_typography(all_stories=true)` / `get_typography_metrics(all_stories=true)` 不再依赖脆弱的 `doc.textFrames` wrapper 或逐对象 UUID 发现。读取侧会对局部 Character / Paragraph wrapper 异常做 partial degradation，而不是让整个 Story metrics 失败；显式单对象 / UUID TextFrame 路径仍保留。
+
+从 v0.4.2 起，当前/已打开 Illustrator 文档且 MCP 已支持的任务采用 **hard routing**：第一个后端动作必须优先调用 `design-production-illustrator` MCP，不再先用 Computer Use 查看应用、画布、选区、菜单或面板；全文档字体/段落/文字颜色任务直接进入 `set_typography(all_stories=true)`。
+
+从 v0.4.3 起，重复图片模板任务采用真正的 **batch-first** 路径：新增 `place_images` 与 `group_object_sets`，可一次处理多张图片、毫米尺寸、居中、剪切蒙版和对应文字标签；大批次使用独立 180 秒 transport budget，并返回阶段 timing telemetry。真实 34 张二维码模板 QA 为 34/34 成功，`place_images` 核心 JSX 约 2.4 秒、含 transport 约 2.6 秒。
+
+从 v0.4.4 起，新增通用 **template variants** 批处理：`generate_template_variants` 可把一个 Illustrator 模板与多行数据一次生成多个画板版本，并在同次调用中处理 Han / Latin 字体、条件字号、段落对齐和画板居中。大列表可通过 `values_json_path` 精确交接，避免模型重新抄写几十个值导致漏项/重复；工具会回报输入数量、SHA-256 与真实重复值。`save_document` 同步使用长保存预算与 timing telemetry，长文档不再因 30 秒保存误判进入重复 save/stat 修复链。
+
+主要能力包括：
+
+- 文档：新建、打开、关闭、保存、读取文档信息和结构、Undo、切换 Illustrator 目标版本
+- 绘图：矩形、椭圆、直线、自定义路径、普通文字、路径文字
+- 对象：查找、选择、删除、复制、单组 / 批量 `group_object_sets`、解组、对齐、修改属性、层级顺序、移动图层、坐标转换
+- 文字：批量 Typography metrics / direct formatting、文字框读取与创建、样式、格式化替换、转轮廓、字体列表、文字一致性检查
+- 颜色与样式：颜色、Swatches、Gradient、Graphic Style、颜色替换、Design Tokens、Style Guide
+- 图片与 SVG：单图 Place、批量 `place_images`、Relink、Embed、读取图片信息、可编辑 SVG、Image Trace
+- 图层与画板：图层管理、画板管理、Fit Artboard to Selection、Duplicate Active Artboard
+- Pathfinder：Unite、Minus Front、Minus Back、Intersect、Exclude、Divide、Trim、Merge、Crop、Outline
+- Expand：支持 Object / Fill / Stroke / Gradient 展开项
+- Symbols / Datasets
+- 输出与印前：PNG / JPEG / SVG、PDF、Preflight、Overprint、Separation、Crop Marks
+
+完整的 Core 工具清单见：
+
+[docs/illustrator-core-tools.md](docs/illustrator-core-tools.md)
+
+<br>
+
+### 🔻 DPM Production
+
+DPM Production 仅用于用户**明确要求**的 **MASTER → Work Copy → 修改 / 保存** 流程。Agent 绝不根据文件名、内容、大小、已保存状态或“看起来重要”自行启用它。
+
+目前公开 3 个工具：
+
+- `create_work_copy`：从已保存的 MASTER 创建工作副本并建立受控会话
+- `reconcile_work_copy`：当大型 AI 文件打开较慢时，重新确认工作副本身份
+- `dpm_save_work_copy`：只允许保存已授权的工作副本，拒绝把 MASTER 当作目标保存
+
+内部还保留了 `SafeMutationContext`、`ObjectLocator`、Managed Session、Timeout Quarantine、模板基础设施、QR、CSV 和 Excel 解析等能力，为后续批量生产工作流预留。
+
+详细说明见：
+
+[docs/dpm-production-tools.md](docs/dpm-production-tools.md)
+
+<br>
+
+## ⭕️ 适合怎么用
+
+这个 MCP 的目标不是让你手动记住 86 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
+
+例如可以直接说：
+
+> 读取当前 Illustrator 文档，找出所有文字框，把姓名改成张三，把部门改成设计部，然后导出 PDF。
+
+或者：
+
+> 找到当前链接图片并替换成指定的新图片，保持位置和尺寸不变。
+
+需要保护母版时，请明确要求：
+
+> 不允许修改 MASTER，先创建 Work Copy，再完成替换和导出。
+
+<br>
+
+## ⭕️ Illustrator 兼容范围
+
+- **Supported target：Adobe Illustrator 2022–2026**（单一 Stable 实例）
+- **Maintainer verified：Adobe Illustrator 2026 Stable 30.8.1**
+- Illustrator 2022–2025 属于 **SUPPORTED_UNVERIFIED**，尚未完成 maintainer 实机测试；这不是“已验证通过”的声明。
+
+可在目标机器运行 `./compatibility-check.command` 或 `npm run compatibility:check` 生成本地安全自检报告。详细状态、测试范围与多版本路由限制见[兼容性说明](docs/illustrator-version-compatibility.md)。
+
+当前 maintainer 实机环境：
+
+- **macOS**
+- **Node.js 20 或更高版本**
+- npm
+- **Adobe Illustrator 2026 Stable 30.8.1**
+- 支持本地 stdio MCP 的 Codex
+
+说明：
+
+- **不需要 Adobe Illustrator Beta**，也不会静默回退到 Beta
+- 2022–2025 仍为未实测目标；请提交本机 compatibility report 供后续社区验证
+- 多个 Stable 版本同时运行时，macOS AppleEvent 与 Windows COM 均不能保证精确地区分实例
 
 <br>
 
