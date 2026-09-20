@@ -57,7 +57,8 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `get_symbols` | 读取 Symbols。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_text_frame_detail` | 获取指定文字框的详细信息。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `get_typography_metrics` | 批量读取官方语义兼容的文字度量；支持 `all_stories=true` 的全文档 Story 读取与局部 wrapper 容错。 | IE3JP + DPM | IE3JP JSX / Classic DOM | 是 | 否 | 通过（Story 全文档） |
-| `group_objects` | 将选中对象成组。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
+| `group_objects` | 将一组对象成组。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
+| `group_object_sets` | 一次创建多组独立 group / clipping group；显式 `clip_path_uuid`。 | IE3JP + DPM | IE3JP JSX | 是 | 否 | 通过（批量模板） |
 | `illustrator_status` | 读取本地 Illustrator Bridge 状态。 | DPM | DPM bridge | 是 | 否 | 待验证 |
 | `image_trace_selection` | 对当前选区执行图像描摹并展开。 | Creold | Creold DOM | 是 | 否 | 待验证 |
 | `import_svg_as_editable` | 导入可编辑 SVG。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
@@ -76,7 +77,8 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `open_document` | 打开 Illustrator 文档。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `pathfinder_objects` | 执行固定的 Pathfinder 模式。 | Alexander | Alexander Action | 是 | 否 | 通过 |
 | `place_color_chips` | 在文档中放置色块。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
-| `place_image` | 放置链接或嵌入图片。 | IE3JP | IE3JP JSX | 是 | 否 | 通过（链接 / Embed） |
+| `place_image` | 放置单个链接或嵌入图片。 | IE3JP | IE3JP JSX | 是 | 否 | 通过（链接 / Embed） |
+| `place_images` | 一次批量放置图片；支持 mm 尺寸、居中、剪切蒙版、标签更新、preflight / rollback / timing。 | IE3JP + DPM | IE3JP JSX | 是 | 否 | 通过（34 张二维码模板） |
 | `place_style_guide` | 在文档中生成 / 放置 Style Guide。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `place_symbol` | 放置 Symbol。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `preflight_check` | 执行印前检查。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
@@ -93,7 +95,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `undo` | 撤销上一次 Illustrator 操作。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `ungroup_objects` | 解组选中的群组。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 
-Illustrator Core 公开工具总数：**83**。
+Illustrator Core 公开工具总数：**85**。
 
 来源统计以当前注册表为准：IE3JP JSX 是主要直接 Core 路径；
 Alexander Ladygin 提供固定 Action 路径；Creold / Sergey Osokin 提供少量
@@ -137,3 +139,8 @@ expand_objects
 ## v0.4.1 Story Typography 验证说明
 
 全文档 Typography 默认可使用 Story target mode，不需要先调用 `list_text_frames` / `find_objects` 获取 UUID。Illustrator 2026 Stable 30.8.1 真机已验证 Story 写入与 `get_typography_metrics(all_stories=true)` 读取；显式 UUID/TextFrame target mode 继续保留，用于明确的单对象操作。
+
+
+## v0.4.3 Batch Image Template QA
+
+Illustrator 2026 Stable 30.8.1 真机验证：同一模板中 34 张二维码一次 `place_images` 完成 30.5 mm 尺寸、按槽位居中、剪切蒙版和对应文件名标签写入，34/34 成功。核心 JSX timing 为 2413 ms，transport elapsed 为 2620 ms。批量工具使用 whole-batch preflight、Illustrator-safe clipping order 和单槽 rollback；大批次专用 transport budget 为 180 秒。
