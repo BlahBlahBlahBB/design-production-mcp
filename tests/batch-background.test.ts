@@ -229,7 +229,7 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(installer, /temporary JSON file/);
   assert.match(installer, /values_json_path/);
   assert.match(installer, /Never deduplicate unless the user explicitly asks/);
-  assert.match(installer, /cache the resulting value array/);
+  assert.match(installer, /cache the result for the rest of the turn/);
   assert.match(installer, /at most once/);
   assert.match(installer, /do not invoke pandas after openpyxl, openpyxl after pandas/);
   assert.match(installer, /second parser only when the first attempt returns a concrete parse error/);
