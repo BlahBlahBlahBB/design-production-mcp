@@ -167,6 +167,12 @@ test("data-driven templates use one rollback-safe variant generator", async () =
 
   const variants = await source("src/illustrator/core/ie3jp/tools/modify/generate-template-variants.ts");
   assert.match(variants, /text_bindings/);
+  assert.match(variants, /values_json_path/);
+  assert.match(variants, /VALUES_JSON_INVALID/);
+  assert.match(variants, /VALUES_JSON_TOO_LARGE/);
+  assert.match(variants, /_dpm_value_sources/);
+  assert.match(variants, /duplicate_values/);
+  assert.match(variants, /sha256/);
   assert.match(variants, /source_uuid: z\.string\(\)\.optional/);
   assert.match(variants, /AUTO_BIND_REQUIRES_ONE_TEXTFRAME/);
   assert.match(variants, /autoResolveSingleTextFrame/);
@@ -219,6 +225,10 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(installer, /段落居中.*paragraph_alignment/);
   assert.match(installer, /画板垂直居中.*center_in_artboard/);
   assert.match(installer, /one extraction attempt with one parser/);
+  assert.match(installer, /20\+ values/);
+  assert.match(installer, /temporary JSON file/);
+  assert.match(installer, /values_json_path/);
+  assert.match(installer, /Never deduplicate unless the user explicitly asks/);
   assert.match(installer, /cache the resulting value array/);
   assert.match(installer, /at most once/);
   assert.match(installer, /do not invoke pandas after openpyxl, openpyxl after pandas/);
