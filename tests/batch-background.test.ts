@@ -21,6 +21,8 @@ test("ordinary Core writes and heavy execution default to background", async () 
   const modify = await source("src/illustrator/core/ie3jp/tools/modify/modify-object.ts");
   assert.match(runner, /options\?\.activate \?\? false/);
   assert.match(executor, /executeJsxHeavy\(jsxCode, resolvedParams, \{ activate: options\?\.activate \?\? false \}\)/);
+  assert.match(executor, /timeoutMs/);
+  assert.match(executor, /timeout: options\.timeoutMs/);
   assert.doesNotMatch(modify, /activate:\s*true/);
 });
 
@@ -131,6 +133,7 @@ test("repeated image/template work has public batch placement and grouping tools
   assert.match(placement, /group\.clipped = true/);
   assert.match(placement, /p\.clipPath\.remove\(\)/);
   assert.match(placement, /group\.remove\(\)/);
+  assert.match(placement, /timeoutMs: 180_000/);
   assert.match(placement, /requested_count/);
   assert.match(placement, /failed_objects/);
   assert.doesNotMatch(placement, /activate:\s*true/);
