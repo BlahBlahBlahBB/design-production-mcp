@@ -213,6 +213,110 @@ export function getExecFailureMessage(
 
 // ─── 各トランスポートの実行ロジック ─────────────────────────────────────────
 
+type ResultProbe =
+  | { ready: false }
+  | { ready: true; result: JsxResult }
+  | { ready: true; error: Error };
+
+function structuredResultError(result: JsxResult): Error {
+  const parts: string[] = [];
+  if (result.message) parts.push(result.message as string);
+  if (result.line != null) parts.push(`(JSX line ${result.line})`);
+  return new Error(parts.length > 0 ? parts.join(' ') : 'An unknown error occurred during JSX execution');
+}
+
+async function probeResultFile(resultPath: string): Promise<ResultProbe> {
+  try {
+    const result = await readResult(resultPath) as JsxResult;
+    if (result.error) return { ready: true, error: structuredResultError(result) };
+    return { ready: true, result };
+  } catch (error) {
+    const code = typeof error === 'object' && error !== null && 'code' in error
+      ? String((error as { code?: unknown }).code ?? '')
+      : '';
+    // ENOENT means Illustrator has not written the result yet. SyntaxError can
+    // occur briefly while the JSON file is still being flushed.
+    if (code === 'ENOENT' || error instanceof SyntaxError) return { ready: false };
+    return { ready: true, error: error instanceof Error ? error : new Error(String(error)) };
+  }
+}
+
+async function executeRunnerAndAwaitResult(
+  command: string,
+  args: string[],
+  resultPath: string,
+  timeout: number,
+  transport: Transport,
+): Promise<JsxResult> {
+  return await new Promise<JsxResult>((resolve, reject) => {
+    let settled = false;
+    let probing = false;
+    let poller: ReturnType<typeof setInterval> | undefined;
+
+    const finish = (callback: () => void): void => {
+      if (settled) return;
+      settled = true;
+      if (poller) clearInterval(poller);
+      callback();
+    };
+
+    const child = execFile(command, args, { timeout }, async (error, _stdout, stderr) => {
+      if (settled) return;
+
+      const probe = await probeResultFile(resultPath);
+      if (probe.ready && 'result' in probe) {
+        finish(() => resolve(probe.result));
+        return;
+      }
+      if (probe.ready && 'error' in probe) {
+        finish(() => reject(probe.error));
+        return;
+      }
+
+      if (error) {
+        finish(() => reject(new Error(getExecFailureMessage(error, stderr, timeout, transport))));
+        return;
+      }
+
+      try {
+        const result = await readAndValidateResult(resultPath);
+        finish(() => resolve(result));
+      } catch (readError) {
+        finish(() => reject(readError));
+      }
+    });
+
+    const probeWhileRunnerLives = async (): Promise<void> => {
+      if (settled || probing) return;
+      probing = true;
+      try {
+        const probe = await probeResultFile(resultPath);
+        if (!probe.ready || settled) return;
+
+        // writeResultFile is the final committed step of a tool JSX. Once that
+        // structured result is complete we no longer need to wait for the
+        // AppleEvent/COM runner to acknowledge return. This prevents a finished
+        // Illustrator mutation from sitting until the shell transport timeout.
+        try { child.kill('SIGTERM'); } catch {}
+
+        if ('result' in probe) {
+          finish(() => resolve({
+            ...probe.result,
+            transport_result_file_completion: true,
+          }));
+        } else {
+          finish(() => reject(probe.error));
+        }
+      } finally {
+        probing = false;
+      }
+    };
+
+    poller = setInterval(() => { void probeWhileRunnerLives(); }, 100);
+    void probeWhileRunnerLives();
+  });
+}
+
 async function executeViaOsascript(
   jsxCode: string,
   params: unknown,
@@ -226,17 +330,13 @@ async function executeViaOsascript(
     await writeJsx(files.scriptPath, fullJsx);
     await writeAppleScript(files.runnerPath, files.scriptPath, { activate, appPath: getAppPath() });
 
-    await new Promise<void>((resolve, reject) => {
-      execFile('osascript', [files.runnerPath], { timeout }, (error, _stdout, stderr) => {
-        if (error) {
-          reject(new Error(getExecFailureMessage(error, stderr, timeout, 'osascript')));
-        } else {
-          resolve();
-        }
-      });
-    });
-
-    return await readAndValidateResult(files.resultPath);
+    return await executeRunnerAndAwaitResult(
+      'osascript',
+      [files.runnerPath],
+      files.resultPath,
+      timeout,
+      'osascript',
+    );
   } finally {
     await cleanupTempFiles(files);
   }
@@ -255,22 +355,13 @@ async function executeViaPowerShell(
     await writeJsx(files.scriptPath, fullJsx);
     await writePowerShellScript(files.runnerPath, files.scriptPath, { activate, appPath: getAppPath() });
 
-    await new Promise<void>((resolve, reject) => {
-      execFile(
-        'powershell.exe',
-        ['-ExecutionPolicy', 'Bypass', '-NonInteractive', '-File', files.runnerPath],
-        { timeout },
-        (error, _stdout, stderr) => {
-          if (error) {
-            reject(new Error(getExecFailureMessage(error, stderr, timeout, 'powershell')));
-          } else {
-            resolve();
-          }
-        },
-      );
-    });
-
-    return await readAndValidateResult(files.resultPath);
+    return await executeRunnerAndAwaitResult(
+      'powershell.exe',
+      ['-ExecutionPolicy', 'Bypass', '-NonInteractive', '-File', files.runnerPath],
+      files.resultPath,
+      timeout,
+      'powershell',
+    );
   } finally {
     await cleanupTempFiles(files);
   }
@@ -285,12 +376,7 @@ async function readAndValidateResult(resultPath: string): Promise<JsxResult> {
       'JSX terminated without producing a result file. An uncaught exception may have occurred within the JSX script.',
     );
   }
-  if (result.error) {
-    const parts: string[] = [];
-    if (result.message) parts.push(result.message as string);
-    if (result.line != null) parts.push(`(JSX line ${result.line})`);
-    throw new Error(parts.length > 0 ? parts.join(' ') : 'An unknown error occurred during JSX execution');
-  }
+  if (result.error) throw structuredResultError(result);
   return result;
 }
 
