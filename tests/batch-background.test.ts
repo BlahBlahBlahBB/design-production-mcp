@@ -158,6 +158,31 @@ test("repeated image/template work has public batch placement and grouping tools
   assert.doesNotMatch(groups, /activate:\s*true/);
 });
 
+test("data-driven templates use one rollback-safe variant generator", async () => {
+  const registered = (createDesignProductionMcpServer() as unknown as { _registeredTools: Record<string, unknown> })._registeredTools;
+  assert.ok(registered.generate_template_variants, "generate_template_variants must be registered");
+
+  const variants = await source("src/illustrator/core/ie3jp/tools/modify/generate-template-variants.ts");
+  assert.match(variants, /text_bindings/);
+  assert.match(variants, /source_artboard_index/);
+  assert.match(variants, /Math\.ceil\(Math\.sqrt\(variantCount\)\)/);
+  assert.match(variants, /sourceRoot\.duplicate\(\)/);
+  assert.match(variants, /dup\.translate\(dx, dy\)/);
+  assert.match(variants, /writeContents/);
+  assert.match(variants, /removeCreatedArtwork/);
+  assert.match(variants, /removeAddedArtboards/);
+  assert.match(variants, /restoreSourceText/);
+  assert.match(variants, /timeoutMs: 180_000/);
+  assert.match(variants, /includeTiming: true/);
+  assert.doesNotMatch(variants, /activate:\s*true/);
+
+  const installer = await source("scripts/configure-codex.mjs");
+  assert.match(installer, /one-template-plus-many-data jobs/);
+  assert.match(installer, /generate_template_variants/);
+  assert.match(installer, /Do not loop/);
+  assert.match(installer, /multi-row grid by default/);
+});
+
 test("typography stays a two-tool batch Core surface with honest Classic DOM limits", async () => {
   const typography = await source("src/illustrator/core/ie3jp/tools/typography-core.ts");
   const detail = await source("src/illustrator/core/ie3jp/tools/read/get-text-frame-detail.ts");
