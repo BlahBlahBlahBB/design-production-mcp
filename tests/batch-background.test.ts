@@ -193,7 +193,7 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(installer, /data_source/);
   assert.match(installer, /do not invoke Spreadsheet editing skills/);
   assert.match(installer, /omit .*source_uuid.*auto-bind/);
-  assert.match(installer, /Do not call .*get_document_structure.*get_document_info.*get_text_frame_detail.*list_text_frames.*get_artboards.*first/);
+  assert.match(installer, /do not call .*get_document_structure.*get_document_info.*get_text_frame_detail.*list_text_frames.*get_artboards.*first/i);
   assert.match(installer, /Do not loop/);
   assert.match(installer, /multi-row grid by default/);
   assert.match(installer, /Put requested per-script fonts/);
