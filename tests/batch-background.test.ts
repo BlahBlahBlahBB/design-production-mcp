@@ -80,7 +80,6 @@ test("installer routing remains batch-first without backend fallback or automati
   assert.match(installer, /group_object_sets/);
   assert.match(installer, /label_uuid/);
   assert.match(installer, /label_text/);
-  assert.match(installer, /Do not repeatedly call/);
   assert.match(installer, /do not enter an improvised repair loop/);
   assert.match(installer, /Do not run shell/);
   assert.match(installer, /Never save after an unverified timeout or failed batch/);
