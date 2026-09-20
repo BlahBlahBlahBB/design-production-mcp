@@ -167,6 +167,12 @@ test("data-driven templates use one rollback-safe variant generator", async () =
 
   const variants = await source("src/illustrator/core/ie3jp/tools/modify/generate-template-variants.ts");
   assert.match(variants, /text_bindings/);
+  assert.match(variants, /values_json_path/);
+  assert.match(variants, /VALUES_JSON_INVALID/);
+  assert.match(variants, /VALUES_JSON_TOO_LARGE/);
+  assert.match(variants, /_dpm_value_sources/);
+  assert.match(variants, /duplicate_values/);
+  assert.match(variants, /sha256/);
   assert.match(variants, /source_uuid: z\.string\(\)\.optional/);
   assert.match(variants, /AUTO_BIND_REQUIRES_ONE_TEXTFRAME/);
   assert.match(variants, /autoResolveSingleTextFrame/);
@@ -181,7 +187,7 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(variants, /center_in_artboard/);
   assert.match(variants, /font: z\.string\(\)\.min\(1\)\.optional/);
   assert.match(variants, /font_name: rule\.font_name \?\? rule\.font/);
-  assert.match(variants, /params\.text_bindings\.map\(normalizeBinding\)/);
+  assert.match(variants, /Promise\.all\(params\.text_bindings\.map\(\(binding, index\) => normalizeBinding\(binding, index\)\)\)/);
   assert.match(variants, /FONT_NOT_FOUND/);
   assert.match(variants, /FONT_AMBIGUOUS/);
   assert.match(variants, /normalizeFontKey/);
@@ -219,11 +225,15 @@ test("data-driven templates use one rollback-safe variant generator", async () =
   assert.match(installer, /段落居中.*paragraph_alignment/);
   assert.match(installer, /画板垂直居中.*center_in_artboard/);
   assert.match(installer, /one extraction attempt with one parser/);
-  assert.match(installer, /cache the resulting value array/);
+  assert.match(installer, /20\+ values/);
+  assert.match(installer, /temporary JSON file/);
+  assert.match(installer, /values_json_path/);
+  assert.match(installer, /Never deduplicate unless the user explicitly asks/);
+  assert.match(installer, /cache the result for the rest of the turn/);
   assert.match(installer, /at most once/);
   assert.match(installer, /do not invoke pandas after openpyxl, openpyxl after pandas/);
   assert.match(installer, /second parser only when the first attempt returns a concrete parse error/);
-  assert.match(installer, /never re-read the workbook during that batch/);
+  assert.match(installer, /pass that path as .*values_json_path/);
   assert.match(installer, /save directly/);
   assert.match(installer, /Do NOT follow a clean success with .*get_typography_metrics.*list_text_frames.*get_artboards.*get_document_structure/);
   assert.match(variants, /mutationStarted/);
