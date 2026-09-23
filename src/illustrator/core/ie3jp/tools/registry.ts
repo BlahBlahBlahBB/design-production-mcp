@@ -85,6 +85,7 @@ import { register as registerBatchTransformObjects } from './modify/batch-transf
 import { register as registerConvertCoordinate } from './read/convert-coordinate.js';
 import { register as registerTypographyCore } from './typography-core.js';
 import { register as registerAutoFitText } from './modify/auto-fit-text.js';
+import { register as registerObserveArtwork } from './read/observe-artwork.js';
 
 export function registerAllTools(server: McpServer): void {
   // Phase 1: 基本読み取りツール
@@ -98,6 +99,7 @@ export function registerAllTools(server: McpServer): void {
   registerGetTextFrameDetail(server);
   registerTypographyCore(server);
   registerAutoFitText(server);
+  registerObserveArtwork(server);
   registerGetVisualAppearance(server);
   registerGetColors(server);
   registerGetPathItems(server);
