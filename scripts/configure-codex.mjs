@@ -6,6 +6,7 @@ import path from "node:path";
 
 const SERVER_NAME = "design-production-illustrator";
 const TABLE_HEADER = `[mcp_servers.${SERVER_NAME}]`;
+const RECOMMENDED_TOOL_TIMEOUT_SEC = 240;
 const ROUTING_START = "<!-- design-production-illustrator:routing:start -->";
 const ROUTING_END = "<!-- design-production-illustrator:routing:end -->";
 const ROUTING_BLOCK = `${ROUTING_START}
@@ -50,23 +51,102 @@ function nodeMajor() {
   return Number.parseInt(process.versions.node.split(".")[0], 10);
 }
 
-function stripServerTable(content) {
-  const lines = content.split(/\r?\n/);
-  const kept = [];
-  let removed = false;
+const TABLE_HEADER_RE = /^\s*\[mcp_servers\.design-production-illustrator\]\s*(?:#.*)?$/;
+const TARGET_SUBTABLE_RE = /^\s*\[mcp_servers\.design-production-illustrator\./;
+const TABLE_RE = /^\s*\[[^\]]+\]\s*(?:#.*)?$/;
+const KEY_RE = /^(\s*)([A-Za-z0-9_.-]+)(\s*)=(.*)$/;
+const SIMPLE_NUMBER_RE = /^\s*(\d+(?:\.\d+)?)\s*(?:#.*)?$/;
 
-  for (let index = 0; index < lines.length;) {
-    if (new RegExp(`^\\s*\\[mcp_servers\\.${SERVER_NAME.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\]\\s*(?:#.*)?$`).test(lines[index])) {
-      removed = true;
-      index += 1;
-      while (index < lines.length && !/^\s*\[/.test(lines[index])) index += 1;
-      continue;
-    }
-    kept.push(lines[index]);
-    index += 1;
+function splitConfig(content) {
+  const eol = content.includes("\r\n") ? "\r\n" : "\n";
+  return { lines: content.split(eol), eol };
+}
+
+function locateTargetTable(lines) {
+  const headers = lines.reduce((found, line, index) => {
+    if (TABLE_HEADER_RE.test(line)) found.push(index);
+    return found;
+  }, []);
+  if (headers.length > 1) throw new Error(`Duplicate ${TABLE_HEADER} entries; refusing to rewrite Codex configuration.`);
+  if (headers.length === 0) return null;
+
+  const start = headers[0];
+  let end = start + 1;
+  while (end < lines.length && !/^\s*\[/.test(lines[end])) end += 1;
+  if (end < lines.length && !TABLE_RE.test(lines[end])) {
+    throw new Error(`Malformed TOML table boundary near ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+  }
+  if (end < lines.length && TARGET_SUBTABLE_RE.test(lines[end])) {
+    throw new Error(`Unsupported nested ${TABLE_HEADER} table; refusing to rewrite Codex configuration.`);
+  }
+  return { start, end };
+}
+
+function inspectTargetTable(lines, start, end) {
+  const keys = new Map();
+  for (let index = start + 1; index < end; index += 1) {
+    const line = lines[index];
+    if (/^\s*(?:#.*)?$/.test(line)) continue;
+    const match = line.match(KEY_RE);
+    if (!match) throw new Error(`Malformed ${TABLE_HEADER} entry on line ${index + 1}; refusing to rewrite Codex configuration.`);
+    const entries = keys.get(match[2]) ?? [];
+    entries.push({ index, match });
+    keys.set(match[2], entries);
+  }
+  for (const key of ["command", "args", "tool_timeout_sec"]) {
+    if ((keys.get(key)?.length ?? 0) > 1) throw new Error(`Duplicate ${key} key in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+  }
+  const timeout = keys.get("tool_timeout_sec")?.[0];
+  if (!timeout) return { keys, timeout: null };
+  const numeric = timeout.match[4].match(SIMPLE_NUMBER_RE);
+  if (!numeric || !Number.isFinite(Number(numeric[1]))) {
+    throw new Error(`Invalid tool_timeout_sec in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+  }
+  return { keys, timeout: Number(numeric[1]) };
+}
+
+function upsertServerTable(content, nodePath, entrypoint) {
+  const { lines, eol } = splitConfig(content);
+  const target = locateTargetTable(lines);
+  if (!target) {
+    const prefix = content.trimEnd();
+    const block = `${TABLE_HEADER}${eol}command = ${tomlString(nodePath)}${eol}args = [${tomlString(entrypoint)}]${eol}tool_timeout_sec = ${RECOMMENDED_TOOL_TIMEOUT_SEC}${eol}`;
+    return { content: `${prefix}${prefix ? `${eol}${eol}` : ""}${block}`, warning: null };
   }
 
-  return { content: kept.join("\n").replace(/\n{3,}/g, "\n\n").trimEnd() + "\n", removed };
+  const inspected = inspectTargetTable(lines, target.start, target.end);
+  const command = inspected.keys.get("command")?.[0];
+  const args = inspected.keys.get("args")?.[0];
+  if (command) lines[command.index] = `${command.match[1]}command${command.match[3]}= ${tomlString(nodePath)}`;
+  if (args) lines[args.index] = `${args.match[1]}args${args.match[3]}= [${tomlString(entrypoint)}]`;
+  const additions = [];
+  if (!command) additions.push(`command = ${tomlString(nodePath)}`);
+  if (!args) additions.push(`args = [${tomlString(entrypoint)}]`);
+  if (inspected.timeout === null) additions.push(`tool_timeout_sec = ${RECOMMENDED_TOOL_TIMEOUT_SEC}`);
+  if (additions.length > 0) lines.splice(target.end, 0, ...additions);
+
+  const warning = inspected.timeout !== null && inspected.timeout < RECOMMENDED_TOOL_TIMEOUT_SEC
+    ? `Existing ${SERVER_NAME} tool_timeout_sec=${inspected.timeout} was preserved. ${RECOMMENDED_TOOL_TIMEOUT_SEC} seconds is recommended because some Illustrator MCP operations can run for up to 180 seconds.`
+    : null;
+  return { content: lines.join(eol), warning };
+}
+
+function stripServerTable(content) {
+  const { lines, eol } = splitConfig(content);
+  const kept = [];
+  let removed = false;
+  let skipping = false;
+  for (const line of lines) {
+    if (TABLE_HEADER_RE.test(line) || TARGET_SUBTABLE_RE.test(line)) {
+      removed = true;
+      skipping = true;
+      continue;
+    }
+    if (/^\s*\[/.test(line)) skipping = false;
+    if (!skipping) kept.push(line);
+  }
+  const next = kept.join(eol).replace(new RegExp(`(?:${eol}){3,}`, "g"), `${eol}${eol}`).trimEnd();
+  return { content: next ? `${next}${eol}` : "", removed };
 }
 
 function stripRoutingBlock(content) {
@@ -110,11 +190,11 @@ const configPath = path.join(codexHome, "config.toml");
 const agentsPath = path.join(codexHome, "AGENTS.md");
 
 const currentConfig = existsSync(configPath) ? await readFile(configPath, "utf8") : "";
-const strippedConfig = stripServerTable(currentConfig);
 const currentAgents = existsSync(agentsPath) ? await readFile(agentsPath, "utf8") : "";
 const strippedAgents = stripRoutingBlock(currentAgents);
 
 if (operation === "uninstall") {
+  const strippedConfig = stripServerTable(currentConfig);
   let changed = false;
 
   if (strippedConfig.removed) {
@@ -143,10 +223,14 @@ if (nodeMajor() < 20) {
 if (!existsSync(nodePath)) throw new Error(`Node executable does not exist: ${nodePath}`);
 if (!existsSync(entrypoint)) throw new Error(`Compiled MCP server does not exist: ${entrypoint}`);
 
-const serverBlock = `${TABLE_HEADER}\ncommand = ${tomlString(nodePath)}\nargs = [${tomlString(entrypoint)}]\n`;
-const nextConfig = `${strippedConfig.content.trimEnd()}${strippedConfig.content.trimEnd() ? "\n\n" : ""}${serverBlock}`;
-await writeWithBackup(configPath, nextConfig, "Codex configuration");
-console.log(`Configured ${TABLE_HEADER} in ${configPath}`);
+const configured = upsertServerTable(currentConfig, nodePath, entrypoint);
+if (configured.content !== currentConfig) {
+  await writeWithBackup(configPath, configured.content, "Codex configuration");
+  console.log(`Configured ${TABLE_HEADER} in ${configPath}`);
+} else {
+  console.log(`${TABLE_HEADER} in ${configPath} is already current.`);
+}
+if (configured.warning) console.warn(`WARNING: ${configured.warning}`);
 
 const nextAgents = `${strippedAgents.content.trimEnd()}${strippedAgents.content.trimEnd() ? "\n\n" : ""}${ROUTING_BLOCK}\n`;
 await writeWithBackup(agentsPath, nextAgents, "Codex global instructions");
