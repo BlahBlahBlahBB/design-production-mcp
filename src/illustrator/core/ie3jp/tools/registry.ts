@@ -86,6 +86,7 @@ import { register as registerConvertCoordinate } from './read/convert-coordinate
 import { register as registerTypographyCore } from './typography-core.js';
 import { register as registerAutoFitText } from './modify/auto-fit-text.js';
 import { register as registerObserveArtwork } from './read/observe-artwork.js';
+import { register as registerRepeatLayout } from './modify/repeat-layout.js';
 
 export function registerAllTools(server: McpServer): void {
   // Phase 1: 基本読み取りツール
@@ -100,6 +101,7 @@ export function registerAllTools(server: McpServer): void {
   registerTypographyCore(server);
   registerAutoFitText(server);
   registerObserveArtwork(server);
+  registerRepeatLayout(server);
   registerGetVisualAppearance(server);
   registerGetColors(server);
   registerGetPathItems(server);
