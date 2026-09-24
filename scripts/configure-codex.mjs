@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -52,6 +52,8 @@ function nodeMajor() {
 }
 
 const TABLE_HEADER_RE = /^\s*\[mcp_servers\.design-production-illustrator\]\s*(?:#.*)?$/;
+const ENV_TABLE_HEADER = `[mcp_servers.${SERVER_NAME}.env]`;
+const ENV_TABLE_HEADER_RE = /^\s*\[mcp_servers\.design-production-illustrator\.env\]\s*(?:#.*)?$/;
 const TARGET_SUBTABLE_RE = /^\s*\[mcp_servers\.design-production-illustrator\./;
 const TABLE_RE = /^\s*\[[^\]]+\]\s*(?:#.*)?$/;
 const KEY_RE = /^(\s*)([A-Za-z0-9_.-]+)(\s*)=(.*)$/;
@@ -68,7 +70,16 @@ function locateTargetTable(lines) {
     return found;
   }, []);
   if (headers.length > 1) throw new Error(`Duplicate ${TABLE_HEADER} entries; refusing to rewrite Codex configuration.`);
-  if (headers.length === 0) return null;
+  const envHeaders = lines.reduce((found, line, index) => {
+    if (ENV_TABLE_HEADER_RE.test(line)) found.push(index);
+    else if (TARGET_SUBTABLE_RE.test(line)) throw new Error(`Unsupported nested ${TABLE_HEADER} table; refusing to rewrite Codex configuration.`);
+    return found;
+  }, []);
+  if (envHeaders.length > 1) throw new Error(`Duplicate ${ENV_TABLE_HEADER} entries; refusing to rewrite Codex configuration.`);
+  if (headers.length === 0) {
+    if (envHeaders.length) throw new Error(`Orphaned ${ENV_TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+    return null;
+  }
 
   const start = headers[0];
   let end = start + 1;
@@ -76,10 +87,121 @@ function locateTargetTable(lines) {
   if (end < lines.length && !TABLE_RE.test(lines[end])) {
     throw new Error(`Malformed TOML table boundary near ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
   }
-  if (end < lines.length && TARGET_SUBTABLE_RE.test(lines[end])) {
-    throw new Error(`Unsupported nested ${TABLE_HEADER} table; refusing to rewrite Codex configuration.`);
+  let env = null;
+  if (envHeaders.length) {
+    const envStart = envHeaders[0];
+    let envEnd = envStart + 1;
+    while (envEnd < lines.length && !/^\s*\[/.test(lines[envEnd])) envEnd += 1;
+    if (envEnd < lines.length && !TABLE_RE.test(lines[envEnd])) {
+      throw new Error(`Malformed TOML table boundary near ${ENV_TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+    }
+    env = { start: envStart, end: envEnd };
   }
-  return { start, end };
+  return { start, end, env };
+}
+
+function parseTomlString(raw) {
+  const value = raw.trim();
+  if (/^"(?:\\.|[^"\\])*"$/.test(value)) {
+    try { return JSON.parse(value); } catch { return null; }
+  }
+  if (/^'[^']*'$/.test(value)) return value.slice(1, -1);
+  return null;
+}
+
+function parseInlineEntries(raw, label) {
+  const entries = new Map();
+  let remaining = raw.trim();
+  while (remaining) {
+    const match = remaining.match(/^([A-Za-z0-9_.-]+)\s*=\s*("(?:\\.|[^"\\])*"|'[^']*')\s*(?:,\s*|$)/);
+    if (!match) throw new Error(`Malformed ${label}; refusing to rewrite Codex configuration.`);
+    if (entries.has(match[1])) throw new Error(`Duplicate ${match[1]} in ${label}; refusing to rewrite Codex configuration.`);
+    const value = parseTomlString(match[2]);
+    if (value === null) throw new Error(`Malformed ${label}; refusing to rewrite Codex configuration.`);
+    entries.set(match[1], value);
+    remaining = remaining.slice(match[0].length);
+  }
+  return entries;
+}
+
+function parseEnvVars(raw) {
+  const openingBracket = raw.indexOf("[");
+  if (!/^\s*\[/.test(raw)) throw new Error(`Malformed env_vars in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+  let closingBracket = -1;
+  let quote = null;
+  let escaped = false;
+  for (let index = openingBracket + 1; index < raw.length; index += 1) {
+    const char = raw[index];
+    if (quote) {
+      if (escaped) escaped = false;
+      else if (char === "\\" && quote === '"') escaped = true;
+      else if (char === quote) quote = null;
+    } else if (char === '"' || char === "'") quote = char;
+    else if (char === "]") { closingBracket = index; break; }
+  }
+  if (closingBracket < 0 || !/^\s*(?:#.*)?$/.test(raw.slice(closingBracket + 1))) {
+    throw new Error(`Malformed env_vars in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+  }
+  const names = [];
+  let remaining = raw.slice(openingBracket + 1, closingBracket).trim();
+  while (remaining) {
+    const item = remaining.match(/^("(?:\\.|[^"\\])*"|'[^']*'|\{[^{}]*\})\s*(?:,\s*|$)/);
+    if (!item) throw new Error(`Malformed env_vars in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+    let name;
+    if (item[1].startsWith("{")) {
+      const fields = parseInlineEntries(item[1].slice(1, -1), "env_vars entry");
+      if ([...fields.keys()].some((field) => field !== "name" && field !== "source") ||
+          (fields.get("source") ?? "local") !== "local") {
+        throw new Error(`Unsupported env_vars entry in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+      }
+      name = fields.get("name");
+    } else {
+      name = parseTomlString(item[1]);
+    }
+    if (!name || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(name) || names.includes(name)) {
+      throw new Error(`Invalid or duplicate env_vars entry in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+    }
+    names.push(name);
+    remaining = remaining.slice(item[0].length);
+  }
+  return { names, closingBracket, trailingComma: raw.slice(openingBracket + 1, closingBracket).trimEnd().endsWith(",") };
+}
+
+function validTmpdir(value) {
+  if (typeof value !== "string" || !value || !path.isAbsolute(value)) return false;
+  try { return statSync(value).isDirectory(); } catch { return false; }
+}
+
+function inspectTmpdir(lines, target) {
+  const targetEntries = inspectTargetTable(lines, target.start, target.end).keys;
+  const envVarsEntry = targetEntries.get("env_vars")?.[0];
+  const inlineEnvEntry = targetEntries.get("env")?.[0];
+  if ((targetEntries.get("env_vars")?.length ?? 0) > 1 || (targetEntries.get("env")?.length ?? 0) > 1) {
+    throw new Error(`Duplicate environment key in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+  }
+  const envVars = envVarsEntry ? parseEnvVars(envVarsEntry.match[4]) : null;
+  const inlineEnv = inlineEnvEntry ? inlineEnvEntry.match[4].match(/^\s*\{(.*)\}\s*(?:#.*)?$/) : null;
+  if (inlineEnvEntry && !inlineEnv) throw new Error(`Malformed env in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+  const inlineValues = inlineEnv ? parseInlineEntries(inlineEnv[1], "env") : new Map();
+  const nestedValues = new Map();
+  if (target.env) {
+    for (let index = target.env.start + 1; index < target.env.end; index += 1) {
+      const line = lines[index];
+      if (/^\s*(?:#.*)?$/.test(line)) continue;
+      const match = line.match(KEY_RE);
+      if (!match || nestedValues.has(match[2])) throw new Error(`Malformed or duplicate ${ENV_TABLE_HEADER} entry; refusing to rewrite Codex configuration.`);
+      const valueMatch = match[4].match(/^\s*("(?:\\.|[^"\\])*"|'[^']*')\s*(?:#.*)?$/);
+      const value = valueMatch ? parseTomlString(valueMatch[1]) : null;
+      if (value === null) throw new Error(`Malformed ${ENV_TABLE_HEADER} entry; refusing to rewrite Codex configuration.`);
+      nestedValues.set(match[2], value);
+    }
+  }
+  if (inlineEnvEntry && target.env) throw new Error(`Ambiguous env in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+  const declarations = [envVars?.names.includes("TMPDIR"), inlineValues.has("TMPDIR"), nestedValues.has("TMPDIR")].filter(Boolean).length;
+  if (declarations > 1) throw new Error(`Duplicate TMPDIR declaration in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+  const explicit = inlineValues.get("TMPDIR") ?? nestedValues.get("TMPDIR");
+  if (explicit !== undefined && !validTmpdir(explicit)) throw new Error(`Invalid TMPDIR in ${TABLE_HEADER}; refusing to rewrite Codex configuration.`);
+  return { envVarsEntry, envVars, configured: declarations === 1 };
 }
 
 function inspectTargetTable(lines, start, end) {
@@ -105,16 +227,19 @@ function inspectTargetTable(lines, start, end) {
   return { keys, timeout: Number(numeric[1]) };
 }
 
-function upsertServerTable(content, nodePath, entrypoint) {
+function upsertServerTable(content, nodePath, entrypoint, currentTmpdir) {
   const { lines, eol } = splitConfig(content);
   const target = locateTargetTable(lines);
+  const canForwardTmpdir = validTmpdir(currentTmpdir);
+  const tmpdirWarning = canForwardTmpdir ? null : `Current TMPDIR is unavailable or invalid; ${SERVER_NAME} TMPDIR forwarding was not added.`;
   if (!target) {
     const prefix = content.trimEnd();
-    const block = `${TABLE_HEADER}${eol}command = ${tomlString(nodePath)}${eol}args = [${tomlString(entrypoint)}]${eol}tool_timeout_sec = ${RECOMMENDED_TOOL_TIMEOUT_SEC}${eol}`;
-    return { content: `${prefix}${prefix ? `${eol}${eol}` : ""}${block}`, warning: null };
+    const block = `${TABLE_HEADER}${eol}command = ${tomlString(nodePath)}${eol}args = [${tomlString(entrypoint)}]${eol}tool_timeout_sec = ${RECOMMENDED_TOOL_TIMEOUT_SEC}${eol}${canForwardTmpdir ? `env_vars = ["TMPDIR"]${eol}` : ""}`;
+    return { content: `${prefix}${prefix ? `${eol}${eol}` : ""}${block}`, warning: tmpdirWarning };
   }
 
   const inspected = inspectTargetTable(lines, target.start, target.end);
+  const tmpdir = inspectTmpdir(lines, target);
   const command = inspected.keys.get("command")?.[0];
   const args = inspected.keys.get("args")?.[0];
   if (command) lines[command.index] = `${command.match[1]}command${command.match[3]}= ${tomlString(nodePath)}`;
@@ -123,11 +248,22 @@ function upsertServerTable(content, nodePath, entrypoint) {
   if (!command) additions.push(`command = ${tomlString(nodePath)}`);
   if (!args) additions.push(`args = [${tomlString(entrypoint)}]`);
   if (inspected.timeout === null) additions.push(`tool_timeout_sec = ${RECOMMENDED_TOOL_TIMEOUT_SEC}`);
+  if (!tmpdir.configured && canForwardTmpdir) {
+    if (tmpdir.envVarsEntry) {
+      const entry = tmpdir.envVarsEntry;
+      const original = lines[entry.index];
+      const bracket = original.indexOf(entry.match[4]) + tmpdir.envVars.closingBracket;
+      lines[entry.index] = `${original.slice(0, bracket)}${tmpdir.envVars.names.length && !tmpdir.envVars.trailingComma ? ", " : ""}"TMPDIR"${original.slice(bracket)}`;
+    } else {
+      additions.push('env_vars = ["TMPDIR"]');
+    }
+  }
   if (additions.length > 0) lines.splice(target.end, 0, ...additions);
 
-  const warning = inspected.timeout !== null && inspected.timeout < RECOMMENDED_TOOL_TIMEOUT_SEC
+  const timeoutWarning = inspected.timeout !== null && inspected.timeout < RECOMMENDED_TOOL_TIMEOUT_SEC
     ? `Existing ${SERVER_NAME} tool_timeout_sec=${inspected.timeout} was preserved. ${RECOMMENDED_TOOL_TIMEOUT_SEC} seconds is recommended because some Illustrator MCP operations can run for up to 180 seconds.`
     : null;
+  const warning = [timeoutWarning, !tmpdir.configured ? tmpdirWarning : null].filter(Boolean).join(" ") || null;
   return { content: lines.join(eol), warning };
 }
 
@@ -223,7 +359,7 @@ if (nodeMajor() < 20) {
 if (!existsSync(nodePath)) throw new Error(`Node executable does not exist: ${nodePath}`);
 if (!existsSync(entrypoint)) throw new Error(`Compiled MCP server does not exist: ${entrypoint}`);
 
-const configured = upsertServerTable(currentConfig, nodePath, entrypoint);
+const configured = upsertServerTable(currentConfig, nodePath, entrypoint, process.env.TMPDIR);
 if (configured.content !== currentConfig) {
   await writeWithBackup(configPath, configured.content, "Codex configuration");
   console.log(`Configured ${TABLE_HEADER} in ${configPath}`);

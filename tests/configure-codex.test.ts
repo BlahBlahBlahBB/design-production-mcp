@@ -12,10 +12,12 @@ const node = process.execPath;
 const entrypoint = join(root, "dist/src/mcp/stdio.js");
 const targetHeader = "[mcp_servers.design-production-illustrator]";
 
-async function fixture(config = "") {
+async function fixture(config: string | ((home: string) => string) = "", tmpdirValue?: string | null) {
   const home = await mkdtemp(join(tmpdir(), "dpm-configure-codex-"));
-  await writeFile(join(home, "config.toml"), config, "utf8");
-  const env = { ...process.env, DPM_CODEX_HOME: home };
+  await writeFile(join(home, "config.toml"), typeof config === "function" ? config(home) : config, "utf8");
+  const env: NodeJS.ProcessEnv = { ...process.env, DPM_CODEX_HOME: home };
+  if (tmpdirValue === null) delete env.TMPDIR;
+  else env.TMPDIR = tmpdirValue ?? home;
   const run = (operation: "install" | "uninstall") => execFile(
     node,
     ["scripts/configure-codex.mjs", operation, ...(operation === "install" ? [node, entrypoint] : [])],
@@ -33,9 +35,92 @@ test("installer adds the 240-second default and remains idempotent without distu
   assert.match(first, /\[mcp_servers\.other\]\ncommand = "other"/);
   assert.match(first, new RegExp(`${targetHeader.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\ncommand = `));
   assert.match(first, /tool_timeout_sec = 240/);
+  assert.match(first, /env_vars = \["TMPDIR"\]/);
   assert.equal((first.match(/tool_timeout_sec/g) ?? []).length, 1);
   await setup.run("install");
   assert.equal(await readFile(setup.configPath, "utf8"), first);
+});
+
+test("installer forwards TMPDIR dynamically and preserves an existing env_vars list", async () => {
+  const setup = await fixture(`${targetHeader}\ncommand = "/old/node"\nargs = ["/old/server"]\nenv_vars = ["OTHER"] # keep ] comment\n`);
+  await setup.run("install");
+  const first = await readFile(setup.configPath, "utf8");
+  assert.match(first, /env_vars = \["OTHER", "TMPDIR"\] # keep \] comment/);
+  assert.match(first, /tool_timeout_sec = 240/);
+  await setup.run("install");
+  assert.equal(await readFile(setup.configPath, "utf8"), first);
+});
+
+test("installer appends TMPDIR after a valid env_vars trailing comma", async () => {
+  const setup = await fixture(`${targetHeader}\ncommand = "/old/node"\nargs = ["/old/server"]\nenv_vars = ["OTHER",] # keep\n`);
+  await setup.run("install");
+  const first = await readFile(setup.configPath, "utf8");
+  assert.match(first, /env_vars = \["OTHER","TMPDIR"\] # keep/);
+  await setup.run("install");
+  assert.equal(await readFile(setup.configPath, "utf8"), first);
+});
+
+test("installer preserves valid explicit TMPDIR in a nested env table and other servers", async () => {
+  const setup = await fixture((home) => `[mcp_servers.other]\ncommand = "other"\n\n${targetHeader}\n# keep target comment\ncommand = "/old/node"\nargs = ["/old/server"]\ntool_timeout_sec = 240\ncustom_key = "keep"\n\n[mcp_servers.design-production-illustrator.env]\n# keep env comment\nTMPDIR = ${JSON.stringify(home)}\nOTHER = "keep"\n`);
+  await setup.run("install");
+  const first = await readFile(setup.configPath, "utf8");
+  assert.match(first, /\[mcp_servers\.other\]\ncommand = "other"/);
+  assert.match(first, /# keep target comment/);
+  assert.match(first, /# keep env comment/);
+  assert.match(first, /custom_key = "keep"/);
+  assert.match(first, /OTHER = "keep"/);
+  assert.doesNotMatch(first, /env_vars =/);
+  assert.equal((first.match(/TMPDIR = /g) ?? []).length, 1);
+  assert.equal((first.match(/tool_timeout_sec/g) ?? []).length, 1);
+  await setup.run("install");
+  assert.equal(await readFile(setup.configPath, "utf8"), first);
+});
+
+test("installer preserves valid explicit inline TMPDIR", async () => {
+  const setup = await fixture((home) => `${targetHeader}\ncommand = "/old/node"\nargs = ["/old/server"]\nenv = { TMPDIR = ${JSON.stringify(home)}, OTHER = "keep" }\n`);
+  await setup.run("install");
+  const config = await readFile(setup.configPath, "utf8");
+  assert.match(config, /env = \{ TMPDIR = /);
+  assert.doesNotMatch(config, /env_vars =/);
+  assert.match(config, /tool_timeout_sec = 240/);
+});
+
+test("installer preserves existing dynamic TMPDIR forwarding", async () => {
+  const setup = await fixture(`${targetHeader}\ncommand = "/old/node"\nargs = ["/old/server"]\nenv_vars = ["TMPDIR", "OTHER"]\n`);
+  await setup.run("install");
+  const config = await readFile(setup.configPath, "utf8");
+  assert.equal((config.match(/TMPDIR/g) ?? []).length, 1);
+  assert.match(config, /tool_timeout_sec = 240/);
+});
+
+test("missing or invalid process TMPDIR adds no invented path and warns", async () => {
+  for (const value of [null, "", "relative/tmpdir", "/no-such-dpm-tmpdir"] as const) {
+    const setup = await fixture("", value);
+    const result = await setup.run("install");
+    const config = await readFile(setup.configPath, "utf8");
+    assert.doesNotMatch(config, /TMPDIR/);
+    assert.match(config, /tool_timeout_sec = 240/);
+    assert.match(result.stderr, /WARNING: Current TMPDIR is unavailable or invalid/);
+  }
+});
+
+test("duplicate or malformed TMPDIR declarations fail closed without rewriting config", async () => {
+  for (const config of [
+    `${targetHeader}\ncommand = "node"\nargs = ["server"]\nenv_vars = ["TMPDIR", "TMPDIR"]\n`,
+    `${targetHeader}\ncommand = "node"\nargs = ["server"]\nenv_vars = ["TMPDIR"]\nenv_vars = ["OTHER"]\n`,
+    `${targetHeader}\ncommand = "node"\nargs = ["server"]\nenv_vars = ["TMPDIR"]\n[mcp_servers.design-production-illustrator.env]\nTMPDIR = "/tmp"\n`,
+    `${targetHeader}\ncommand = "node"\nargs = ["server"]\n[mcp_servers.design-production-illustrator.env]\nTMPDIR = ""\n`,
+    `${targetHeader}\ncommand = "node"\nargs = ["server"]\n[mcp_servers.design-production-illustrator.env]\nTMPDIR = "relative"\n`,
+    `${targetHeader}\ncommand = "node"\nargs = ["server"]\n[mcp_servers.design-production-illustrator.env]\nTMPDIR = "one"\nTMPDIR = "two"\n`,
+    `${targetHeader}\ncommand = "node"\nargs = ["server"]\n[mcp_servers.design-production-illustrator.env]\nTMPDIR = ["wrong type"]\n`,
+    `${targetHeader}\ncommand = "node"\nargs = ["server"]\nenv_vars = not-an-array\n`,
+    `${targetHeader}\ncommand = "node"\nargs = ["server"]\n[mcp_servers.design-production-illustrator.env]\nthis is malformed\n`,
+    `${targetHeader}\ncommand = "node"\nargs = ["server"]\n[mcp_servers.design-production-illustrator.env]\nTMPDIR = "/tmp"\n[mcp_servers.design-production-illustrator.env]\nTMPDIR = "/tmp"\n`,
+  ]) {
+    const setup = await fixture(config);
+    await assert.rejects(setup.run("install"));
+    assert.equal(await readFile(setup.configPath, "utf8"), config);
+  }
 });
 
 test("installer adds a missing timeout while preserving safe unknown target-table fields and comments", async () => {
