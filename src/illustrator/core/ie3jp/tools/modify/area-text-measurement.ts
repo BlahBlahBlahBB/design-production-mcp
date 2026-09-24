@@ -67,6 +67,17 @@ export interface AreaTextMeasurementAdapter<T> {
   setHeight(target: T, height: number): void;
 }
 
+/**
+ * Feature-local production runtime contract.  The synchronous C3 contract
+ * above remains available to in-process callers and existing unit tests.
+ */
+export interface AsyncAreaTextMeasurementAdapter<T> {
+  checkEligibility(target: T): Promise<AreaTextEligibility>;
+  snapshot(target: T): Promise<AreaTextSnapshot>;
+  isOverset(target: T): Promise<boolean>;
+  setHeight(target: T, height: number): Promise<void>;
+}
+
 export type AreaTextMeasurementResult =
   | {
       status: 'SUCCESS';
@@ -190,6 +201,102 @@ export function measureAreaTextRequiredHeight<T>(
     return { status: 'SUCCESS', originalHeight: original.height, measuredHeight, growthDelta: measuredHeight - original.height, alreadyFit: false, measurementIterations: iterations };
   } catch (error) {
     const restored = restore();
+    return restored ?? { status: 'MEASUREMENT_FAILED_RESTORED', reason: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+/**
+ * Async-runtime equivalent of the frozen C3 measurement contract.  It keeps
+ * the same bounded growth/refinement and restoration semantics while allowing
+ * each Illustrator-backed adapter operation to be awaited.
+ */
+export async function measureAreaTextRequiredHeightAsync<T>(
+  target: T,
+  adapter: AsyncAreaTextMeasurementAdapter<T>,
+): Promise<AreaTextMeasurementResult> {
+  let eligibility: AreaTextEligibility;
+  try {
+    eligibility = await adapter.checkEligibility(target);
+  } catch (error) {
+    return { status: 'UNSUPPORTED', reason: error instanceof Error ? error.message : String(error) };
+  }
+  if (!eligibility.eligible) return { status: 'UNSUPPORTED', reason: eligibility.reason ?? 'AreaText is outside the supported V1 scope' };
+
+  let original: AreaTextSnapshot;
+  try {
+    original = await adapter.snapshot(target);
+    finite(original.height, 'original height');
+    finite(original.top, 'original top');
+    finite(original.left, 'original left');
+    finite(original.width, 'original width');
+    if (original.height <= 0 || original.width <= 0) return { status: 'UNSUPPORTED', reason: 'AreaText geometry must have positive dimensions' };
+  } catch (error) {
+    return { status: 'UNSUPPORTED', reason: error instanceof Error ? error.message : String(error) };
+  }
+
+  let iterations = 0;
+  const maximumHeight = original.height * MAX_AREA_TEXT_GROWTH_FACTOR;
+  if (!Number.isFinite(maximumHeight) || maximumHeight <= 0) {
+    return { status: 'UNSUPPORTED', reason: 'AreaText maximum measurement height is invalid' };
+  }
+
+  const restore = async (): Promise<AreaTextMeasurementResult | null> => {
+    try {
+      await adapter.setHeight(target, original.height);
+      const restored = await adapter.snapshot(target);
+      if (!geometryMatch(restored, original)) return { status: 'RESTORE_FAILED', reason: 'Original AreaText state could not be verified after restoration' };
+      return null;
+    } catch (error) {
+      return { status: 'RESTORE_FAILED', reason: error instanceof Error ? error.message : String(error) };
+    }
+  };
+
+  let overset: boolean;
+  try {
+    overset = await adapter.isOverset(target);
+  } catch (error) {
+    const restored = await restore();
+    return restored ?? { status: 'MEASUREMENT_FAILED_RESTORED', reason: error instanceof Error ? error.message : String(error) };
+  }
+  if (!overset) {
+    return { status: 'SUCCESS', originalHeight: original.height, measuredHeight: original.height, growthDelta: 0, alreadyFit: true, measurementIterations: 0 };
+  }
+
+  const probe = async (height: number): Promise<boolean> => {
+    if (iterations >= MAX_AREA_TEXT_MEASUREMENT_ITERATIONS) throw new Error('AreaText measurement iteration limit reached');
+    if (!Number.isFinite(height) || height <= 0) throw new Error('AreaText probe height is invalid');
+    await adapter.setHeight(target, height);
+    iterations += 1;
+    const state = await adapter.snapshot(target);
+    if (!invariantsMatch(state, original)) throw new Error('AreaText invariant drift detected during measurement');
+    return adapter.isOverset(target);
+  };
+
+  let measuredHeight = original.height;
+  try {
+    let lowerBound = original.height;
+    let upperBound: number | null = null;
+    let current = original.height;
+    while (upperBound === null) {
+      const candidate = Math.min(current * 2, maximumHeight);
+      if (candidate <= current) throw new Error('AreaText remained overset at the maximum measurement height');
+      if (!(await probe(candidate))) upperBound = candidate;
+      else { lowerBound = candidate; current = candidate; }
+    }
+
+    let fittingHeight = upperBound;
+    while (iterations < MAX_AREA_TEXT_MEASUREMENT_ITERATIONS - 1 && fittingHeight - lowerBound > AREA_TEXT_GEOMETRY_TOLERANCE) {
+      const candidate = lowerBound + ((fittingHeight - lowerBound) / 2);
+      if (await probe(candidate)) lowerBound = candidate;
+      else { fittingHeight = candidate; }
+    }
+    measuredHeight = fittingHeight;
+    if (await probe(measuredHeight)) throw new Error('Final AreaText measurement remained overset');
+    const restored = await restore();
+    if (restored) return restored;
+    return { status: 'SUCCESS', originalHeight: original.height, measuredHeight, growthDelta: measuredHeight - original.height, alreadyFit: false, measurementIterations: iterations };
+  } catch (error) {
+    const restored = await restore();
     return restored ?? { status: 'MEASUREMENT_FAILED_RESTORED', reason: error instanceof Error ? error.message : String(error) };
   }
 }

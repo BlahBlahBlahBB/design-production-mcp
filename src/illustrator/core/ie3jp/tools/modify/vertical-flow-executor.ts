@@ -1,8 +1,10 @@
 import {
   AREA_TEXT_GEOMETRY_TOLERANCE,
   measureAreaTextRequiredHeight,
+  measureAreaTextRequiredHeightAsync,
   type AreaTextMeasurementAdapter,
   type AreaTextSnapshot,
+  type AsyncAreaTextMeasurementAdapter,
 } from './area-text-measurement.js';
 import {
   MAX_FLOW_ITEMS,
@@ -38,6 +40,14 @@ export interface VerticalFlowExecutorAdapter<T> {
   areaText: AreaTextMeasurementAdapter<T>;
   /** Applies the planner's native Illustrator deltaY exactly; no sign conversion occurs here. */
   translateY(target: T, deltaY: number): void;
+}
+
+/** Feature-local async runtime contract for the existing C4 execution semantics. */
+export interface AsyncVerticalFlowExecutorAdapter<T> {
+  resolve(uuid: string): Promise<T | null>;
+  snapshotItem(target: T): Promise<VerticalFlowItemSnapshot>;
+  areaText: AsyncAreaTextMeasurementAdapter<T>;
+  translateY(target: T, deltaY: number): Promise<void>;
 }
 
 export type VerticalFlowExecutorStatus =
@@ -386,6 +396,194 @@ export function executeVerticalFlow<T>(orderedUuids: string[], adapter: Vertical
   const verification = verifyFinal(prepared, plan, adapter);
   if (!verification.verified) {
     const restored = rollback(mutations, itemsByUuid, adapter);
+    return result(restored.verified ? 'VERIFY_FAILED_ROLLED_BACK' : 'ROLLBACK_FAILED', prepared, measuredAreaTextCount, plan, appliedMutationCount, verification, restored, verification.reason);
+  }
+  return result('SUCCESS', prepared, measuredAreaTextCount, plan, appliedMutationCount, verification, noRollback());
+}
+
+async function verifyFinalAsync<T>(
+  items: PreparedItem<T>[],
+  plan: VerticalFlowPlanItem[],
+  adapter: AsyncVerticalFlowExecutorAdapter<T>,
+): Promise<VerticalFlowVerification> {
+  try {
+    if (plan.length !== items.length) return { verified: false, reason: 'planned item count differs from original item count' };
+    const current: Array<{ target: T; item: VerticalFlowItemSnapshot }> = [];
+    for (let index = 0; index < items.length; index += 1) {
+      const prepared = items[index];
+      const target = await adapter.resolve(prepared.original.uuid);
+      if (!target) return { verified: false, reason: `verification could not resolve ${prepared.original.uuid}` };
+      const snapshot = await adapter.snapshotItem(target);
+      const planned = plan[index];
+      if (snapshot.uuid !== prepared.original.uuid) return { verified: false, reason: `verification identity mismatch for ${prepared.original.uuid}` };
+      if (!sameBounds(snapshot.bounds, planned.targetBounds)) return { verified: false, reason: `verification geometry mismatch for ${prepared.original.uuid}` };
+      if (!closeEnough(snapshot.bounds.left, prepared.original.bounds.left) || !closeEnough(snapshot.bounds.right, prepared.original.bounds.right)) {
+        return { verified: false, reason: `verification detected X movement for ${prepared.original.uuid}` };
+      }
+      if (prepared.original.kind === 'AREA_TEXT') {
+        const originalAreaText = prepared.originalAreaText;
+        if (!originalAreaText) return { verified: false, reason: `missing AreaText snapshot for ${prepared.original.uuid}` };
+        const currentAreaText = await adapter.areaText.snapshot(target);
+        if (!areaTextProtectedStateMatches(originalAreaText, currentAreaText, planned.targetHeight)) {
+          return { verified: false, reason: `verification AreaText invariant mismatch for ${prepared.original.uuid}` };
+        }
+        if (planned.resized && (await adapter.areaText.isOverset(target)) !== false) {
+          return { verified: false, reason: `verification AreaText remains overset for ${prepared.original.uuid}` };
+        }
+      }
+      current.push({ target, item: snapshot });
+    }
+    if (!closeEnough(current[0].item.bounds.top, plan[0].targetBounds.top)) return { verified: false, reason: 'first item top does not match plan' };
+    for (let index = 1; index < current.length; index += 1) {
+      const originalGap = items[index - 1].original.bounds.bottom - items[index].original.bounds.top;
+      const finalGap = current[index - 1].item.bounds.bottom - current[index].item.bounds.top;
+      if (!closeEnough(finalGap, originalGap)) return { verified: false, reason: `verification gap mismatch at ${index - 1}` };
+    }
+    return { verified: true };
+  } catch (error) {
+    return { verified: false, reason: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+async function verifyRestorationAsync<T>(
+  items: PreparedItem<T>[],
+  adapter: AsyncVerticalFlowExecutorAdapter<T>,
+): Promise<VerticalFlowVerification> {
+  try {
+    for (const prepared of items) {
+      const target = await adapter.resolve(prepared.original.uuid);
+      if (!target) return { verified: false, reason: `rollback could not resolve ${prepared.original.uuid}` };
+      const current = await adapter.snapshotItem(target);
+      if (current.uuid !== prepared.original.uuid || !sameBounds(current.bounds, prepared.original.bounds)) {
+        return { verified: false, reason: `rollback geometry mismatch for ${prepared.original.uuid}` };
+      }
+      if (prepared.original.kind === 'AREA_TEXT') {
+        const originalAreaText = prepared.originalAreaText;
+        if (!originalAreaText || !sameAreaTextSnapshot(originalAreaText, await adapter.areaText.snapshot(target))) {
+          return { verified: false, reason: `rollback AreaText invariant mismatch for ${prepared.original.uuid}` };
+        }
+      }
+    }
+    return { verified: true };
+  } catch (error) {
+    return { verified: false, reason: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+async function rollbackAsync<T>(
+  mutations: AppliedMutation[],
+  itemsByUuid: Map<string, PreparedItem<T>>,
+  adapter: AsyncVerticalFlowExecutorAdapter<T>,
+): Promise<VerticalFlowRollback> {
+  let restoredMutationCount = 0;
+  try {
+    for (let index = mutations.length - 1; index >= 0; index -= 1) {
+      const mutation = mutations[index];
+      const prepared = itemsByUuid.get(mutation.uuid);
+      const target = await adapter.resolve(mutation.uuid);
+      if (!prepared || !target) throw new Error(`rollback could not resolve ${mutation.uuid}`);
+      if (mutation.kind === 'HEIGHT') {
+        if (mutation.originalHeight === null) throw new Error(`rollback original height is missing for ${mutation.uuid}`);
+        await adapter.areaText.setHeight(target, mutation.originalHeight);
+      } else {
+        const current = await adapter.snapshotItem(target);
+        await adapter.translateY(target, prepared.original.bounds.top - current.bounds.top);
+      }
+      restoredMutationCount += 1;
+    }
+    const verification = await verifyRestorationAsync([...itemsByUuid.values()], adapter);
+    return { attempted: true, verified: verification.verified, restoredMutationCount, reason: verification.reason };
+  } catch (error) {
+    return { attempted: true, verified: false, restoredMutationCount, reason: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+/**
+ * Async-runtime equivalent of the frozen C4 pipeline. The planner remains
+ * synchronous and pure; only Illustrator-backed adapter operations are awaited.
+ */
+export async function executeVerticalFlowAsync<T>(
+  orderedUuids: string[],
+  adapter: AsyncVerticalFlowExecutorAdapter<T>,
+): Promise<VerticalFlowExecutionResult> {
+  const prepared: PreparedItem<T>[] = [];
+  let measuredAreaTextCount = 0;
+  try {
+    validateOrderedUuids(orderedUuids);
+    for (const uuid of orderedUuids) {
+      const target = await adapter.resolve(uuid);
+      if (!target) throw new Error(`object not found: ${uuid}`);
+      const original = await adapter.snapshotItem(target);
+      if (original.uuid !== uuid) throw new Error(`identity mismatch for ${uuid}`);
+      if (!original.editable || !original.movable) throw new Error(`object is unsafe or uneditable: ${uuid}`);
+      if (original.kind !== 'AREA_TEXT' && original.kind !== 'FIXED') throw new Error(`unsupported object role for ${uuid}`);
+      const originalAreaText = original.kind === 'AREA_TEXT' ? await adapter.areaText.snapshot(target) : null;
+      const preparedItem = { target, original, originalAreaText, measuredHeight: null };
+      prepared.push(preparedItem);
+      const eligibility = originalAreaText ? await adapter.areaText.checkEligibility(target) : null;
+      if (eligibility && !eligibility.eligible) {
+        return result('MEASUREMENT_UNSUPPORTED', prepared, measuredAreaTextCount, [], 0, { verified: false }, noRollback(), eligibility.reason ?? `unsupported AreaText: ${uuid}`);
+      }
+    }
+    detectOverlappingTargets(prepared);
+    planVerticalFlow(plannerInput(prepared, false));
+  } catch (error) {
+    return result('PRECHECK_FAILED', prepared, measuredAreaTextCount, [], 0, { verified: false }, noRollback(), error instanceof Error ? error.message : String(error));
+  }
+
+  for (const item of prepared) {
+    if (item.original.kind !== 'AREA_TEXT') continue;
+    const measurement = await measureAreaTextRequiredHeightAsync(item.target, adapter.areaText);
+    if (measurement.status === 'UNSUPPORTED') {
+      return result('MEASUREMENT_UNSUPPORTED', prepared, measuredAreaTextCount, [], 0, { verified: false }, noRollback(), measurement.reason);
+    }
+    if (measurement.status === 'MEASUREMENT_FAILED_RESTORED') {
+      return result('MEASUREMENT_FAILED_RESTORED', prepared, measuredAreaTextCount, [], 0, { verified: false }, noRollback(), measurement.reason);
+    }
+    if (measurement.status === 'RESTORE_FAILED') {
+      return result('MEASUREMENT_RESTORE_FAILED', prepared, measuredAreaTextCount, [], 0, { verified: false }, noRollback(), measurement.reason);
+    }
+    const originalAreaText = item.originalAreaText;
+    if (!originalAreaText || !sameAreaTextSnapshot(originalAreaText, await adapter.areaText.snapshot(item.target))) {
+      return result('MEASUREMENT_RESTORE_UNVERIFIED', prepared, measuredAreaTextCount, [], 0, { verified: false }, noRollback(), `AreaText measurement did not restore ${item.original.uuid}`);
+    }
+    item.measuredHeight = measurement.measuredHeight;
+    measuredAreaTextCount += 1;
+  }
+
+  let plan: VerticalFlowPlanItem[];
+  try {
+    plan = planVerticalFlow(plannerInput(prepared, true));
+  } catch (error) {
+    return result('PLAN_FAILED', prepared, measuredAreaTextCount, [], 0, { verified: false }, noRollback(), error instanceof Error ? error.message : String(error));
+  }
+
+  const itemsByUuid = new Map(prepared.map((item) => [item.original.uuid, item]));
+  const mutations: AppliedMutation[] = [];
+  let appliedMutationCount = 0;
+  try {
+    for (const planned of plan) {
+      const item = itemsByUuid.get(planned.uuid);
+      if (!item) throw new Error(`planned UUID is missing from precheck: ${planned.uuid}`);
+      if (planned.resized) {
+        mutations.push({ uuid: planned.uuid, kind: 'HEIGHT', value: planned.targetHeight, originalHeight: item.originalAreaText?.height ?? null });
+        await adapter.areaText.setHeight(item.target, planned.targetHeight);
+        appliedMutationCount += 1;
+      }
+      if (!closeEnough(planned.deltaY, 0)) {
+        mutations.push({ uuid: planned.uuid, kind: 'TRANSLATE', value: planned.deltaY, originalHeight: null });
+        await adapter.translateY(item.target, planned.deltaY);
+        appliedMutationCount += 1;
+      }
+    }
+  } catch (error) {
+    const restored = await rollbackAsync(mutations, itemsByUuid, adapter);
+    return result(restored.verified ? 'APPLY_FAILED_ROLLED_BACK' : 'ROLLBACK_FAILED', prepared, measuredAreaTextCount, plan, appliedMutationCount, { verified: false }, restored, error instanceof Error ? error.message : String(error));
+  }
+
+  const verification = await verifyFinalAsync(prepared, plan, adapter);
+  if (!verification.verified) {
+    const restored = await rollbackAsync(mutations, itemsByUuid, adapter);
     return result(restored.verified ? 'VERIFY_FAILED_ROLLED_BACK' : 'ROLLBACK_FAILED', prepared, measuredAreaTextCount, plan, appliedMutationCount, verification, restored, verification.reason);
   }
   return result('SUCCESS', prepared, measuredAreaTextCount, plan, appliedMutationCount, verification, noRollback());
