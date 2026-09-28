@@ -72,7 +72,14 @@ function asyncAdapter(delay = false): AsyncAreaTextMeasurementAdapter<Mock> {
       return target.eligible === false ? { eligible: false, reason: 'unsupported' } : { eligible: true };
     },
     snapshot: async (target) => { await pause(); target.events.push(`snapshot:${target.height}`); return snapshot(target); },
-    isOverset: async (target) => { await pause(); target.events.push(`overset:${target.height}`); return target.height < target.fitAt; },
+    probeHeight: async (target, height) => {
+      await pause();
+      target.events.push(`probe:${height}`);
+      if (target.throwOnProbe && height !== target.originalHeight) throw new Error('probe failed');
+      if (target.height !== height) { target.height = height; target.iterations += 1; }
+      return { requestedHeight: height, actualHeight: target.height, overset: target.height < target.fitAt };
+    },
+    isOverset: async () => { throw new Error('separate overset observation is not part of async C3 measurement'); },
     setHeight: async (target, height) => {
       await pause();
       if (target.throwOnProbe && height !== target.originalHeight) throw new Error('probe failed');
@@ -114,6 +121,23 @@ test('async adapter delay preserves the bounded measurement result', async () =>
   const delayed = mock({ fitAt: 180 });
   const immediate = mock({ fitAt: 180 });
   assert.deepEqual(await measureAreaTextRequiredHeightAsync(delayed, asyncAdapter(true)), await measureAreaTextRequiredHeightAsync(immediate, asyncAdapter()));
+});
+
+test('async C3 consumes atomic height probes and never calls the separate overset reader', async () => {
+  const target = mock({ fitAt: 180 });
+  const result = await measureAreaTextRequiredHeightAsync(target, asyncAdapter());
+  assert.equal(result.status, 'SUCCESS');
+  assert.ok(target.events.some((event) => event.startsWith('probe:')));
+  assert.equal(target.events.some((event) => event.startsWith('overset:')), false);
+});
+
+test('async C3 fails closed and restores when an atomic probe cannot verify its actual height', async () => {
+  const target = mock({ fitAt: 180 });
+  const adapter = asyncAdapter();
+  adapter.probeHeight = async (_target, height) => ({ requestedHeight: height, actualHeight: height + 1, overset: false });
+  const result = await measureAreaTextRequiredHeightAsync(target, adapter);
+  assert.equal(result.status, 'MEASUREMENT_FAILED_RESTORED');
+  assert.equal(target.height, target.originalHeight);
 });
 
 test('async eligibility rejection performs no mutation', async () => {

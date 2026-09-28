@@ -115,6 +115,12 @@ function asyncHarness(items: Item[], options: Options = {}) {
       checkEligibility: async (target) => { await pause(); return target.eligible ? { eligible: true } : { eligible: false, reason: 'unsupported' }; },
       snapshot: async (target) => { await pause(); events.push(`area-snapshot:${target.uuid}:${target.height}`); return areaSnapshot(target); },
       isOverset: async (target) => { await pause(); return target.height < target.fitAt; },
+      probeHeight: async (target, height) => {
+        await pause(); events.push(`probe:${target.uuid}:${height}`);
+        if (target.throwOnProbe && height !== target.originalHeight) throw new Error('probe failed');
+        target.height = height;
+        return { requestedHeight: height, actualHeight: target.height, overset: target.height < target.fitAt };
+      },
       setHeight: async (target, height) => {
         await pause(); events.push(`height:${target.uuid}:${height}`);
         if (target.throwOnProbe && height !== target.originalHeight) throw new Error('probe failed');

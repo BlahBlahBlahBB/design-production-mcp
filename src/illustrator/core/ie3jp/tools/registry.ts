@@ -88,6 +88,7 @@ import { register as registerAutoFitText } from './modify/auto-fit-text.js';
 import { register as registerObserveArtwork } from './read/observe-artwork.js';
 import { register as registerRepeatLayout } from './modify/repeat-layout.js';
 import { register as registerReplaceItem } from './modify/replace-item.js';
+import { register as registerLayoutVerticalFlow } from './modify/layout-vertical-flow.js';
 
 export function registerAllTools(server: McpServer): void {
   // Phase 1: 基本読み取りツール
@@ -104,6 +105,7 @@ export function registerAllTools(server: McpServer): void {
   registerObserveArtwork(server);
   registerRepeatLayout(server);
   registerReplaceItem(server);
+  registerLayoutVerticalFlow(server);
   registerGetVisualAppearance(server);
   registerGetColors(server);
   registerGetPathItems(server);

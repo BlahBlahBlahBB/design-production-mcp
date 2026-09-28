@@ -74,8 +74,20 @@ export interface AreaTextMeasurementAdapter<T> {
 export interface AsyncAreaTextMeasurementAdapter<T> {
   checkEligibility(target: T): Promise<AreaTextEligibility>;
   snapshot(target: T): Promise<AreaTextSnapshot>;
+  /**
+   * Atomically writes a candidate TextPath height and observes the resulting
+   * visible-line fit state at the production runtime boundary.
+   */
+  probeHeight(target: T, height: number): Promise<AreaTextHeightProbe>;
+  /** Retained for callers outside the async C3 measurement path. */
   isOverset(target: T): Promise<boolean>;
   setHeight(target: T, height: number): Promise<void>;
+}
+
+export interface AreaTextHeightProbe {
+  requestedHeight: number;
+  actualHeight: number;
+  overset: boolean;
 }
 
 export type AreaTextMeasurementResult =
@@ -253,7 +265,11 @@ export async function measureAreaTextRequiredHeightAsync<T>(
 
   let overset: boolean;
   try {
-    overset = await adapter.isOverset(target);
+    const initial = await adapter.probeHeight(target, original.height);
+    if (!sameNumber(initial.requestedHeight, original.height) || !sameNumber(initial.actualHeight, original.height)) {
+      throw new Error('AreaText initial probe height did not verify');
+    }
+    overset = initial.overset;
   } catch (error) {
     const restored = await restore();
     return restored ?? { status: 'MEASUREMENT_FAILED_RESTORED', reason: error instanceof Error ? error.message : String(error) };
@@ -265,11 +281,14 @@ export async function measureAreaTextRequiredHeightAsync<T>(
   const probe = async (height: number): Promise<boolean> => {
     if (iterations >= MAX_AREA_TEXT_MEASUREMENT_ITERATIONS) throw new Error('AreaText measurement iteration limit reached');
     if (!Number.isFinite(height) || height <= 0) throw new Error('AreaText probe height is invalid');
-    await adapter.setHeight(target, height);
+    const result = await adapter.probeHeight(target, height);
+    if (!sameNumber(result.requestedHeight, height) || !sameNumber(result.actualHeight, height)) {
+      throw new Error('AreaText probe height did not verify');
+    }
     iterations += 1;
     const state = await adapter.snapshot(target);
     if (!invariantsMatch(state, original)) throw new Error('AreaText invariant drift detected during measurement');
-    return adapter.isOverset(target);
+    return result.overset;
   };
 
   let measuredHeight = original.height;
