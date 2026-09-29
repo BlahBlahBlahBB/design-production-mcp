@@ -3,6 +3,10 @@ import { z } from 'zod';
 import { executeToolJsx } from './tool-executor.js';
 import { colorSchema, coerceBoolean, READ_ANNOTATIONS, WRITE_ANNOTATIONS } from './modify/shared.js';
 import { SCRIPT_CLASSIFIER_JSX } from './typography-script-rules.js';
+import { createSmartTextAutoFlowIllustratorAdapter, SMART_TEXT_OPERATION_TIMEOUT_MS } from '../../smart-text-auto-flow/illustrator-adapter.js';
+import { formattedMutationSucceeded, mutationsForTypography } from '../../smart-text-auto-flow/mutation-descriptors.js';
+import { executeSmartTextMutation } from '../../smart-text-auto-flow/transaction.js';
+import { formatToolResult } from './tool-executor.js';
 
 /*
  * Typography deliberately has one batch reader and one batch writer.  The reader
@@ -390,5 +394,16 @@ export function register(server: McpServer): void {
     title: 'Set Typography',
     description: 'Set explicitly supplied character and paragraph formatting in one background JSX execution. This is the direct tool for ordinary natural-language requests that change fonts, paragraph alignment, or text color across the current/open Illustrator document; for those document-wide requests call this tool with all_stories=true without first inspecting the Illustrator UI, selecting objects, navigating menus, or discovering TextFrame UUIDs. Pass uuids only for explicit TextFrame targets. For document-wide typography, use all_stories=true so the write operates through Story text directly and does not depend on doc.textFrames wrappers or PageItem UUIDs. Before any Story mutation, the Story/TextRange surfaces used by this tool are read-checked in a no-mutation preflight. Story mode intentionally does not dereference story.textFrames because valid documents can expose readable Story text while TextFrame wrappers throw Error 45. Lock/hidden/editable state is not exposed on Story/TextRange; Illustrator write rejection is reported if a Story is not writable. Do not combine target modes. `character` applies target-wide first; optional `script_rules.han` and `.latin` then override only matching Han/Latin characters. CJK/full-width punctuation defaults to Han; ASCII digits and punctuation default to Latin; spaces, tabs, CR/LF, and unclassified characters are left unchanged by script rules. Paragraph formatting remains target-wide. Specify a script font by exact `font_name` or exact `font_family` plus `font_style`; missing fonts do not fall back and are reported per rule/property.',
     inputSchema: { uuids: uuids.optional(), all_stories: allStories, character: characterSchema.optional(), script_rules: scriptRulesSchema.optional(), paragraph: paragraphSchema.optional() }, annotations: WRITE_ANNOTATIONS,
-  }, async (params) => executeToolJsx(writeJsx, params));
+  }, async (params) => {
+    // Story-wide writes intentionally have no stable TextFrame UUID set, so
+    // their established Story-only safety contract remains isolated from B2.
+    if (params.all_stories === true || !params.uuids?.length) return executeToolJsx(writeJsx, params);
+    return (await executeSmartTextMutation({
+      mutations: mutationsForTypography(params.uuids, params.character, params.paragraph, params.script_rules),
+      executeMutation: () => executeToolJsx(writeJsx, params, { timeoutMs: SMART_TEXT_OPERATION_TIMEOUT_MS }),
+      mutationSucceeded: formattedMutationSucceeded,
+      failure: (reason, status) => formatToolResult({ success: false, error: true, message: `set_typography smart auto flow ${status}: ${reason}` }),
+      adapter: createSmartTextAutoFlowIllustratorAdapter(),
+    })).result;
+  });
 }

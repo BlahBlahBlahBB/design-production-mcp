@@ -4,6 +4,10 @@ import { executeToolJsx } from '../tool-executor.js';
 import { coordinateSystemSchema } from '../session.js';
 import { colorSchema, strokeSchema, DESTRUCTIVE_ANNOTATIONS } from './shared.js';
 import { BATCH_OBJECT_CORE_JSX } from './batch-object-core.js';
+import { createSmartTextAutoFlowIllustratorAdapter, SMART_TEXT_OPERATION_TIMEOUT_MS } from '../../../smart-text-auto-flow/illustrator-adapter.js';
+import { mutationsForModifyOperations, formattedMutationSucceeded } from '../../../smart-text-auto-flow/mutation-descriptors.js';
+import { executeSmartTextMutation } from '../../../smart-text-auto-flow/transaction.js';
+import { formatToolResult } from '../tool-executor.js';
 
 export const modifyPropertiesSchema = z.object({
   position: z.object({ x: z.number(), y: z.number() }).optional(),
@@ -39,5 +43,11 @@ export function register(server: McpServer): void {
     description: 'Single-object compatibility tool. Do not call it repeatedly for a batch. For different changes on several objects use modify_objects; for shared appearance use set_appearance. Runs in the background.',
     inputSchema: { uuid: z.string(), properties: modifyPropertiesSchema, coordinate_system: coordinateSystemSchema },
     annotations: DESTRUCTIVE_ANNOTATIONS,
-  }, async (params) => executeToolJsx(jsxCode, params, { resolveCoordinate: true }));
+  }, async (params) => (await executeSmartTextMutation({
+    mutations: mutationsForModifyOperations([{ uuid: params.uuid, properties: params.properties }]),
+    executeMutation: () => executeToolJsx(jsxCode, params, { resolveCoordinate: true, timeoutMs: SMART_TEXT_OPERATION_TIMEOUT_MS }),
+    mutationSucceeded: formattedMutationSucceeded,
+    failure: (reason, status) => formatToolResult({ success: false, error: true, message: `modify_object smart auto flow ${status}: ${reason}` }),
+    adapter: createSmartTextAutoFlowIllustratorAdapter(),
+  })).result);
 }
