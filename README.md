@@ -4,7 +4,7 @@
 
 这个项目把多个成熟的 Illustrator 开源能力整合到同一个 MCP 中，并保留 DPM 自己的生产安全能力。Core 默认直接操作当前文档；只有用户明确要求保护 MASTER / 保留原稿 / 使用 Work Copy 时，才启用独立的 Production 安全机制。
 
-当前版本：**v0.4.4**
+当前版本：**v0.5.0**
 
 - 最新 Release / 下载页：<https://github.com/BlahBlahBlahBB/design-production-mcp/releases/latest>
 - 发布说明：[RELEASE_NOTES.md](RELEASE_NOTES.md)
@@ -240,8 +240,9 @@ node -p 'process.execPath'
 
 当前公开能力分为两部分：
 
-- **Illustrator Core：86 个公开工具**（构建时从注册表自动计数）
+- **Illustrator Core：91 个公开工具**（构建时从注册表自动计数）
 - **DPM Production：3 个公开生产安全工具**
+- **总 public tools：94**
 
 <br>
 
@@ -260,6 +261,8 @@ Stable Illustrator MCP 独立运行，不依赖 Adobe Illustrator Beta。DPM 工
 从 v0.4.3 起，重复图片模板任务采用真正的 **batch-first** 路径：新增 `place_images` 与 `group_object_sets`，可一次处理多张图片、毫米尺寸、居中、剪切蒙版和对应文字标签；大批次使用独立 180 秒 transport budget，并返回阶段 timing telemetry。真实 34 张二维码模板 QA 为 34/34 成功，`place_images` 核心 JSX 约 2.4 秒、含 transport 约 2.6 秒。
 
 从 v0.4.4 起，新增通用 **template variants** 批处理：`generate_template_variants` 可把一个 Illustrator 模板与多行数据一次生成多个画板版本，并在同次调用中处理 Han / Latin 字体、条件字号、段落对齐和画板居中。大列表可通过 `values_json_path` 精确交接，避免模型重新抄写几十个值导致漏项/重复；工具会回报输入数量、SHA-256 与真实重复值。`save_document` 同步使用长保存预算与 timing telemetry，长文档不再因 30 秒保存误判进入重复 save/stat 修复链。
+
+从 v0.5.0 起，Core 增加 5 个面向日常 Illustrator 操作的公开工具：`repeat_layout` 可按行列复制并排布对象，`observe_artwork` 可读取画板上的受限对象清单，`replace_item` 可用同类型对象安全替换目标，`auto_fit_text` 可在范围内为 AreaText 自动寻找合适字号，`layout_vertical_flow` 可在文字增长后保持间距并向下排列后续对象。Smart Text Auto Flow 继续作为现有 mutation tools 的自动编排能力，自动测量 AreaText 增长、规划 downstream vertical flow，并在无法可靠验证时 fail-closed rollback；它不是第 6 个 public MCP tool。当前最终 automated regression 为 **297 / 297 PASS**，姓名贴 `generate_template_variants` 真实生产 QA 仍为 **63/63 PASS**。
 
 主要能力包括：
 
@@ -301,7 +304,7 @@ DPM Production 仅用于用户**明确要求**的 **MASTER → Work Copy → 修
 
 ## ⭕️ 适合怎么用
 
-这个 MCP 的目标不是让你手动记住 86 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
+这个 MCP 的目标不是让你手动记住 91 个工具，而是让 **Codex 自己组合这些能力完成 Illustrator 任务**。
 
 例如可以直接说：
 
@@ -398,7 +401,8 @@ create_work_copy
 
 项目测试状态：
 
-- `npm test`：**120 / 120 通过**
+- `npm test`：**297 / 297 通过**
+- GitHub CI #176：通过
 - MASTER / Work Copy safety regression：包含于 automated suite
 - TypeScript build：通过
 - `npm audit --omit=dev`：**0 个已报告漏洞**
