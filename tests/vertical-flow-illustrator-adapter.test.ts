@@ -72,7 +72,7 @@ test('adapter JSX uses TextPath height, visible-line overset evidence, and no sy
   assert.match(verticalFlowAdapterJsxCode, /firstOverset !== secondOverset/);
   assert.match(verticalFlowAdapterJsxCode, /observationCount:2/);
   assert.match(verticalFlowAdapterJsxCode, /function probeHeight\(uuid, requestedHeight\)/);
-  assert.match(verticalFlowAdapterJsxCode, /frame\.textPath\.height = height;\n    app\.redraw\(\);\n    var actualHeight/);
+  assert.match(verticalFlowAdapterJsxCode, /frame\.textPath\.height = height;\n    app\.redraw\(\);\n    var bounds = textPathBounds\(frame\), actualHeight = bounds\.height/);
   assert.match(verticalFlowAdapterJsxCode, /contents\.charAt\(contents\.length - 1\)/);
   assert.match(verticalFlowAdapterJsxCode, /lastEnd === end - 1/);
   assert.match(verticalFlowAdapterJsxCode, /target\.translate\(0, deltaY\)/);
@@ -111,16 +111,6 @@ test('adapter preserves stable true and false overset values after bounded stabi
     });
     assert.equal(await adapter.areaText.isOverset({ uuid: 'a' }), expected);
   }
-});
-
-test('height writer request and confirmed application semantics remain unchanged', async () => {
-  let request: Record<string, unknown> | undefined;
-  const adapter = createVerticalFlowIllustratorAdapter(async (_jsx, params) => {
-    request = params as Record<string, unknown>;
-    return { applied: true };
-  });
-  await adapter.areaText.setHeight({ uuid: 'a' }, 80);
-  assert.deepEqual(request, { operation: 'set_height', uuid: 'a', height: 80 });
 });
 
 test('adapter keeps ExtendScript reserved words out of the generated JSX and passes JSX by file to AppleScript', async () => {

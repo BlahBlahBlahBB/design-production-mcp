@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { executeJsx } from '../../executor/jsx-runner.js';
 import { formatToolResult } from '../tool-executor.js';
 import { READ_ANNOTATIONS, WRITE_ANNOTATIONS, coerceBoolean } from './shared.js';
+import { createSmartTextAutoFlowIllustratorAdapter, SMART_TEXT_OPERATION_TIMEOUT_MS } from '../../../smart-text-auto-flow/illustrator-adapter.js';
+import { formattedMutationSucceeded, mutationForTextStyle } from '../../../smart-text-auto-flow/mutation-descriptors.js';
+import { executeSmartTextMutation } from '../../../smart-text-auto-flow/transaction.js';
 
 /**
  * apply_text_style / list_text_styles
@@ -110,10 +113,13 @@ export function register(server: McpServer): void {
       },
       annotations: WRITE_ANNOTATIONS,
     },
-    async (params) => {
-      const result = await executeJsx(applyJsxCode, params);
-      return formatToolResult(result);
-    },
+    async (params) => (await executeSmartTextMutation({
+      mutations: [mutationForTextStyle(params.uuid)],
+      executeMutation: async () => formatToolResult(await executeJsx(applyJsxCode, params, { timeout: SMART_TEXT_OPERATION_TIMEOUT_MS })),
+      mutationSucceeded: formattedMutationSucceeded,
+      failure: (reason, status) => formatToolResult({ success: false, error: true, message: `apply_text_style smart auto flow ${status}: ${reason}` }),
+      adapter: createSmartTextAutoFlowIllustratorAdapter(),
+    })).result,
   );
 
   server.registerTool(

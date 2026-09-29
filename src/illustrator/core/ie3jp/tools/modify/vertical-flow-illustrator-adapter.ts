@@ -13,6 +13,8 @@ export type VerticalFlowJsxRunner = (
   options?: { timeout?: number; activate?: boolean },
 ) => Promise<JsxResult>;
 
+export type VerticalFlowIllustratorAdapter = AsyncVerticalFlowExecutorAdapter<VerticalFlowIllustratorItem>;
+
 const VERTICAL_FLOW_OPERATION_TIMEOUT_MS = 60_000;
 
 /**
@@ -148,7 +150,7 @@ else try {
     if (height <= 0) fail("AreaText height must be positive");
     frame.textPath.height = height;
     app.redraw();
-    var actualHeight = textPathBounds(frame).height;
+    var bounds = textPathBounds(frame), actualHeight = bounds.height;
     if (Math.abs(actualHeight - height) > 0.01) fail("AreaText TextPath height did not verify");
     return { requestedHeight:height, actualHeight:actualHeight, overset:singleOversetObservation(frame) };
   }
@@ -176,8 +178,9 @@ else try {
     var height = number(params.height, "AreaText height");
     if (height <= 0) fail("AreaText height must be positive");
     frame.textPath.height = height;
-    if (Math.abs(frame.textPath.height - height) > 0.01) fail("AreaText TextPath height did not verify");
     app.redraw();
+    var actualHeight = textPathBounds(frame).height;
+    if (Math.abs(actualHeight - height) > 0.01) fail("AreaText TextPath height did not verify");
     result = { applied:true };
   } else if (params.operation === "translate_y") {
     var target = requiredItem(params.uuid);
@@ -259,7 +262,7 @@ function asAreaSnapshot(result: Record<string, unknown>): AreaTextSnapshot {
 
 export function createVerticalFlowIllustratorAdapter(
   runJsx: VerticalFlowJsxRunner = executeJsx,
-): AsyncVerticalFlowExecutorAdapter<VerticalFlowIllustratorItem> {
+): VerticalFlowIllustratorAdapter {
   const execute = async (operation: string, extra: Record<string, unknown> = {}): Promise<Record<string, unknown>> =>
     objectResult(await runJsx(verticalFlowAdapterJsxCode, { operation, ...extra }, { timeout: VERTICAL_FLOW_OPERATION_TIMEOUT_MS, activate: false }), operation);
   const areaText: AsyncAreaTextMeasurementAdapter<VerticalFlowIllustratorItem> = {
@@ -273,7 +276,8 @@ export function createVerticalFlowIllustratorAdapter(
       return asAreaSnapshot(await execute('snapshot_area_text', { uuid: target.uuid }));
     },
     async probeHeight(target, height) {
-      return readHeightProbe(await execute('probe_height', { uuid: target.uuid, height }), height);
+      const result = await execute('probe_height', { uuid: target.uuid, height });
+      return readHeightProbe(result, height);
     },
     async isOverset(target): Promise<boolean> {
       return readStabilizedOverset(await execute('is_overset', { uuid: target.uuid }));
