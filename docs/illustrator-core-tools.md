@@ -14,6 +14,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | 工具 | 中文用途 | 来源 | Illustrator 后端 | 直接操作当前文档 | 需要 DPM Production 安全层 | 30.8.1 Smoke |
 | --- | --- | --- | --- | --- | --- | --- |
 | `align_objects` | 对齐选中的对象。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
+| `auto_fit_text` | 在限定字号范围内为 AreaText 自动寻找不溢出的统一字号，并在失败时恢复原字号。 | IE3JP | IE3JP JSX | 是 | 否 | 通过（真实 QA） |
 | `apply_graphic_style` | 应用指定 Graphic Style。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `apply_text_style` | 应用文字样式。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `assign_color_profile` | 为文档指定颜色配置文件。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
@@ -65,6 +66,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `import_svg_as_editable` | 导入可编辑 SVG。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `list_fonts` | 列出可用字体。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `list_graphic_styles` | 列出 Graphic Styles。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
+| `layout_vertical_flow` | 测量可增长的 AreaText，并按明确 UUID 顺序向下移动后续对象，保持原有垂直间距。 | IE3JP | IE3JP JSX | 是 | 否 | 通过（真实 QA） |
 | `list_text_frames` | 列出文档中的文字框。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `list_text_styles` | 列出文字样式。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `manage_artboards` | 新建、修改、删除等画板管理。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
@@ -76,6 +78,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `modify_objects` | 一次执行多个对象的不同属性修改并返回逐对象真实验证。 | IE3JP | IE3JP JSX | 是 | 否 | 通过 |
 | `move_to_layer` | 将选区移动到指定图层。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `open_document` | 打开 Illustrator 文档。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
+| `observe_artwork` | 读取指定画板上的直接 PageItem 根对象清单；只遍历图层和子图层，不写入标识或 Illustrator 状态。 | IE3JP | IE3JP JSX | 是 | 否 | 通过（真实 QA） |
 | `pathfinder_objects` | 执行固定的 Pathfinder 模式。 | Alexander | Alexander Action | 是 | 否 | 通过 |
 | `place_color_chips` | 在文档中放置色块。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `place_image` | 放置单个链接或嵌入图片。 | IE3JP | IE3JP JSX | 是 | 否 | 通过（链接 / Embed） |
@@ -85,6 +88,8 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `preflight_check` | 执行印前检查。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `replace_color` | 替换颜色。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `replace_formatted_text` | 替换选中文字，同时保留 / 处理格式逻辑。 | Creold | Creold DOM | 是 | 否 | 待验证 |
+| `replace_item` | 用同类型 PageItem 的副本替换目标对象，保持尺寸并居中到原目标位置。 | IE3JP | IE3JP JSX | 是 | 否 | 通过（真实 QA） |
+| `repeat_layout` | 按行列和水平 / 垂直间距复制一个源对象并生成有界布局。 | IE3JP | IE3JP JSX | 是 | 否 | 通过（真实 QA） |
 | `resize_for_variation` | 为尺寸变体调整文档。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `save_document` | 保存当前文档。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `select_objects` | 按条件选择对象。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
@@ -96,7 +101,7 @@ Illustrator Core 直接操作当前活动的 Illustrator 文档，不要求进�
 | `undo` | 撤销上一次 Illustrator 操作。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 | `ungroup_objects` | 解组选中的群组。 | IE3JP | IE3JP JSX | 是 | 否 | 待验证 |
 
-Illustrator Core 公开工具总数：**86**。
+Illustrator Core 公开工具总数：**91**。
 
 来源统计以当前注册表为准：IE3JP JSX 是主要直接 Core 路径；
 Alexander Ladygin 提供固定 Action 路径；Creold / Sergey Osokin 提供少量

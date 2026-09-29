@@ -1,3 +1,25 @@
+# v0.5.0 发布说明
+
+## Phase 3 / Wave 3.6：更可靠的画板观察、布局与文字增长编排
+
+这一版把几类常见的 Illustrator 任务变成了可以直接交给 Codex 的公开 Core 能力：
+
+- 新增 5 个 public Core tools：`auto_fit_text`、`layout_vertical_flow`、`observe_artwork`、`repeat_layout`、`replace_item`。
+- `auto_fit_text` 为 AreaText 在限定范围内寻找合适字号；`layout_vertical_flow` 在文字增长后测量并向下安排后续对象；`observe_artwork` 提供受限的画板对象观察；`repeat_layout` 复制并排列对象；`replace_item` 用同类型对象安全替换目标。
+- Smart Text Auto Flow 已支持在受支持的文字 mutation 后自动测量 AreaText 增长、规划 downstream vertical flow、保持间距，并在无法可靠验证时 fail-closed rollback。它是现有 mutation pipeline 的自动编排能力，不是新的 public tool。
+- Template Variants 继续保留并已再次真实生产验证：63 个姓名 → 63 个画板；中英文字体、四字中文 83pt、段落居中、画板水平居中均 PASS。
+
+### 验证状态
+
+- Wave 3.6 真实 QA：typography growth path PASS；contents Golden Path PASS
+- public tools：**94**（Illustrator Core 91，DPM Production 3）
+- `npm test`：**297 / 297 PASS**
+- TypeScript build：**PASS**
+- GitHub CI #176：**PASS**
+- Maintainer verified Illustrator：**Adobe Illustrator 2026 Stable 30.8.1**
+
+2022–2025 仍是 `SUPPORTED_UNVERIFIED`，本说明不将其描述为 maintainer verified。
+
 # v0.4.4 发布说明
 
 ## Data-driven template variants + reliable long saves
